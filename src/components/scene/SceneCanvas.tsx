@@ -13,10 +13,11 @@ import {
 import { BlendFunction } from "postprocessing";
 import { Suspense, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { AgXToneMapping, MathUtils, Vector2 } from "three";
-import { getReducedMotion, subscribeReducedMotion } from "@/lib/story";
+import { getReducedMotion, getScenePaused, subscribeReducedMotion, subscribeScenePaused } from "@/lib/story";
 import { getTilt } from "@/lib/tilt";
 import ChapterPieces from "./ChapterPieces";
 import Space from "./Space";
+import SpaceObjects from "./SpaceObjects";
 import Star from "./Star";
 
 // One canvas for the whole site, mounted in the root layout so it survives
@@ -25,6 +26,22 @@ import Star from "./Star";
 // sitting small in the corner elsewhere.
 
 const noop = () => () => {};
+
+type Hints = Navigator & { connection?: { saveData?: boolean }; deviceMemory?: number };
+
+// Devices that ask to save data, have little memory or no WebGL get a still
+// image of the star in space instead of the live scene.
+function prefersLite() {
+  const nav = navigator as Hints;
+  if (nav.connection?.saveData) return true;
+  if (nav.deviceMemory !== undefined && nav.deviceMemory <= 2) return true;
+  if (nav.hardwareConcurrency !== undefined && nav.hardwareConcurrency <= 2) return true;
+  try {
+    return !document.createElement("canvas").getContext("webgl2");
+  } catch {
+    return true;
+  }
+}
 
 function usePrefersReducedMotion() {
   return useSyncExternalStore(subscribeReducedMotion, getReducedMotion, () => true);
@@ -45,7 +62,7 @@ function SpaceLights({ rich }: { rich: boolean }) {
         <Lightformer form="circle" intensity={1.4} color="#ffd9bd" position={[6, 5, -3.2]} scale={6} />
         {/* Cool rim from behind, and the planet's dull bounce from below. */}
         <Lightformer form="rect" intensity={3} color="#8fa6ff" position={[-5, 2, -6]} rotation={[0, 0.6, 0]} scale={[3, 9, 1]} />
-        <Lightformer form="rect" intensity={1.2} color="#5a2a22" position={[0, -6, 2]} rotation={[-Math.PI / 2, 0, 0]} scale={[16, 10, 1]} />
+        <Lightformer form="rect" intensity={0.6} color="#5a2a22" position={[0, -6, 2]} rotation={[-Math.PI / 2, 0, 0]} scale={[16, 10, 1]} />
         {/* Faint gas the chrome picks up as smears of colour. */}
         <Lightformer form="rect" intensity={0.35} color="#3b4f7a" position={[-4, 4, 4]} scale={[8, 4, 1]} />
         <Lightformer form="rect" intensity={0.3} color="#7a1f2e" position={[5, -2, 5]} scale={[6, 3, 1]} />
@@ -125,6 +142,7 @@ function Effects({ rich }: { rich: boolean }) {
 
 export default function SceneCanvas() {
   const reducedMotion = usePrefersReducedMotion();
+  const paused = useSyncExternalStore(subscribeScenePaused, getScenePaused, () => false);
 
   // Events come from the whole page so the star can be hovered and dragged
   // while the canvas itself stays behind the content.
@@ -136,6 +154,7 @@ export default function SceneCanvas() {
     () => window.innerWidth > 760 && window.devicePixelRatio <= 2,
     () => true,
   );
+  const lite = useSyncExternalStore(noop, prefersLite, () => false);
   // Drops resolution and effects if the frame rate can't keep up.
   const [struggling, setStruggling] = useState(false);
   const full = rich && !struggling;
@@ -154,6 +173,15 @@ export default function SceneCanvas() {
     return () => clearTimeout(id);
   }, []);
 
+  if (lite) {
+    return (
+      <div className="scene" data-lite aria-hidden="true">
+        {/* eslint-disable-next-line @next/next/no-img-element -- a small decorative still */}
+        <img src="/models/previews/deadzolt-star.webp" alt="" className="scene-still" />
+      </div>
+    );
+  }
+
   return (
     <div className="scene" aria-hidden="true">
       {eventSource && (
@@ -161,10 +189,13 @@ export default function SceneCanvas() {
           eventSource={eventSource}
           eventPrefix="client"
           camera={{ position: [0, 0, 7], fov: 40 }}
-          // Phones render at up to 2x so model edges stay crisp; if the frame
-          // rate drops, resolution steps down before anything else does.
-          dpr={struggling ? 1.25 : [1, rich ? 1.75 : 2]}
-          frameloop={reducedMotion ? "demand" : "always"}
+          // Capped at 1.5x on phones (SMAA keeps edges clean) and 1.75x on
+          // larger screens; if the frame rate drops, resolution steps down
+          // before anything else does.
+          dpr={struggling ? 1 : [1, rich ? 1.75 : 1.5]}
+          // Browsers already stop drawing in a hidden tab; the scene also
+          // holds still while the showreel plays.
+          frameloop={reducedMotion || paused ? "demand" : "always"}
           gl={{
             antialias: false,
             // Opaque, so the sky, tone mapping and grain are one image.
@@ -186,6 +217,7 @@ export default function SceneCanvas() {
           {piecesReady && (
             <Suspense fallback={null}>
               <ChapterPieces animate={!reducedMotion} />
+              <SpaceObjects rich={full} />
             </Suspense>
           )}
           <Effects rich={full} />

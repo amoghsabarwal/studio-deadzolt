@@ -97,37 +97,36 @@ export default function Keepsake() {
 
   return (
     <section ref={root} className="keepsake" data-open={open || undefined} aria-labelledby="keepsake-title">
-      <div className="keepsake-copy">
-        <p className="label">You reached the end</p>
-        <h2 id="keepsake-title">Thank you for your time. Here is something to keep.</h2>
-        <p className="keepsake-note">
-          {visitor?.number != null ? (
-            <>
-              You are visitor <span ref={number}>{label}</span> to this site. Your number is on a card made for your
-              story or your feed.
-            </>
-          ) : (
-            <>A card with your own code and the day you came, made for your story or your feed.</>
-          )}
-        </p>
-
-        <div className="keepsake-formats" role="group" aria-label="Card size">
-          <button type="button" className="chip" aria-pressed={format === "story"} onClick={() => setFormat("story")}>
-            Story <span className="chip-count">9:16</span>
-          </button>
-          <button type="button" className="chip" aria-pressed={format === "post"} onClick={() => setFormat("post")}>
-            Post <span className="chip-count">16:9</span>
-          </button>
-        </div>
-
-        <button type="button" className="button button-primary button-foil" onClick={save}>
-          {share ? "Share your keepsake" : "Download your keepsake"}
-        </button>
-      </div>
-
       <div className="keepsake-card" data-holo data-tier="holo" data-format={format}>
         <HoloLayers />
         <canvas ref={canvas} role="img" aria-label={`Deadzolt keepsake card, ${label}`} />
+      </div>
+
+      <div className="keepsake-copy">
+        <h2 id="keepsake-title">Thanks for your time. Here&apos;s a keepsake.</h2>
+        <p className="keepsake-note">
+          {visitor?.number != null ? (
+            <>
+              You are visitor <span ref={number}>{label}</span>. Share your card to your story or feed.
+            </>
+          ) : (
+            <>Your own card with the day you came, sized for your story or feed.</>
+          )}
+        </p>
+      </div>
+
+      <div className="keepsake-actions">
+        <div className="keepsake-formats" role="group" aria-label="Card size">
+          <button type="button" className="chip" aria-pressed={format === "story"} onClick={() => setFormat("story")}>
+            Story
+          </button>
+          <button type="button" className="chip" aria-pressed={format === "post"} onClick={() => setFormat("post")}>
+            Post
+          </button>
+        </div>
+        <button type="button" className="button" onClick={save}>
+          {share ? "Share" : "Download"}
+        </button>
       </div>
     </section>
   );

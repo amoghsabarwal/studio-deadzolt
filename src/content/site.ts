@@ -13,19 +13,40 @@ export const site = {
     "Hi, I'm Amogh, founder of Studio Deadzolt.",
     "I make motion graphics for startups and brands: launch films, product animation and social content, built so people stop scrolling and look.",
   ],
-  // Where every "Book a free call" button on the site goes: the studio's
-  // Calendly page, which opens in a new tab.
+  // Where every booking button goes: the studio's Calendly page. With
+  // JavaScript it opens over the site (BookingDialog); without, in a new tab.
   booking: "https://calendly.com/amoghsabarwal/30min",
+  // The one call to action, worded the same everywhere, and its promise.
+  cta: "Book a free call",
+  ctaNote: "30 minutes. You leave with a fixed quote in writing.",
+  socials: [
+    { label: "Instagram", href: "https://www.instagram.com/deadzolt/" },
+    { label: "X", href: "https://x.com/deadzoltt" },
+  ],
   // What the studio makes. All of it is motion graphics.
   services: ["Launch films", "Product animation", "Brand motion", "Social content", "Logo animation", "3D motion"],
 };
 
-// Extra attributes for booking links: a web booking page opens in a new tab,
-// an email link opens the mail app as usual.
-export const bookingLink = {
-  href: site.booking,
-  ...(site.booking.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {}),
-};
+// Attributes for a booking button. `from` names where on the site it sits;
+// it travels to Calendly as utm_content and to analytics, so bookings show
+// which button brought them.
+export function bookingLink(from: string) {
+  const url = new URL(site.booking);
+  url.searchParams.set("utm_source", "deadzolt.studio");
+  url.searchParams.set("utm_content", from);
+  return { href: url.toString(), target: "_blank", rel: "noopener noreferrer", "data-book": from };
+}
+
+// Calendly's embedded calendar, in the site's colours.
+export function bookingEmbed(from: string) {
+  const url = new URL(bookingLink(from).href);
+  url.searchParams.set("embed_type", "Inline");
+  url.searchParams.set("hide_gdpr_banner", "1");
+  url.searchParams.set("background_color", "0a0b10");
+  url.searchParams.set("text_color", "ededed");
+  url.searchParams.set("primary_color", "ff1f1f");
+  return url.toString();
+}
 
 export type DisciplineSlug = "3d-experience" | "motion-direction" | "branding" | "art-direction";
 
@@ -76,7 +97,7 @@ export const projects: Project[] = [
     year: 2026,
     disciplines: ["3d-experience"],
     summary:
-      "A conceptual 3D product film exploring Daily Objects' NODE wireless ecosystem through a warm, tactile visual world.",
+      "A 3D product film for Daily Objects' NODE wireless ecosystem, set in a warm, tactile visual world.",
     body: "Built entirely from scratch in Cinema 4D and Octane, this project reimagines the NODE ecosystem within a carefully constructed domestic environment.",
   },
   {
@@ -86,7 +107,7 @@ export const projects: Project[] = [
     year: 2026,
     disciplines: ["art-direction"],
     summary:
-      "A collection of self-initiated posters translating the music and visual identities of artists I listen to into graphic experiments.",
+      "Posters translating the music and visual identities of artists into graphic experiments.",
     body: "Sound Studies is an ongoing collection of personal poster work created around artists, albums, and tracks that have influenced my listening.",
   },
   {
@@ -96,7 +117,7 @@ export const projects: Project[] = [
     year: 2025,
     disciplines: ["art-direction"],
     summary:
-      "A research-driven exploration of cloth simulation, using digital fabric to experiment with movement, form, and material behavior.",
+      "Cloth simulation in motion: digital fabric exploring movement, form and material behaviour.",
     body: "This project began as an R&D study while learning and experimenting with cloth simulation in 3D.",
   },
   {
@@ -126,7 +147,7 @@ export const projects: Project[] = [
     year: 2025,
     disciplines: ["3d-experience", "motion-direction"],
     summary:
-      "A conceptual 3D spec ad exploring Solana Seeker as a gateway between the physical device and the constantly evolving world of Web3.",
+      "A 3D product film for Solana Seeker, a gateway between the physical device and the world of Web3.",
     body: "This project is a speculative product film for Solana Seeker, built around the idea of making an inherently digital ecosystem feel physical.",
   },
   {
@@ -136,7 +157,7 @@ export const projects: Project[] = [
     year: 2024,
     disciplines: ["branding"],
     summary:
-      "A self-initiated apparel project turning graphic experimentation into a small collection of wearable pieces.",
+      "Graphic experiments turned into a small collection of wearable pieces.",
     body: "Not Your Average Tee is a collection I designed, developed, and released as an exploration of how my visual language could exist beyond the screen.",
   },
   {
@@ -146,7 +167,7 @@ export const projects: Project[] = [
     year: 2024,
     disciplines: ["3d-experience"],
     summary:
-      "A conceptual 3D product study reimagining the Solflare Card through custom modeling, materials, and lighting.",
+      "The Solflare Card reimagined through custom modelling, materials and lighting.",
     body: "Created entirely from scratch in Cinema 4D and Octane, this project is a focused product visualization of the Solflare Card.",
   },
 ];
@@ -173,13 +194,12 @@ export type Plan = {
   note: string;
   summary: string;
   includes: string[];
-  cta: string;
   featured?: boolean;
   // The card's holographic foil: silver, full holo or brand red.
   foil: "silver" | "holo" | "red";
 };
 
-// Ways to work together. Every plan starts with the free consultation call.
+// Ways to work together. Every plan starts with the free 30-minute call.
 export const plans: Plan[] = [
   {
     name: "Starter",
@@ -187,8 +207,7 @@ export const plans: Plan[] = [
     price: "$500",
     note: "One-off",
     summary: "One short motion piece: a logo animation, a product loop or a social clip.",
-    includes: ["One animation", "Two rounds of revisions", "Exports for every platform", "Free consultation call"],
-    cta: "Book a free call",
+    includes: ["One animation", "Two rounds of revisions", "Exports for every platform", "Free call to start"],
   },
   {
     name: "Project",
@@ -197,7 +216,6 @@ export const plans: Plan[] = [
     note: "Per project",
     summary: "A launch film or product animation, from storyboard to final render.",
     includes: ["Storyboard and style frames", "Fixed scope and price", "Weekly check-ins", "Final renders and source files"],
-    cta: "Start a project",
     featured: true,
   },
   {
@@ -207,7 +225,6 @@ export const plans: Plan[] = [
     note: "Per month",
     summary: "Motion on call for brands that ship all the time.",
     includes: ["Ongoing motion requests", "Priority turnaround", "Monthly planning call", "Launch, product and social"],
-    cta: "Talk about a retainer",
   },
 ];
 

@@ -32,8 +32,8 @@ export default function SiteHeader() {
             );
           })}
           <li>
-            <a {...bookingLink} className="button button-primary button-small">
-              Book a call
+            <a {...bookingLink("header")} className="button button-primary button-small">
+              {site.cta}
             </a>
           </li>
         </ul>

@@ -1,6 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
-import MagneticLink from "@/components/MagneticLink";
+import BookingEmbed from "@/components/BookingEmbed";
 import Showreel from "@/components/Showreel";
 import HoloLayers from "@/components/HoloLayers";
 import StudioClock from "@/components/StudioClock";
@@ -17,16 +16,6 @@ export default function Home() {
     <>
       <StoryDriver />
 
-      <noscript>
-        <style>{".intro{display:none}[data-hero-title]{visibility:visible}"}</style>
-      </noscript>
-      <div className="intro" data-intro aria-hidden="true">
-        <Image src="/brand/wordmark.svg" alt="" width={583} height={61} className="intro-mark" />
-        <span className="intro-count label" data-intro-count>
-          000
-        </span>
-      </div>
-
       <section id="arrival" data-chapter className="chapter hero">
         <div className="hero-copy" data-hero>
           <p className="eyebrow">
@@ -40,19 +29,16 @@ export default function Home() {
             Launch films, product animation and social content for startups and brands that need to be
             seen.
           </p>
-          <TiltHint />
           <div className="actions">
-            <a className="button button-primary" {...bookingLink}>
-              Book a free call
+            <a className="button button-primary" {...bookingLink("hero")}>
+              {site.cta}
             </a>
             <a className="button" href="#showreel">
               Watch the reel
             </a>
           </div>
+          <p className="cta-note">{site.ctaNote}</p>
         </div>
-        <p className="label drag-hint" aria-hidden="true">
-          Drag to spin
-        </p>
         <div className="hero-foot label">
           <ul aria-label="What the studio makes">
             {site.services.slice(0, 4).map((s) => (
@@ -118,9 +104,7 @@ export default function Home() {
               <header>
                 <p className="label">{plan.note}</p>
                 <h3 className="plan-name">{plan.name}</h3>
-                <p className="plan-price" data-count>
-                  {plan.price}
-                </p>
+                <p className="plan-price">{plan.price}</p>
                 <p className="plan-summary">{plan.summary}</p>
               </header>
               <ul className="plan-list">
@@ -128,8 +112,11 @@ export default function Home() {
                   <li key={item}>{item}</li>
                 ))}
               </ul>
-              <a className={plan.featured ? "button button-primary" : "button"} {...bookingLink}>
-                {plan.cta}
+              <a
+                className={plan.featured ? "button button-primary" : "button"}
+                {...bookingLink(`plan-${plan.name.toLowerCase().replace(/\s+/g, "-")}`)}
+              >
+                {site.cta}
               </a>
             </article>
           ))}
@@ -138,20 +125,18 @@ export default function Home() {
 
       <section id="contact" data-chapter className="chapter contact">
         <div className="contact-copy">
-          <p className="label" data-scramble>Contact</p>
+          <p className="label" data-scramble>Book</p>
           <h2 className="section-title" data-split>
             Have something to launch?
           </h2>
-          <p className="section-sub">Book a free call and tell us what you are making.</p>
-          <div className="actions" data-reveal>
-            <MagneticLink className="button button-primary button-foil" {...bookingLink}>
-              Book a free call
-            </MagneticLink>
-            <a className="button" href={`mailto:${site.email}`}>
-              {site.email}
-            </a>
-          </div>
+          <p className="section-sub">
+            Pick a time that suits you. {site.ctaNote}
+          </p>
+          <p className="contact-alt">
+            Prefer email? <a href={`mailto:${site.email}`}>{site.email}</a>
+          </p>
         </div>
+        <BookingEmbed from="closing" />
       </section>
     </>
   );

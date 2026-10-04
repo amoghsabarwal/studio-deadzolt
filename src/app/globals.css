@@ -169,6 +169,33 @@ ol {
   background: var(--ink);
 }
 
+/* The still for devices that skip the live scene. */
+.scene[data-lite] {
+  background:
+    radial-gradient(40% 50% at 30% 30%, rgba(59, 79, 122, 0.22), transparent 70%),
+    radial-gradient(35% 40% at 75% 75%, rgba(122, 31, 46, 0.16), transparent 70%),
+    #020306;
+}
+
+.scene-still {
+  position: absolute;
+  right: 4vw;
+  top: 50%;
+  width: min(48vw, 640px);
+  translate: 0 -50%;
+  mix-blend-mode: screen;
+  opacity: 0.9;
+}
+
+@media (max-width: 760px) {
+  .scene-still {
+    right: 50%;
+    top: 26%;
+    width: 78vw;
+    translate: 50% -50%;
+  }
+}
+
 .skip-link {
   position: absolute;
   left: -9999px;
@@ -324,13 +351,6 @@ main {
   max-width: 44ch;
 }
 
-.drag-hint {
-  position: absolute;
-  right: calc(var(--gutter) + 18vw);
-  bottom: 96px;
-  pointer-events: none;
-}
-
 .hero-foot {
   display: flex;
   flex-wrap: wrap;
@@ -437,7 +457,7 @@ main {
    opens to full width as it scrolls in. */
 .reel {
   position: relative;
-  padding: 12vh var(--gutter) 16vh;
+  padding: 8vh var(--gutter) 10vh;
 }
 
 .reel-frame {
@@ -487,6 +507,23 @@ main {
   object-fit: cover;
   opacity: 0.8;
   transition: transform 1.4s var(--ease), opacity 0.6s;
+}
+
+.reel-fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: url("/models/previews/deadzolt-star.webp") 50% 50% / auto 110% no-repeat;
+  mix-blend-mode: screen;
+  opacity: 0.85;
+}
+
+.reel-fallback span {
+  font-size: clamp(3rem, 11vw, 10rem);
+  font-weight: 500;
+  letter-spacing: -0.05em;
+  color: rgba(237, 237, 237, 0.08);
 }
 
 .reel-poster::after {
@@ -705,21 +742,103 @@ main {
 }
 
 /* Closing call to action */
+/* The closing ask, with the calendar right there. */
 .contact {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
   align-items: center;
-  border-top: 1px solid var(--line);
+  gap: clamp(32px, 5vw, 80px);
 }
 
 .contact-copy {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  max-width: 560px;
+  max-width: 520px;
 }
 
-.contact-copy .actions {
-  margin-top: 8px;
+.contact-alt {
+  color: var(--dim);
+  font-size: 14px;
+}
+
+.contact-alt a {
+  color: var(--paper);
+  border-bottom: 1px solid var(--line);
+}
+
+.booking-embed {
+  height: 700px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: rgba(10, 11, 16, 0.85);
+  box-shadow: 0 0 0 1px var(--line);
+}
+
+.booking-embed iframe,
+.booking-dialog iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* Calendly over the site, from any booking button. */
+.booking-dialog {
+  width: min(1000px, calc(100vw - 32px));
+  height: min(760px, calc(100svh - 48px));
+  margin: auto;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius);
+  background: #0a0b10;
+  box-shadow: 0 0 0 1px var(--line), 0 40px 120px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+}
+
+.booking-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.7);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.booking-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  z-index: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.6);
+  color: var(--paper);
+  cursor: pointer;
+}
+
+/* The promise under every main booking button. */
+.cta-note {
+  margin-top: -6px;
+  font-size: 13px;
+  color: var(--dim);
+}
+
+/* Peak intent: a booking button straight under the reel. */
+.reel-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px 32px;
+  flex-wrap: wrap;
+  max-width: 1480px;
+  margin: 28px auto 0;
+}
+
+.reel-cta p {
+  font-size: clamp(1rem, 1.4vw, 1.2rem);
+}
+
+.reel-cta span {
+  color: var(--dim);
 }
 
 /* Inner pages */
@@ -975,6 +1094,10 @@ main {
   gap: 18px;
 }
 
+.footer-col li {
+  color: var(--dim);
+}
+
 .footer-col ul {
   display: flex;
   flex-direction: column;
@@ -1010,34 +1133,36 @@ main {
   mask: url("/brand/wordmark.svg") center / contain no-repeat;
 }
 
-/* The keepsake at the end of every page (src/components/Keepsake.tsx). */
+/* The keepsake at the very bottom of every page (src/components/Keepsake.tsx):
+   one compact row, so it thanks the visitor without adding length. */
 .keepsake {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: clamp(32px, 6vw, 96px);
-  padding-bottom: 80px;
-  margin-bottom: 72px;
-  border-bottom: 1px solid var(--line);
+  gap: 16px clamp(16px, 3vw, 40px);
+  margin-bottom: 28px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(10, 11, 16, 0.55);
 }
 
 .keepsake-copy {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 20px;
-  max-width: 520px;
+  gap: 6px;
+  min-width: 0;
 }
 
 .keepsake h2 {
-  font-size: clamp(26px, 3vw, 40px);
+  font-size: clamp(17px, 1.6vw, 21px);
   font-weight: 500;
-  line-height: 1.1;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
 }
 
 .keepsake-note {
   color: var(--dim);
+  font-size: 13px;
 }
 
 .keepsake-note span {
@@ -1047,24 +1172,30 @@ main {
 
 .keepsake-formats {
   display: flex;
+  gap: 6px;
+}
+
+.keepsake-actions {
+  display: flex;
+  align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .keepsake-card {
-  width: clamp(220px, 22vw, 300px);
+  width: 72px;
   aspect-ratio: 9 / 16;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 8px;
   overflow: hidden;
   background: var(--ink);
-  box-shadow: 0 40px 80px -30px rgba(216, 221, 227, 0.18);
   opacity: 0;
-  translate: 0 40px;
-  transition: opacity 1s var(--ease), translate 1.2s var(--ease), width 0.8s var(--ease), aspect-ratio 0.8s var(--ease);
+  translate: 0 12px;
+  transition: opacity 1s var(--ease), translate 1.2s var(--ease), width 0.6s var(--ease), aspect-ratio 0.6s var(--ease);
 }
 
 .keepsake-card[data-format="post"] {
-  width: clamp(300px, 36vw, 520px);
+  width: 128px;
   aspect-ratio: 16 / 9;
 }
 
@@ -1101,7 +1232,6 @@ main {
    until its lines are split, so it never flashes before rising. */
 [data-hero-title] {
   --wipe: 0%;
-  visibility: hidden;
 }
 
 .split-line {
@@ -1299,28 +1429,6 @@ main {
   color: var(--paper);
 }
 
-/* Intro curtain (home only). A noscript style hides it without JavaScript. */
-.intro {
-  position: fixed;
-  inset: 0;
-  z-index: 50;
-  background: var(--ink);
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  padding: var(--gutter);
-}
-
-.intro-mark {
-  width: clamp(160px, 22vw, 320px);
-}
-
-.intro-count {
-  font-size: clamp(2rem, 6vw, 5rem);
-  color: var(--paper);
-  letter-spacing: 0;
-}
-
 /* Custom cursor, mouse only. */
 .has-cursor,
 .has-cursor * {
@@ -1426,29 +1534,32 @@ main {
 
 /* Phones */
 @media (max-width: 760px) {
-  /* The card leads on phones, so it is the first thing seen at the end. */
-  .keepsake {
+  .contact {
     grid-template-columns: 1fr;
-    justify-items: center;
-    padding-bottom: 56px;
-    margin-bottom: 56px;
   }
 
-  .keepsake-card {
-    order: -1;
-    width: min(64vw, 280px);
+  .booking-embed {
+    height: 760px;
   }
 
-  .keepsake-card[data-format="post"] {
-    width: 100%;
+  .booking-dialog {
+    width: 100vw;
+    height: 100svh;
+    max-width: none;
+    max-height: none;
+    border-radius: 0;
   }
 
-  .keepsake-copy {
-    align-items: stretch;
+  .keepsake {
+    grid-template-columns: auto minmax(0, 1fr);
   }
 
-  .keepsake-copy .button {
-    justify-content: center;
+  .keepsake-actions {
+    grid-column: 1 / -1;
+  }
+
+  .keepsake-actions .button {
+    flex: 1;
   }
 
   .site-header ul li:not(:last-child) {
@@ -1465,10 +1576,6 @@ main {
     align-self: end;
     gap: 22px;
     padding-top: 38vh;
-  }
-
-  .drag-hint {
-    display: none;
   }
 
   /* On phones the steps stack, so the line runs down their left edge. */
@@ -1534,16 +1641,11 @@ main {
 
 @media (prefers-reduced-motion: reduce) {
 
-  [data-hero-title] {
-    visibility: visible;
-  }
-
   .keepsake-card {
     opacity: 1;
     translate: none;
   }
 
-  .intro,
   .transition {
     display: none;
   }

@@ -49,8 +49,8 @@ export default function AboutPage() {
         />
       </div>
 
-      <a className="button" {...bookingLink}>
-        Book a free call <span aria-hidden="true">→</span>
+      <a className="button" {...bookingLink("about")}>
+        {site.cta} <span aria-hidden="true">→</span>
       </a>
     </section>
   );

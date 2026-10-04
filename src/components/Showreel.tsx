@@ -3,8 +3,8 @@
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useEffect, useRef, useState } from "react";
-import { showreel } from "@/content/site";
-import { getReducedMotion, setStory } from "@/lib/story";
+import { bookingLink, showreel, site } from "@/content/site";
+import { getReducedMotion, setScenePaused, setStory } from "@/lib/story";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -33,6 +33,13 @@ export default function Showreel() {
   const frame = useRef<HTMLDivElement>(null);
   const [playing, setPlaying] = useState(false);
   const [poster, setPoster] = useState(0);
+  const [inView, setInView] = useState(false);
+
+  // The 3D pauses while the reel plays on screen.
+  useEffect(() => {
+    setScenePaused(playing && inView);
+    return () => setScenePaused(false);
+  }, [playing, inView]);
 
   useEffect(() => {
     const el = root.current;
@@ -43,7 +50,10 @@ export default function Showreel() {
       trigger: el,
       start: "top 70%",
       end: "bottom 30%",
-      onToggle: (self) => setStory({ stage: self.isActive }),
+      onToggle: (self) => {
+        setStory({ stage: self.isActive });
+        setInView(self.isActive);
+      },
     });
     const opens = getReducedMotion()
       ? null
@@ -86,6 +96,10 @@ export default function Showreel() {
             onClick={() => setPlaying(true)}
             aria-label={`Play the ${title}`}
           >
+            {/* A branded poster underneath, for when YouTube's image can't load. */}
+            <span className="reel-fallback" aria-hidden="true">
+              <span>Showreel</span>
+            </span>
             {poster < POSTERS.length && (
               // eslint-disable-next-line @next/next/no-img-element -- a remote poster that falls back on error
               <img
@@ -113,6 +127,14 @@ export default function Showreel() {
             </span>
           </button>
         )}
+      </div>
+      <div className="reel-cta">
+        <p>
+          Motion graphics for startups and brands. <span>{site.ctaNote}</span>
+        </p>
+        <a className="button button-primary" {...bookingLink("reel")}>
+          {site.cta}
+        </a>
       </div>
     </section>
   );

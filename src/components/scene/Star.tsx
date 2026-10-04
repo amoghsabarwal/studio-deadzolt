@@ -37,6 +37,14 @@ const FILM = [
   [180, 520],
 ];
 
+// The footer has its own chrome wordmark, so the star leaves it the stage.
+let footer: HTMLElement | null = null;
+function inFooter() {
+  footer ??= document.querySelector<HTMLElement>(".site-footer");
+  if (!footer) return false;
+  return footer.getBoundingClientRect().top < window.innerHeight * 0.5;
+}
+
 export default function Star({ animate }: { animate: boolean }) {
   const root = useRef<Group>(null);
   const tilt = useRef<Group>(null);
@@ -104,7 +112,7 @@ export default function Star({ animate }: { animate: boolean }) {
     const ty = wide ? pose.y * viewport.height : feature ? viewport.height * 0.2 : viewport.height * NARROW_SPOT.y;
     // When a work or case study puts its own piece in focus, or the showreel
     // takes the screen, the star steps aside.
-    const yields = getFocus().discipline !== null || story.stage;
+    const yields = getFocus().discipline !== null || story.stage || inFooter();
     // On phones the work list and plans fill the screen, so the star only
     // returns for the closing ask.
     const closing = story.chapter === STORY_POSES.length - 1;

@@ -242,7 +242,7 @@ function Planet({ rich }: { rich: boolean }) {
   useFrame(() => {
     if (!group.current) return;
     const t = travel.current.value;
-    group.current.position.set(wide ? -17 : -9, (wide ? -30 : -40) - t * 1.1, -80 - t * 1.6);
+    group.current.position.set(wide ? -24 : -9, (wide ? -40 : -50) - t * 1.1, -80 - t * 1.6);
   });
   const shared = {
     uniforms,
