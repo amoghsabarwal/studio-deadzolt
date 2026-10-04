@@ -46,8 +46,10 @@ export function getReducedMotion() {
   return window.matchMedia(reducedMotionQuery).matches;
 }
 
-// The 3D pauses while the showreel plays on screen, so the video gets the
-// device's full attention.
+// The 3D pauses while the showreel plays on screen or the booking popup is
+// open, so the video or the calendar gets the device's full attention. Each
+// asks under its own reason, and the scene runs again once none remain.
+const pausedFor = new Set<string>();
 let paused = false;
 const pauseListeners = new Set<() => void>();
 
@@ -55,9 +57,11 @@ export function getScenePaused() {
   return paused;
 }
 
-export function setScenePaused(next: boolean) {
-  if (next === paused) return;
-  paused = next;
+export function setScenePaused(next: boolean, reason = "reel") {
+  if (next) pausedFor.add(reason);
+  else pausedFor.delete(reason);
+  if (pausedFor.size > 0 === paused) return;
+  paused = pausedFor.size > 0;
   pauseListeners.forEach((l) => l());
 }
 

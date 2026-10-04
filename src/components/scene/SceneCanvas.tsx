@@ -22,8 +22,9 @@ import {
   subscribeReducedMotion,
   subscribeScenePaused,
 } from "@/lib/story";
+import { getFocus } from "@/lib/focus";
 import { getTilt } from "@/lib/tilt";
-import ChapterPieces from "./ChapterPieces";
+import ChapterPieces, { PIECE_DISCIPLINES } from "./ChapterPieces";
 import Space from "./Space";
 import SpaceObjects from "./SpaceObjects";
 import Star from "./Star";
@@ -148,6 +149,72 @@ function Effects({ rich }: { rich: boolean }) {
   );
 }
 
+// The extras in the order they are met on the way down the page.
+const EXTRAS = ["asteroids", "probe", ...PIECE_DISCIPLINES];
+
+// Whether an extra's part of the page is close enough to start loading it.
+function isNear(key: string) {
+  const screens = window.scrollY / Math.max(window.innerHeight, 1);
+  if (key === "asteroids") return screens > 0.15;
+  if (key === "probe") return screens > 0.4;
+  // A case study needs its piece straight away; the home page needs them
+  // once the work list is within a screen and a half.
+  if (getFocus().discipline === key) return true;
+  const work = document.getElementById("work");
+  return !!work && work.getBoundingClientRect().top < window.innerHeight * 1.5;
+}
+
+// Runs a callback when the browser is idle (Safari has no
+// requestIdleCallback, so it gets a short delay) and returns a cancel.
+function whenIdle(run: () => void) {
+  if (typeof window.requestIdleCallback === "function") {
+    const id = window.requestIdleCallback(run, { timeout: 1500 });
+    return () => window.cancelIdleCallback(id);
+  }
+  const id = setTimeout(run, 200);
+  return () => clearTimeout(id);
+}
+
+// Adds one extra per idle moment, in page order, once each comes near. It
+// holds off while the booking popup is opening or open, so Book always gets
+// the device first.
+function useStagedExtras(entered: boolean) {
+  const [ready, setReady] = useState<string[]>([]);
+  useEffect(() => {
+    if (!entered) return;
+    const done = new Set<string>();
+    let cancel: (() => void) | null = null;
+    let holdUntil = 0;
+    const tick = () => {
+      if (cancel || performance.now() < holdUntil || document.querySelector("dialog[open]")) return;
+      const next = EXTRAS.find((key) => !done.has(key) && isNear(key));
+      if (!next) return;
+      cancel = whenIdle(() => {
+        cancel = null;
+        done.add(next);
+        setReady([...done]);
+      });
+    };
+    const hold = (e: Event) => {
+      if (!(e.target as HTMLElement | null)?.closest?.("a[data-book]")) return;
+      holdUntil = performance.now() + 2500;
+      cancel?.();
+      cancel = null;
+    };
+    const timer = setInterval(tick, 400);
+    window.addEventListener("scroll", tick, { passive: true });
+    document.addEventListener("pointerdown", hold, true);
+    tick();
+    return () => {
+      cancel?.();
+      clearInterval(timer);
+      window.removeEventListener("scroll", tick);
+      document.removeEventListener("pointerdown", hold, true);
+    };
+  }, [entered]);
+  return ready;
+}
+
 export default function SceneCanvas() {
   const reducedMotion = usePrefersReducedMotion();
   const paused = useSyncExternalStore(subscribeScenePaused, getScenePaused, () => false);
@@ -167,22 +234,11 @@ export default function SceneCanvas() {
   const [struggling, setStruggling] = useState(false);
   const full = rich && !struggling;
 
-  // The discipline pieces and the space objects load once the visitor is in
-  // and the page has settled, so the entry screen and the star get the
-  // device first.
+  // The discipline pieces and the space objects are staged in one at a time
+  // after the visitor is in, each only as its part of the page comes near, so
+  // the first seconds (when visitors reach for Book) stay light.
   const entered = useSyncExternalStore(subscribeEntry, getEntered, () => false);
-  const [piecesReady, setPiecesReady] = useState(false);
-  useEffect(() => {
-    if (!entered) return;
-    const start = () => setPiecesReady(true);
-    // Safari has no requestIdleCallback, so it gets a plain delay.
-    if (typeof window.requestIdleCallback === "function") {
-      const id = window.requestIdleCallback(start, { timeout: 2500 });
-      return () => window.cancelIdleCallback(id);
-    }
-    const id = setTimeout(start, 1500);
-    return () => clearTimeout(id);
-  }, [entered]);
+  const extras = useStagedExtras(entered);
 
   // With no 3D to draw, the entry screen needn't wait for it.
   useEffect(() => {
@@ -230,12 +286,8 @@ export default function SceneCanvas() {
             {!reducedMotion && <TiltedStudio />}
             <Star animate={!reducedMotion} />
           </Suspense>
-          {piecesReady && (
-            <Suspense fallback={null}>
-              <ChapterPieces animate={!reducedMotion} />
-              <SpaceObjects rich={full} />
-            </Suspense>
-          )}
+          <ChapterPieces animate={!reducedMotion} ready={extras} />
+          <SpaceObjects rich={full} asteroids={extras.includes("asteroids")} probe={extras.includes("probe")} />
           <Effects rich={full} />
         </Canvas>
       )}

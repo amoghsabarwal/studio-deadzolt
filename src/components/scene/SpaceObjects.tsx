@@ -2,7 +2,7 @@
 
 import { useGLTF } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
-import { useMemo, useRef } from "react";
+import { Suspense, useMemo, useRef } from "react";
 import { type Group, MathUtils, type MeshStandardMaterial, type Object3D } from "three";
 
 /*
@@ -10,7 +10,8 @@ import { type Group, MathUtils, type MeshStandardMaterial, type Object3D } from 
   - chrome asteroids drifting along the edges of the view, tumbling slowly,
   - the DZ-01 probe, a small ship with red running lights, that the visitor
     catches up with as they scroll down to the work.
-  They load after the page has settled and keep their Blender materials.
+  They load one at a time as the visitor scrolls towards them, and keep their
+  Blender materials.
 */
 
 const ASTEROIDS_URL = "/models/asteroids-space.glb";
@@ -131,11 +132,20 @@ function Probe() {
   );
 }
 
-export default function SpaceObjects({ rich }: { rich: boolean }) {
+// The asteroids and the probe are staged in separately as the visitor scrolls.
+export default function SpaceObjects({ rich, asteroids, probe }: { rich: boolean; asteroids: boolean; probe: boolean }) {
   return (
     <>
-      <Asteroids count={rich ? ROCKS.length : 5} />
-      <Probe />
+      {asteroids && (
+        <Suspense fallback={null}>
+          <Asteroids count={rich ? ROCKS.length : 5} />
+        </Suspense>
+      )}
+      {probe && (
+        <Suspense fallback={null}>
+          <Probe />
+        </Suspense>
+      )}
     </>
   );
 }
