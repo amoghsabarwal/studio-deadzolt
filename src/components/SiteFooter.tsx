@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import Keepsake from "@/components/Keepsake";
-import { bookingLink, disciplines, site } from "@/content/site";
+import { bookingLink, site } from "@/content/site";
 
 const pages = [
   { href: "/", label: "Home" },
@@ -20,7 +20,7 @@ export default function SiteFooter() {
           <Image src="/brand/wordmark.svg" alt={site.name} width={583} height={61} className="footer-mark" />
           <p>{site.tagline}</p>
           <a className="button button-primary" {...bookingLink}>
-            Book a consultation
+            Book a free call
           </a>
         </div>
 
@@ -40,12 +40,8 @@ export default function SiteFooter() {
         <div className="footer-col">
           <p className="label" data-scramble>Services</p>
           <ul>
-            {disciplines.map((d) => (
-              <li key={d.slug}>
-                <Link href={`/#${d.slug}`} data-scramble-hover>
-                  {d.name}
-                </Link>
-              </li>
+            {site.services.slice(0, 4).map((s) => (
+              <li key={s}>{s}</li>
             ))}
           </ul>
         </div>

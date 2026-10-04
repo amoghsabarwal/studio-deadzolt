@@ -99,7 +99,7 @@ export default async function CaseStudyPage({ params }: PageProps<"/works/[slug]
         </div>
         <div className="actions">
           <a className="button button-primary" {...bookingLink}>
-            Book a consultation
+            Book a free call
           </a>
           <Link href="/#pricing" className="button">
             See pricing

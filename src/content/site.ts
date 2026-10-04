@@ -3,32 +3,21 @@
 export const site = {
   name: "Studio Deadzolt",
   founder: "Amogh Sabarwal",
-  tagline: "Building brands people remember.",
+  tagline: "Motion graphics people can't scroll past.",
   email: "amoghsabarwal@gmail.com",
   url: "https://deadzolt.studio",
   location: "Indore, M.P.",
   description:
-    "Studio Deadzolt is the design practice of Amogh Sabarwal: a designer obsessed with building brands that people remember.",
-  manifesto:
-    "A Y2K-born design studio for electric, chrome-finished web, visuals and objects. Identities, worlds, experiences, noise, desire, internet. 2000 to forever.",
+    "Studio Deadzolt is the motion graphics studio of Amogh Sabarwal, making launch films, product animation and social content for startups and brands.",
   about: [
     "Hi, I'm Amogh, founder of Studio Deadzolt.",
-    "I'm a brand designer who loves sitting with a problem until every piece falls into place, building identities that are original, intentional, and impossible to mistake for anything else.",
+    "I make motion graphics for startups and brands: launch films, product animation and social content, built so people stop scrolling and look.",
   ],
-  // Where every "Book a consultation" button on the site goes: the studio's
+  // Where every "Book a free call" button on the site goes: the studio's
   // Calendly page, which opens in a new tab.
   booking: "https://calendly.com/amoghsabarwal/30min",
-  services: [
-    "Creative direction",
-    "Brand strategy",
-    "Identity",
-    "Digital design",
-    "Motion",
-    "Print and packaging",
-    "Art direction",
-    "Copywriting",
-    "Tone of voice",
-  ],
+  // What the studio makes. All of it is motion graphics.
+  services: ["Launch films", "Product animation", "Brand motion", "Social content", "Logo animation", "3D motion"],
 };
 
 // Extra attributes for booking links: a web booking page opens in a new tab,
@@ -178,14 +167,6 @@ export function disciplineNames(project: Project) {
   return project.disciplines.map((d) => getDiscipline(d).name).join(" · ");
 }
 
-// How a project runs, shown on the home page above the pricing.
-export const process = [
-  { title: "Consultation", line: "A short call about your brand, goals and timeline." },
-  { title: "Proposal", line: "Scope, deliverables and a fixed quote, in writing." },
-  { title: "Design", line: "Identity, 3D and motion, with a review at every stage." },
-  { title: "Handover", line: "Final files, guidelines and everything you need to launch." },
-];
-
 export type Plan = {
   name: string;
   price: string;
@@ -205,22 +186,17 @@ export const plans: Plan[] = [
     foil: "silver",
     price: "$500",
     note: "One-off",
-    summary: "One focused piece: a logo refresh, a product render or a short motion loop.",
-    includes: ["One deliverable", "Two rounds of revisions", "Source files", "Free consultation call"],
-    cta: "Book a consultation",
+    summary: "One short motion piece: a logo animation, a product loop or a social clip.",
+    includes: ["One animation", "Two rounds of revisions", "Exports for every platform", "Free consultation call"],
+    cta: "Book a free call",
   },
   {
     name: "Project",
     foil: "holo",
     price: "$1,000",
     note: "Per project",
-    summary: "A defined piece of work, from a new identity to a 3D product film.",
-    includes: [
-      "Brand identity or 3D visuals",
-      "Fixed scope and price",
-      "Weekly check-ins",
-      "Source files and handover",
-    ],
+    summary: "A launch film or product animation, from storyboard to final render.",
+    includes: ["Storyboard and style frames", "Fixed scope and price", "Weekly check-ins", "Final renders and source files"],
     cta: "Start a project",
     featured: true,
   },
@@ -229,8 +205,8 @@ export const plans: Plan[] = [
     foil: "red",
     price: "$5,000",
     note: "Per month",
-    summary: "Design, 3D and motion on call for brands that ship all the time.",
-    includes: ["Ongoing design requests", "Priority turnaround", "Monthly planning call", "Design, 3D and motion"],
+    summary: "Motion on call for brands that ship all the time.",
+    includes: ["Ongoing motion requests", "Priority turnaround", "Monthly planning call", "Launch, product and social"],
     cta: "Talk about a retainer",
   },
 ];

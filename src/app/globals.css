@@ -83,7 +83,6 @@ ol {
 .display,
 .hero-title,
 .section-title,
-.panel-name,
 .plan-name {
   font-family: var(--text);
   font-weight: 500;
@@ -356,77 +355,11 @@ main {
 }
 
 /* Manifesto */
-.manifesto {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 28px;
-}
-
-.manifesto-text {
-  font-size: clamp(1.5rem, 2.7vw, 2.4rem);
-  font-weight: 400;
-  line-height: 1.25;
-  letter-spacing: -0.025em;
-  max-width: 30ch;
-}
 
 /* Disciplines: a pinned track of full-screen panels that scrolls sideways. */
-.disciplines {
-  position: relative;
-  overflow: hidden;
-}
-
-.disciplines-track {
-  display: flex;
-  flex-direction: column;
-}
-
-.panel {
-  position: relative;
-  min-height: 100svh;
-  padding: 120px var(--gutter) 64px;
-  display: flex;
-  align-items: center;
-  border-top: 1px solid var(--line);
-  overflow: hidden;
-}
 
 /* Added by the story driver when the track is pinned and scrolls sideways. */
-.is-sideways .disciplines-track {
-  flex-direction: row;
-  width: max-content;
-}
 
-.is-sideways .panel {
-  width: 100vw;
-  height: 100svh;
-  border-top: 0;
-}
-
-.panel-body {
-  position: relative;
-  width: min(480px, 42vw);
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.panel-name {
-  font-size: clamp(2rem, 3.6vw, 3.25rem);
-}
-
-.panel-line {
-  color: var(--dim);
-  max-width: 40ch;
-}
-
-.panel-projects {
-  margin-top: 8px;
-  border-top: 1px solid var(--line);
-}
-
-.panel-projects li,
 .work-list li,
 .works-list li {
   border-bottom: 1px solid var(--line);
@@ -457,8 +390,7 @@ main {
 }
 
 .work-list:has(.work-row:hover) .work-row:not(:hover),
-.works-list:has(.works-row:hover) .works-row:not(:hover),
-.panel-projects:has(.row-link:hover) .row-link:not(:hover) {
+.works-list:has(.works-row:hover) .works-row:not(:hover) {
   opacity: 0.35;
 }
 
@@ -494,6 +426,11 @@ main {
 .work-date,
 .works-date {
   text-align: right;
+}
+
+/* Home rows: number, title, year. */
+.work .work-row {
+  grid-template-columns: 40px minmax(0, 1fr) 64px;
 }
 
 /* Showreel (src/components/Showreel.tsx): a viewport out into space that
@@ -648,67 +585,6 @@ main {
   min-height: auto;
 }
 
-.process {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0;
-  margin-bottom: 56px;
-  border-top: 1px solid var(--line);
-}
-
-.process {
-  position: relative;
-}
-
-/* The line drawn through the steps (--p runs 0 to 1 with the scroll). */
-.process::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: -1px;
-  width: calc(var(--p, 0) * 100%);
-  height: 1px;
-  background: linear-gradient(90deg, rgba(255, 31, 31, 0.2), var(--red));
-  box-shadow: 0 0 12px rgba(255, 31, 31, 0.6);
-}
-
-.process li {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 24px 24px 0 0;
-}
-
-.process li > .label {
-  transition: color 0.4s;
-}
-
-.process li.is-lit > .label {
-  color: var(--red);
-}
-
-.process li h3 {
-  transition: color 0.4s;
-}
-
-/* Manifesto words that catch the light: a slow chrome sheen once lit. */
-.key-word {
-  background: linear-gradient(100deg, var(--paper) 30%, #ffffff 45%, #9aa3ad 55%, var(--paper) 70%) 0 0 / 300% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation: sheen 5s linear infinite;
-}
-
-@keyframes sheen {
-  from {
-    background-position: 100% 0;
-  }
-  to {
-    background-position: -50% 0;
-  }
-}
-
 /* Works filters */
 .works-filters {
   display: flex;
@@ -753,18 +629,6 @@ main {
 .works-list {
   transform: skewY(var(--skew, 0deg));
   transform-origin: left center;
-}
-
-.process h3 {
-  font-size: 17px;
-  font-weight: 500;
-  letter-spacing: -0.015em;
-}
-
-.process p {
-  color: var(--dim);
-  font-size: 14px;
-  max-width: 28ch;
 }
 
 .plans {
@@ -1544,16 +1408,11 @@ main {
   user-select: none;
 }
 
-
 /* Tablets */
 @media (max-width: 1080px) {
   .plans {
     grid-template-columns: 1fr;
     max-width: 560px;
-  }
-
-  .process {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .footer-top {
@@ -1612,32 +1471,7 @@ main {
     display: none;
   }
 
-  .panel-body {
-    width: 100%;
-  }
-
-  .process {
-    grid-template-columns: 1fr;
-  }
-
-  .process li {
-    padding: 20px 0 20px 20px;
-    border-bottom: 1px solid var(--line);
-  }
-
   /* On phones the steps stack, so the line runs down their left edge. */
-  .process {
-    border-top: 0;
-    border-left: 1px solid var(--line);
-  }
-
-  .process::before {
-    top: 0;
-    left: -1px;
-    width: 1px;
-    height: calc(var(--p, 0) * 100%);
-    background: linear-gradient(180deg, rgba(255, 31, 31, 0.2), var(--red));
-  }
 
   .plan {
     padding: 24px;
@@ -1654,7 +1488,10 @@ main {
     gap: 6px 12px;
   }
 
-  .work-tags,
+  .work .work-row {
+    grid-template-columns: 28px minmax(0, 1fr) auto;
+  }
+
   .works-tags {
     grid-column: 1;
     grid-row: 2;
@@ -1696,9 +1533,6 @@ main {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .key-word {
-    animation: none;
-  }
 
   [data-hero-title] {
     visibility: visible;

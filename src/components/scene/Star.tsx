@@ -9,7 +9,7 @@ import { getFocus } from "@/lib/focus";
 import { getStory, subscribeStory } from "@/lib/story";
 import { getTilt } from "@/lib/tilt";
 import { REAL_CHROME, withSurfaceDetail } from "./materials";
-import { DISCIPLINE_SPOT, NARROW_SPOT } from "./spots";
+import { NARROW_SPOT } from "./spots";
 
 const STAR_URL = "/models/deadzolt-star.glb";
 // The Blender star is about 3 units across; this scales it to suit the size
@@ -19,19 +19,12 @@ const STAR_SCALE = 1.15;
 type Pose = { x: number; y: number; scale: number; turn: number };
 
 // Where the star sits for each chapter of the home page story. x and y are
-// fractions of the visible viewport; turn is extra rotation in radians. In
-// the four discipline chapters the star shrinks away and that chapter's own
-// piece (ChapterPieces) takes its place.
+// fractions of the visible viewport; turn is extra rotation in radians.
 const STORY_POSES: Pose[] = [
-  { x: 0.25, y: 0, scale: 0.95, turn: 0 }, // studio (hero copy sits on the left)
-  { x: 0.3, y: 0, scale: 0.7, turn: 0.6 }, // manifesto
-  { ...DISCIPLINE_SPOT, scale: 0, turn: 1.2 }, // 3D experience
-  { ...DISCIPLINE_SPOT, scale: 0, turn: 1.8 }, // motion direction
-  { ...DISCIPLINE_SPOT, scale: 0, turn: 2.4 }, // branding
-  { ...DISCIPLINE_SPOT, scale: 0, turn: 3 }, // art direction
-  { x: 0.33, y: 0.02, scale: 0.62, turn: 3.6 }, // work
-  { x: 0.33, y: 0.3, scale: 0, turn: 3.9 }, // pricing: the cards get the stage
-  { x: 0.24, y: 0, scale: 0.85, turn: 4.2 }, // contact
+  { x: 0.25, y: 0, scale: 0.95, turn: 0 }, // hero (copy sits on the left)
+  { x: 0.33, y: 0.02, scale: 0.62, turn: 1.2 }, // work
+  { x: 0.33, y: 0.3, scale: 0, turn: 2.4 }, // pricing: the cards get the stage
+  { x: 0.24, y: 0, scale: 0.85, turn: 3.6 }, // contact
 ];
 const PAGE_POSE: Pose = { x: 0.36, y: 0.26, scale: 0.36, turn: 0 };
 
@@ -41,11 +34,6 @@ const FILM = [
   [180, 520],
   [220, 560],
   [260, 600],
-  [300, 640],
-  [240, 560],
-  [320, 680],
-  [200, 540],
-  [200, 540],
   [180, 520],
 ];
 
@@ -117,7 +105,10 @@ export default function Star({ animate }: { animate: boolean }) {
     // When a work or case study puts its own piece in focus, or the showreel
     // takes the screen, the star steps aside.
     const yields = getFocus().discipline !== null || story.stage;
-    const base = yields ? 0 : wide ? pose.scale : feature ? pose.scale * 0.55 : pose.scale > 0 ? NARROW_SPOT.scale : 0;
+    // On phones the work list and plans fill the screen, so the star only
+    // returns for the closing ask.
+    const closing = story.chapter === STORY_POSES.length - 1;
+    const base = yields ? 0 : wide ? pose.scale : feature ? pose.scale * 0.55 : closing ? NARROW_SPOT.scale : 0;
     const ts = base * (1 + hover.current * 0.06);
 
     const k = animate ? 2.6 : 1000;
