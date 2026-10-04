@@ -5,6 +5,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import { MathUtils, type Group } from "three";
 import { getStory } from "@/lib/story";
+import { applyRealChrome } from "./materials";
 import { DISCIPLINE_SPOT, NARROW_SPOT } from "./spots";
 
 type Motion = "spin" | "dial" | "swing" | "tumble";
@@ -28,7 +29,7 @@ const PIECES: Piece[] = [
     chapter: 3,
     url: "/models/knob-motion-direction.glb",
     scale: 1.45,
-    rotation: [0.7, 0, 0],
+    rotation: [-0.6, 0, 0],
     offset: [0, -0.3, 0],
     motion: "dial",
   },
@@ -38,8 +39,12 @@ const PIECES: Piece[] = [
 
 function ChapterPiece({ piece, animate }: { piece: Piece; animate: boolean }) {
   const { scene } = useGLTF(piece.url);
-  // A copy, so the cached original stays untouched.
-  const model = useMemo(() => scene.clone(true), [scene]);
+  // A copy with the studio finish, so the cached original stays untouched.
+  const model = useMemo(() => {
+    const copy = scene.clone(true);
+    applyRealChrome(copy);
+    return copy;
+  }, [scene]);
 
   const root = useRef<Group>(null);
   const tilt = useRef<Group>(null);

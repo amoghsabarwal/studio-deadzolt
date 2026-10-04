@@ -15,6 +15,9 @@ export const site = {
     "Hi, I'm Amogh, founder of Studio Deadzolt.",
     "I'm a brand designer who loves sitting with a problem until every piece falls into place, building identities that are original, intentional, and impossible to mistake for anything else.",
   ],
+  // Where every "Book a consultation" button goes. Swap in a Cal.com or
+  // Calendly link here when there is one.
+  booking: "mailto:amoghsabarwal@gmail.com?subject=Consultation%20with%20Studio%20Deadzolt",
   services: [
     "Creative direction",
     "Brand strategy",
@@ -168,12 +171,66 @@ export function disciplineNames(project: Project) {
   return project.disciplines.map((d) => getDiscipline(d).name).join(" · ");
 }
 
+// How a project runs, shown on the home page above the pricing.
+export const process = [
+  { title: "Consultation", line: "A short call about your brand, goals and timeline." },
+  { title: "Proposal", line: "Scope, deliverables and a fixed quote, in writing." },
+  { title: "Design", line: "Identity, 3D and motion, with a review at every stage." },
+  { title: "Handover", line: "Final files, guidelines and everything you need to launch." },
+];
+
+export type Plan = {
+  name: string;
+  price: string;
+  note: string;
+  summary: string;
+  includes: string[];
+  cta: string;
+  featured?: boolean;
+};
+
+// Ways to work together. Prices are left as text so they can be set to real
+// figures here without touching the layout.
+export const plans: Plan[] = [
+  {
+    name: "Consultation",
+    price: "Free",
+    note: "30-minute call",
+    summary: "Talk through your brand, what it needs and what it would take.",
+    includes: ["Review of your current brand", "Recommended scope", "Honest timeline", "No obligation"],
+    cta: "Book a consultation",
+  },
+  {
+    name: "Project",
+    price: "Fixed quote",
+    note: "Per project",
+    summary: "A defined piece of work, from a new identity to a 3D product film.",
+    includes: [
+      "Brand identity or 3D visuals",
+      "Fixed scope and price",
+      "Weekly check-ins",
+      "Source files and handover",
+    ],
+    cta: "Start a project",
+    featured: true,
+  },
+  {
+    name: "Studio partner",
+    price: "Monthly",
+    note: "Ongoing retainer",
+    summary: "Design, 3D and motion on call for brands that ship all the time.",
+    includes: ["Ongoing design requests", "Priority turnaround", "Monthly planning call", "Design, 3D and motion"],
+    cta: "Talk about a retainer",
+  },
+];
+
 // The chapters of the home page scroll story, in order. The 3D scene reads
 // the active chapter to decide where the star sits.
 export const chapters = [
-  { id: "arrival", label: "Arrival" },
+  { id: "arrival", label: "Studio" },
   { id: "manifesto", label: "Manifesto" },
   ...disciplines.map((d) => ({ id: d.slug, label: d.name })),
-  { id: "studio", label: "Studio" },
+  { id: "work", label: "Work" },
+  { id: "pricing", label: "Pricing" },
   { id: "contact", label: "Contact" },
 ] as const;

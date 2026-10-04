@@ -48,8 +48,8 @@ export default function AboutPage() {
         />
       </div>
 
-      <a className="contact-link" href={`mailto:${site.email}`}>
-        get in touch <span aria-hidden="true">→</span>
+      <a className="button" href={site.booking}>
+        Book a consultation <span aria-hidden="true">→</span>
       </a>
     </section>
   );

@@ -1,7 +1,7 @@
 "use client";
 
-import { Environment, Lightformer, Sparkles } from "@react-three/drei";
-import { Canvas, useThree } from "@react-three/fiber";
+import { Environment, Lightformer } from "@react-three/drei";
+import { Canvas } from "@react-three/fiber";
 import {
   Bloom,
   ChromaticAberration,
@@ -12,7 +12,7 @@ import {
 import { BlendFunction } from "postprocessing";
 import { usePathname } from "next/navigation";
 import { Suspense, useSyncExternalStore } from "react";
-import { ACESFilmicToneMapping, Vector2 } from "three";
+import { AgXToneMapping, Vector2 } from "three";
 import { getReducedMotion, subscribeReducedMotion } from "@/lib/story";
 import ChapterPieces from "./ChapterPieces";
 import Star from "./Star";
@@ -69,20 +69,6 @@ function Effects({ rich }: { rich: boolean }) {
   );
 }
 
-function ResponsiveDust() {
-  const viewport = useThree((s) => s.viewport);
-  return (
-    <Sparkles
-      count={viewport.width > viewport.height ? 90 : 40}
-      scale={[viewport.width, viewport.height, 4]}
-      size={1.6}
-      speed={0.15}
-      opacity={0.5}
-      color="#ffffff"
-    />
-  );
-}
-
 export default function SceneCanvas() {
   const pathname = usePathname();
   const reducedMotion = usePrefersReducedMotion();
@@ -108,7 +94,7 @@ export default function SceneCanvas() {
           camera={{ position: [0, 0, 7], fov: 40 }}
           dpr={[1, rich ? 1.75 : 1.25]}
           frameloop={reducedMotion ? "demand" : "always"}
-          gl={{ antialias: false, alpha: true, toneMapping: ACESFilmicToneMapping, toneMappingExposure: 1.1 }}
+          gl={{ antialias: false, alpha: true, toneMapping: AgXToneMapping, toneMappingExposure: 1.25 }}
         >
           {/* The hero star waits only for its own model and the lighting; the
               chapter pieces load behind it. */}
@@ -119,7 +105,6 @@ export default function SceneCanvas() {
           <Suspense fallback={null}>
             <ChapterPieces animate={!reducedMotion} />
           </Suspense>
-          {!reducedMotion && <ResponsiveDust />}
           <Effects rich={rich} />
         </Canvas>
       )}

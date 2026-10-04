@@ -1,11 +1,64 @@
-import { site } from "@/content/site";
+import Image from "next/image";
+import Link from "next/link";
+import { disciplines, site } from "@/content/site";
+
+const pages = [
+  { href: "/", label: "Home" },
+  { href: "/works", label: "Work" },
+  { href: "/#pricing", label: "Pricing" },
+  { href: "/about", label: "About" },
+];
 
 export default function SiteFooter() {
   return (
     <footer className="site-footer">
-      <span>© 2000—forever {site.name}</span>
-      <span>{site.location}</span>
-      <a href={`mailto:${site.email}`}>{site.email}</a>
+      <div className="footer-top">
+        <div className="footer-brand">
+          <Image src="/brand/wordmark.svg" alt={site.name} width={583} height={61} className="footer-mark" />
+          <p>{site.tagline}</p>
+          <a className="button button-primary" href={site.booking}>
+            Book a consultation
+          </a>
+        </div>
+
+        <nav className="footer-col" aria-label="Footer">
+          <p className="label">Studio</p>
+          <ul>
+            {pages.map((p) => (
+              <li key={p.href}>
+                <Link href={p.href}>{p.label}</Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        <div className="footer-col">
+          <p className="label">Services</p>
+          <ul>
+            {disciplines.map((d) => (
+              <li key={d.slug}>
+                <Link href={`/#${d.slug}`}>{d.name}</Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="footer-col">
+          <p className="label">Contact</p>
+          <ul>
+            <li>
+              <a href={`mailto:${site.email}`}>{site.email}</a>
+            </li>
+            <li>{site.location}, India</li>
+          </ul>
+        </div>
+      </div>
+
+      <div className="footer-bottom label">
+        <span>© {new Date().getFullYear()} {site.name}</span>
+        <span>Designed and built in Indore</span>
+        <a href="#main">Back to top ↑</a>
+      </div>
     </footer>
   );
 }
