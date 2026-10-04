@@ -13,7 +13,13 @@ import {
 import { BlendFunction } from "postprocessing";
 import { Suspense, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { AgXToneMapping, MathUtils, Vector2 } from "three";
-import { getReducedMotion, getScenePaused, subscribeReducedMotion, subscribeScenePaused } from "@/lib/story";
+import {
+  getReducedMotion,
+  getScenePaused,
+  markSceneReady,
+  subscribeReducedMotion,
+  subscribeScenePaused,
+} from "@/lib/story";
 import { getTilt } from "@/lib/tilt";
 import ChapterPieces from "./ChapterPieces";
 import Space from "./Space";
@@ -172,6 +178,11 @@ export default function SceneCanvas() {
     const id = setTimeout(start, 1500);
     return () => clearTimeout(id);
   }, []);
+
+  // With no 3D to draw, the entry screen needn't wait for it.
+  useEffect(() => {
+    if (lite) markSceneReady();
+  }, [lite]);
 
   if (lite) {
     return (

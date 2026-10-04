@@ -1,10 +1,11 @@
+import BookButton from "@/components/BookButton";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import CaseFocus from "@/components/CaseFocus";
 import HoloLayers from "@/components/HoloLayers";
 import Reveals from "@/components/Reveals";
-import { bookingLink, disciplineNames, getDiscipline, getProject, projects, site } from "@/content/site";
+import { disciplineNames, getDiscipline, getProject, projects, site } from "@/content/site";
 
 export const dynamicParams = false;
 
@@ -98,9 +99,7 @@ export default async function CaseStudyPage({ params }: PageProps<"/works/[slug]
           </p>
         </div>
         <div className="actions">
-          <a className="button button-primary" {...bookingLink("case")}>
-            {site.cta}
-          </a>
+          <BookButton from="case" />
           <Link href="/#pricing" className="button">
             See pricing
           </Link>

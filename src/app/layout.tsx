@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { Inter_Tight, JetBrains_Mono } from "next/font/google";
+import BookDock from "@/components/BookDock";
 import BookingDialog from "@/components/BookingDialog";
 import Cursor from "@/components/Cursor";
+import EntryGate from "@/components/EntryGate";
 import HoloDriver from "@/components/HoloDriver";
+import MotionDriver from "@/components/MotionDriver";
 import PageTransition from "@/components/PageTransition";
 import SceneCanvas from "@/components/scene/SceneCanvas";
 import SiteFooter from "@/components/SiteFooter";
@@ -11,6 +14,7 @@ import SiteHeader from "@/components/SiteHeader";
 import SmoothScroll from "@/components/SmoothScroll";
 import TextFx from "@/components/TextFx";
 import { site } from "@/content/site";
+import { ENTRY_SKIP_SCRIPT } from "@/lib/story";
 import "./globals.css";
 
 // Text and headings: Inter Tight. Labels: JetBrains Mono.
@@ -39,8 +43,14 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${text.variable} ${mono.variable}`}>
+    <html lang="en" className={`${text.variable} ${mono.variable}`} suppressHydrationWarning>
       <body>
+        {/* Returning or campaign visitors skip the entry screen, decided before the first paint. */}
+        <script dangerouslySetInnerHTML={{ __html: ENTRY_SKIP_SCRIPT }} />
+        <noscript>
+          <style>{".entry{display:none}"}</style>
+        </noscript>
+        <EntryGate />
         <SmoothScroll />
         <SceneCanvas />
         <a href="#main" className="skip-link">
@@ -53,6 +63,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <PageTransition />
         <TextFx />
         <Cursor />
+        <MotionDriver />
+        <BookDock />
         <BookingDialog />
         <Analytics />
       </body>

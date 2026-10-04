@@ -28,8 +28,17 @@ export const site = {
   speed: "First frames in 48 hours",
   assurance: "Free 30-min call · fixed quote in writing · no lock\u2011in",
   craft: "Every frame built from scratch in Cinema 4D and Octane. No templates, no stock.",
+  // The availability line with a live dot. PLACEHOLDER: it has to be true,
+  // so the studio sets it (e.g. "Booking for November").
+  availability: "Open for new projects",
   // How the monthly plan runs, shown under the plans. Placeholder.
   steps: ["Request in Slack", "Frames for review in 48h", "Exports for every platform"],
+  // What happens on the free call, shown on the closing booking card.
+  callSteps: [
+    "You show what you're launching, and when",
+    "We sketch the motion that fits it",
+    "You leave with a fixed quote in writing",
+  ],
   // What the studio makes. All of it is motion graphics.
   services: ["Launch films", "Product animation", "Brand motion", "Social content", "Logo animation", "3D motion"],
 };

@@ -2,7 +2,7 @@
 
 import { track } from "@vercel/analytics";
 import { useEffect, useRef, useState } from "react";
-import { bookingEmbed } from "@/content/site";
+import { bookingEmbed, site } from "@/content/site";
 
 // Every booking button opens Calendly over the site instead of sending the
 // visitor to another tab, and each step is counted: which button was pressed,
@@ -11,6 +11,7 @@ import { bookingEmbed } from "@/content/site";
 export default function BookingDialog() {
   const dialog = useRef<HTMLDialogElement>(null);
   const [from, setFrom] = useState<string | null>(null);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     const click = (e: MouseEvent) => {
@@ -43,16 +44,35 @@ export default function BookingDialog() {
       ref={dialog}
       className="booking-dialog"
       aria-label="Book a call"
-      onClose={() => setFrom(null)}
+      onClose={() => {
+        setFrom(null);
+        setLoaded(false);
+      }}
       onClick={(e) => {
         // A click on the backdrop closes it.
         if (e.target === dialog.current) dialog.current?.close();
       }}
     >
-      <button type="button" className="booking-close label" onClick={() => dialog.current?.close()}>
-        Close ✕
-      </button>
-      {from && <iframe src={bookingEmbed(from, location.host)} title="Book a call with Studio Deadzolt" />}
+      <header className="booking-bar">
+        <p className="label">
+          <span className="dot" aria-hidden="true" /> {site.cta} · 30 min
+        </p>
+        <button type="button" className="booking-close label" onClick={() => dialog.current?.close()}>
+          Close ✕
+        </button>
+      </header>
+      <div className="booking-frame" data-loaded={loaded || undefined}>
+        <p className="label booking-wait" aria-hidden={loaded}>
+          Loading the calendar
+        </p>
+        {from && (
+          <iframe
+            src={bookingEmbed(from, location.host)}
+            title="Book a call with Studio Deadzolt"
+            onLoad={() => setLoaded(true)}
+          />
+        )}
+      </div>
     </dialog>
   );
 }

@@ -5,7 +5,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
-import { getReducedMotion } from "@/lib/story";
+import { getEntered, getReducedMotion, subscribeEntry } from "@/lib/story";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -20,7 +20,13 @@ export default function SmoothScroll() {
     lenis.on("scroll", ScrollTrigger.update);
     const tick = (time: number) => lenis.raf(time * 1000);
     gsap.ticker.add(tick);
+    // Still while the entry screen is up.
+    if (!getEntered()) lenis.stop();
+    const unsubscribe = subscribeEntry(() => {
+      if (getEntered()) lenis.start();
+    });
     return () => {
+      unsubscribe();
       gsap.ticker.remove(tick);
       lenis.destroy();
     };

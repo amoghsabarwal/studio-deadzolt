@@ -67,3 +67,51 @@ export function subscribeScenePaused(listener: () => void) {
     pauseListeners.delete(listener);
   };
 }
+
+// The entry moment. Remembered across visits under this key, so returning
+// visitors go straight in. The scene says when it has drawn its first frame, and
+// the entry screen says when the visitor is in.
+export const ENTERED_KEY = "dz-entered";
+// Runs before the first paint (inlined in the layout): returning visitors and
+// visitors from a campaign link (utm, ad click ids) skip the entry screen.
+export const ENTRY_SKIP_SCRIPT = `try{var q=location.search;if(localStorage.getItem("${ENTERED_KEY}")||/[?&](utm_|gclid|fbclid)/.test(q))document.documentElement.dataset.entered="1"}catch(e){}`;
+let sceneReady = false;
+let entered = false;
+let enteredAt = 0;
+const entryListeners = new Set<() => void>();
+
+export function getSceneReady() {
+  return sceneReady;
+}
+
+export function markSceneReady() {
+  if (sceneReady) return;
+  sceneReady = true;
+  entryListeners.forEach((l) => l());
+}
+
+export function getEntered() {
+  return entered;
+}
+
+export function markEntered() {
+  if (entered) return;
+  entered = true;
+  enteredAt = performance.now();
+  entryListeners.forEach((l) => l());
+}
+
+export function subscribeEntry(listener: () => void) {
+  entryListeners.add(listener);
+  return () => {
+    entryListeners.delete(listener);
+  };
+}
+
+// How far the star has rushed in from deep space since the visitor entered,
+// 0 to 1, with an expo-out finish.
+export function getEntrance() {
+  if (!entered) return 0;
+  const t = Math.min((performance.now() - enteredAt) / 1400, 1);
+  return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+}
