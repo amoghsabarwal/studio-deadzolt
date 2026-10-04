@@ -2,7 +2,9 @@
 
 import gsap from "gsap";
 import { useEffect } from "react";
-import { revealLines, rollNumber, scramble } from "@/lib/motion/text";
+import { DURATION, revealLines, rollNumber, scramble } from "@/lib/motion/text";
+
+const DURATION_LONG = DURATION.long;
 import { getReducedMotion } from "@/lib/story";
 
 // Scroll reveals for any page:
@@ -11,6 +13,7 @@ import { getReducedMotion } from "@/lib/story";
 // [data-count] numbers roll up to their value,
 // [data-process] steps light up along a line drawn by the scroll,
 // [data-stagger] lists bring their children up one after another,
+// [data-wipe-in] blocks wipe in from the left,
 // [data-reveal] blocks rise and fade in.
 export function useReveals() {
   useEffect(() => {
@@ -62,6 +65,20 @@ export function useReveals() {
           clearProps: "transform",
           scrollTrigger: { trigger: list, start: "top 88%" },
         });
+      });
+
+      gsap.utils.toArray<HTMLElement>("[data-wipe-in]").forEach((el) => {
+        gsap.fromTo(
+          el,
+          { clipPath: "inset(0% 100% 0% 0%)" },
+          {
+            clipPath: "inset(0% 0% 0% 0%)",
+            duration: DURATION_LONG,
+            ease: "expo.inOut",
+            clearProps: "clipPath",
+            scrollTrigger: { trigger: el, start: "top 98%" },
+          },
+        );
       });
 
       gsap.utils.toArray<HTMLElement>("[data-reveal]").forEach((el) => {

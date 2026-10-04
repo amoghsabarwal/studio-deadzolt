@@ -55,6 +55,7 @@ export default function Home() {
             Studio Deadzolt designs identities, 3D product worlds and motion for brands that want to be
             impossible to mistake for anything else.
           </p>
+          <TiltHint />
           <div className="actions">
             <a className="button button-primary" {...bookingLink}>
               Book a consultation
@@ -209,7 +210,7 @@ export default function Home() {
           </h2>
           <p className="section-sub">Tell us what you are making and we will get back to you.</p>
           <div className="actions" data-reveal>
-            <MagneticLink className="button button-primary" {...bookingLink}>
+            <MagneticLink className="button button-primary button-foil" {...bookingLink}>
               Book a consultation
             </MagneticLink>
             <a className="button" href={`mailto:${site.email}`}>

@@ -58,6 +58,10 @@ export default function SiteFooter() {
         </div>
       </div>
 
+      {/* The wordmark across the full width, in chrome that turns with the
+          pointer or the phone's tilt. */}
+      <div className="footer-giant" role="img" aria-label={site.name} data-wipe-in />
+
       <div className="footer-bottom label">
         <span>© {new Date().getFullYear()} {site.name}</span>
         <span>Designed and built in Indore</span>

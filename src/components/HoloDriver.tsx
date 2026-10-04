@@ -82,6 +82,8 @@ export default function HoloDriver() {
     let last = performance.now();
     let lastScroll = window.scrollY;
     let skew = 0;
+    let gx = 0;
+    let gy = 0;
     const root = document.documentElement.style;
     const loop = (now: number) => {
       const dt = Math.min((now - last) / 1000, 0.05);
@@ -95,6 +97,12 @@ export default function HoloDriver() {
       skew += (target - skew) * (1 - Math.exp(-6 * dt));
       if (Math.abs(skew) > 0.005 || Math.abs(target) > 0.005) root.setProperty("--skew", `${skew.toFixed(3)}deg`);
       const tilt = getTilt();
+      // The page-wide tilt (--tx/--ty, -1 to 1) for effects that turn with
+      // the visitor, like the footer wordmark.
+      gx += (tilt.x - gx) * k;
+      gy += (tilt.y - gy) * k;
+      root.setProperty("--tx", gx.toFixed(3));
+      root.setProperty("--ty", gy.toFixed(3));
       cards.forEach((card) => {
         if (!card.visible) return;
         let x = 0;

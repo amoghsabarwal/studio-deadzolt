@@ -600,6 +600,45 @@ main {
   }
 }
 
+/* Works filters */
+.works-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 32px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--dim);
+  font: inherit;
+  font-size: 13px;
+  transition: color 0.3s, border-color 0.3s, background 0.3s;
+}
+
+.chip:hover {
+  color: var(--paper);
+  border-color: rgba(237, 237, 237, 0.3);
+}
+
+.chip[aria-pressed="true"] {
+  color: var(--ink);
+  background: var(--paper);
+  border-color: var(--paper);
+}
+
+.chip-count {
+  font-family: var(--mono);
+  font-size: 10px;
+  opacity: 0.6;
+}
+
 /* Work lists lean a touch with scroll speed (--skew, set by HoloDriver). */
 .work-list,
 .works-list {
@@ -980,6 +1019,25 @@ main {
   color: var(--paper);
 }
 
+.footer-giant {
+  width: 100%;
+  aspect-ratio: 583 / 61;
+  margin-bottom: 32px;
+  background: linear-gradient(
+      100deg,
+      #6d747c 0%,
+      #f4f6f8 18%,
+      #9aa3ad 32%,
+      #ffffff 46%,
+      #7d858e 60%,
+      #e6e9ec 76%,
+      #6d747c 100%
+    )
+    calc(50% + var(--tx, 0) * 40%) calc(50% + var(--ty, 0) * 40%) / 260% 260%;
+  -webkit-mask: url("/brand/wordmark.svg") center / contain no-repeat;
+  mask: url("/brand/wordmark.svg") center / contain no-repeat;
+}
+
 .footer-bottom {
   display: flex;
   justify-content: space-between;
@@ -1116,12 +1174,48 @@ main {
   translate: 0 -4px;
 }
 
+/* The contact button picks up the foil edge on hover. */
+.button-foil {
+  position: relative;
+  isolation: isolate;
+}
+
+.button-foil::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  z-index: -1;
+  border-radius: inherit;
+  background: conic-gradient(from var(--angle, 0deg), #ff3da8, #ffe14d, #3dff8a, #38d9ff, #a07cff, #ff3da8);
+  filter: blur(6px);
+  opacity: 0;
+  transition: opacity 0.5s;
+  animation: foil-spin 4s linear infinite;
+}
+
+.button-foil:hover::before {
+  opacity: 0.7;
+}
+
+@property --angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes foil-spin {
+  to {
+    --angle: 360deg;
+  }
+}
+
 /* iPhone only: asks once for motion so the foil can follow the tilt. */
 .tilt-hint {
   display: inline-flex;
+  align-self: flex-start;
   align-items: center;
   gap: 8px;
-  margin: -32px 0 24px;
+  margin: 0 0 24px;
   padding: 10px 14px;
   border: 1px solid var(--line);
   border-radius: 999px;
