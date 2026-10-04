@@ -6,7 +6,7 @@ shapes and materials can be tweaked and rebuilt rather than hand-edited.
 
 | File | Chapter | Triangles | Size |
 | --- | --- | --- | --- |
-| `deadzolt-star.glb` | Hero (arrival, contact) | 90k (foil balloon with sealed seam and pleats) | 690 KB |
+| `deadzolt-star.glb` | Hero (arrival, contact) | 60k (hard-surface slab, bevelled edges) | 455 KB |
 | `orb-3d-experience.glb` | 3D Experience | 55k (planet, ring, star moon) | 415 KB |
 | `knob-motion-direction.glb` | Motion Direction | 106k (knob, red insert, dial, glow ring) | 810 KB |
 | `pendant-branding.glb` | Branding | 80k (engraved DEADZOLT STUDIO front, 2000 back) | 620 KB |
