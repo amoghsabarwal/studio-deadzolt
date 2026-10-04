@@ -8,7 +8,8 @@ import { setCursorLabel } from "@/lib/cursor";
 import { getFocus } from "@/lib/focus";
 import { getStory, subscribeStory } from "@/lib/story";
 import { getTilt } from "@/lib/tilt";
-import { REAL_CHROME } from "./materials";
+import Grounding from "./Grounding";
+import { REAL_CHROME, withSurfaceDetail } from "./materials";
 import { DISCIPLINE_SPOT, NARROW_SPOT } from "./spots";
 
 const STAR_URL = "/models/deadzolt-star.glb";
@@ -184,9 +185,17 @@ export default function Star({ animate }: { animate: boolean }) {
 
   return (
     <group ref={root}>
+      <Grounding radius={2.1} floor={-2.3} />
       <group ref={tilt}>
         <group ref={spin}>
           <mesh
+            onClick={(e) => {
+              // A tap flicks the star into a spin (and a tiny buzz where
+              // phones support it), so touch screens get a toy too.
+              if (e.delta > 6 || (e.nativeEvent.target as HTMLElement | null)?.closest("a, button")) return;
+              drag.current.vy += 0.5;
+              navigator.vibrate?.(8);
+            }}
             scale={STAR_SCALE}
             onPointerDown={onPointerDown}
             onPointerOver={() => {
@@ -200,7 +209,10 @@ export default function Star({ animate }: { animate: boolean }) {
           >
             <primitive object={geometry} attach="geometry" />
             <meshPhysicalMaterial
-              ref={material}
+              ref={(m: MeshPhysicalMaterial | null) => {
+                material.current = m;
+                if (m) withSurfaceDetail(m);
+              }}
               {...REAL_CHROME}
               roughness={0.08}
               iridescenceThicknessRange={[180, 520]}
@@ -209,8 +221,14 @@ export default function Star({ animate }: { animate: boolean }) {
         </group>
         {/* A thin chrome halo orbiting the star. */}
         <mesh ref={halo} rotation={[1.2, 0, 0]}>
-          <torusGeometry args={[2.05, 0.012, 24, 256]} />
-          <meshPhysicalMaterial color="#ffffff" metalness={1} roughness={0.15} envMapIntensity={2} />
+          <torusGeometry args={[2.05, 0.02, 24, 384]} />
+          <meshPhysicalMaterial
+            ref={(m: MeshPhysicalMaterial | null) => void (m && withSurfaceDetail(m))}
+            color="#ffffff"
+            metalness={1}
+            roughness={0.15}
+            envMapIntensity={2}
+          />
         </mesh>
       </group>
     </group>

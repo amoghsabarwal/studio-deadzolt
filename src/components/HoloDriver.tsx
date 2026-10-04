@@ -75,6 +75,25 @@ export default function HoloDriver() {
       });
     };
     const leave = () => cards.forEach((card) => (card.hover = false));
+    // Touch: a finger on a card tilts it towards the touch point, even while
+    // the page scrolls under it, and lets go when the finger lifts.
+    const touch = (e: TouchEvent) => {
+      const t = e.touches[0];
+      if (!t) return;
+      const over = (e.target as Element | null)?.closest<HTMLElement>("[data-holo]");
+      cards.forEach((card) => {
+        card.hover = card.el === over;
+        if (card.hover) {
+          const box = card.el.getBoundingClientRect();
+          card.local.x = Math.min(Math.max((t.clientX - box.left) / box.width, 0), 1);
+          card.local.y = Math.min(Math.max((t.clientY - box.top) / box.height, 0), 1);
+        }
+      });
+    };
+    window.addEventListener("touchstart", touch, { passive: true });
+    window.addEventListener("touchmove", touch, { passive: true });
+    window.addEventListener("touchend", leave, { passive: true });
+    window.addEventListener("touchcancel", leave, { passive: true });
     window.addEventListener("pointermove", move);
     document.addEventListener("pointerleave", leave);
 
@@ -148,6 +167,10 @@ export default function HoloDriver() {
       mutations.disconnect();
       window.removeEventListener("pointermove", move);
       document.removeEventListener("pointerleave", leave);
+      window.removeEventListener("touchstart", touch);
+      window.removeEventListener("touchmove", touch);
+      window.removeEventListener("touchend", leave);
+      window.removeEventListener("touchcancel", leave);
     };
   }, []);
 

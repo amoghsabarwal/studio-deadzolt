@@ -7,6 +7,7 @@ import {
   ChromaticAberration,
   EffectComposer,
   Noise,
+  SMAA,
   Vignette,
 } from "@react-three/postprocessing";
 import { BlendFunction } from "postprocessing";
@@ -79,11 +80,14 @@ function TiltedStudio() {
 
 function Effects({ rich }: { rich: boolean }) {
   // Phones and struggling GPUs keep the bloom and vignette and skip the rest.
+  // Multisampling is costly at phone resolutions, so their edges are
+  // smoothed with SMAA instead, which keeps the chrome outlines clean.
   if (!rich) {
     return (
       <EffectComposer multisampling={0}>
         <Bloom mipmapBlur intensity={0.35} luminanceThreshold={0.9} luminanceSmoothing={0.2} />
         <Vignette offset={0.25} darkness={0.75} />
+        <SMAA />
       </EffectComposer>
     );
   }
@@ -144,7 +148,9 @@ export default function SceneCanvas() {
           eventSource={eventSource}
           eventPrefix="client"
           camera={{ position: [0, 0, 7], fov: 40 }}
-          dpr={struggling ? 1 : [1, rich ? 1.75 : 1.25]}
+          // Phones render at up to 2x so model edges stay crisp; if the frame
+          // rate drops, resolution steps down before anything else does.
+          dpr={struggling ? 1.25 : [1, rich ? 1.75 : 2]}
           frameloop={reducedMotion ? "demand" : "always"}
           gl={{
             antialias: false,

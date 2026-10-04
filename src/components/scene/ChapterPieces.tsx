@@ -6,6 +6,8 @@ import { useMemo, useRef } from "react";
 import { MathUtils, type Group } from "three";
 import { getFocus } from "@/lib/focus";
 import { getStory } from "@/lib/story";
+import { getTilt } from "@/lib/tilt";
+import Grounding from "./Grounding";
 import { applyRealChrome } from "./materials";
 import { DISCIPLINE_SPOT, NARROW_SPOT } from "./spots";
 
@@ -55,6 +57,8 @@ function ChapterPiece({ piece, animate }: { piece: Piece; animate: boolean }) {
   const tilt = useRef<Group>(null);
   const turn = useRef<Group>(null);
   const dial = useRef<Group>(null);
+  const flick = useRef<Group>(null);
+  const boost = useRef(0);
   const viewport = useThree((s) => s.viewport);
   const wide = viewport.width > viewport.height;
   const lastScroll = useRef(0);
@@ -95,8 +99,23 @@ function ChapterPiece({ piece, animate }: { piece: Piece; animate: boolean }) {
     r.visible = r.scale.x > 0.005;
     if (!r.visible || !animate) return;
 
-    tilt.current.rotation.x = MathUtils.damp(tilt.current.rotation.x, -state.pointer.y * 0.3, 3, dt);
-    tilt.current.rotation.y = MathUtils.damp(tilt.current.rotation.y, state.pointer.x * 0.45, 3, dt);
+    // Lean towards the pointer, or with the phone as it tilts.
+    const gyro = getTilt();
+    const lx = gyro.source === "gyro" ? gyro.x * 0.8 : state.pointer.x * 0.45;
+    const ly = gyro.source === "gyro" ? -gyro.y * 0.6 : state.pointer.y * 0.3;
+    tilt.current.rotation.x = MathUtils.damp(tilt.current.rotation.x, -ly, 3, dt);
+    tilt.current.rotation.y = MathUtils.damp(tilt.current.rotation.y, lx, 3, dt);
+
+    // A tap flicks the piece into a spin that coasts back to rest.
+    if (flick.current) {
+      const f = flick.current;
+      f.rotation.y += boost.current * dt * 10;
+      boost.current *= Math.pow(0.04, dt);
+      if (boost.current < 0.02) {
+        boost.current = 0;
+        f.rotation.y = MathUtils.damp(f.rotation.y, Math.round(f.rotation.y / (Math.PI * 2)) * Math.PI * 2, 2, dt);
+      }
+    }
 
     const scrollY = window.scrollY;
     const scrollSpin = MathUtils.clamp(((scrollY - lastScroll.current) / Math.max(dt, 0.001)) * 0.00006, -0.04, 0.04);
@@ -132,11 +151,23 @@ function ChapterPiece({ piece, animate }: { piece: Piece; animate: boolean }) {
 
   return (
     <group ref={root} scale={0} visible={false}>
-      <group ref={tilt}>
-        <group ref={turn}>
-          <group rotation={piece.rotation ?? [0, 0, 0]} position={piece.offset ?? [0, 0, 0]}>
-            <group ref={dial}>
-              <primitive object={model} />
+      <Grounding radius={1.7} floor={-1.9} />
+      <group
+        ref={tilt}
+        onClick={(e) => {
+          // A tap flicks the piece into a spin (and a tiny buzz on phones that
+          // support it), so touch screens get something to play with.
+          if (e.delta > 6 || (e.nativeEvent.target as HTMLElement | null)?.closest("a, button")) return;
+          boost.current += 1;
+          navigator.vibrate?.(8);
+        }}
+      >
+        <group ref={flick}>
+          <group ref={turn}>
+            <group rotation={piece.rotation ?? [0, 0, 0]} position={piece.offset ?? [0, 0, 0]}>
+              <group ref={dial}>
+                <primitive object={model} />
+              </group>
             </group>
           </group>
         </group>
