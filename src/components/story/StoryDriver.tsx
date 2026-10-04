@@ -4,6 +4,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useEffect } from "react";
 import { getReducedMotion, setStory } from "@/lib/story";
+import { useReveals } from "../Reveals";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -159,16 +160,6 @@ export default function StoryDriver() {
         );
       }
 
-      gsap.utils.toArray<HTMLElement>("[data-reveal]").forEach((el) => {
-        gsap.from(el, {
-          y: 32,
-          opacity: 0,
-          duration: 1.1,
-          ease: "expo.out",
-          scrollTrigger: { trigger: el, start: "top 88%" },
-        });
-      });
-
       // The hero copy drifts up and fades as the story begins.
       gsap.to("[data-hero]", {
         y: -60,
@@ -185,6 +176,10 @@ export default function StoryDriver() {
       setStory({ active: false, chapter: 0, progress: 0 });
     };
   }, []);
+
+  // Heading, list and block reveals. Created after the pinned track above so
+  // their trigger points account for its scroll length.
+  useReveals();
 
   return null;
 }

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import MagneticLink from "@/components/MagneticLink";
+import SplitWords from "@/components/SplitWords";
 import ChapterNav from "@/components/story/ChapterNav";
 import StoryDriver from "@/components/story/StoryDriver";
 import {
@@ -95,7 +96,7 @@ export default function Home() {
                   <ol className="panel-projects">
                     {list.map((p) => (
                       <li key={p.slug}>
-                        <Link href={`/works/${p.slug}`} className="row-link">
+                        <Link href={`/works/${p.slug}`} className="row-link" data-cursor="View">
                           <span>{p.title}</span>
                           <span className="label">{p.date}</span>
                         </Link>
@@ -112,12 +113,19 @@ export default function Home() {
       <section id="work" data-chapter className="chapter work">
         <div className="section-head">
           <p className="label">Selected work</p>
-          <h2 className="section-title">Recent projects</h2>
+          <h2 className="section-title" data-split>
+            <SplitWords text="Recent projects" />
+          </h2>
         </div>
-        <ol className="work-list" data-reveal>
+        <ol className="work-list" data-stagger>
           {selected.map((p) => (
             <li key={p.slug}>
-              <Link href={`/works/${p.slug}`} className="work-row">
+              <Link
+                href={`/works/${p.slug}`}
+                className="work-row"
+                data-focus={p.disciplines[0]}
+                data-cursor="View"
+              >
                 <span className="work-title">{p.title}</span>
                 <span className="label work-tags">{disciplineNames(p)}</span>
                 <span className="label work-date">{p.year}</span>
@@ -133,14 +141,16 @@ export default function Home() {
       <section id="pricing" data-chapter className="chapter pricing">
         <div className="section-head">
           <p className="label">Work with the studio</p>
-          <h2 className="section-title">Start with a conversation.</h2>
+          <h2 className="section-title" data-split>
+            <SplitWords text="Start with a conversation." />
+          </h2>
           <p className="section-sub">
             Every project begins with a free consultation. You leave with a clear scope and a fixed quote,
             whether or not we work together.
           </p>
         </div>
 
-        <ol className="process" data-reveal>
+        <ol className="process" data-stagger>
           {process.map((step, i) => (
             <li key={step.title}>
               <span className="label">{String(i + 1).padStart(2, "0")}</span>
@@ -150,9 +160,9 @@ export default function Home() {
           ))}
         </ol>
 
-        <div className="plans" data-reveal>
+        <div className="plans" data-stagger>
           {plans.map((plan) => (
-            <article key={plan.name} className="plan" data-featured={plan.featured || undefined}>
+            <article key={plan.name} className="plan" data-featured={plan.featured || undefined} data-spotlight>
               <header>
                 <p className="label">{plan.note}</p>
                 <h3 className="plan-name">{plan.name}</h3>
@@ -173,11 +183,13 @@ export default function Home() {
       </section>
 
       <section id="contact" data-chapter className="chapter contact">
-        <div className="contact-copy" data-reveal>
+        <div className="contact-copy">
           <p className="label">Contact</p>
-          <h2 className="section-title">Have a brand to build?</h2>
+          <h2 className="section-title" data-split>
+            <SplitWords text="Have a brand to build?" />
+          </h2>
           <p className="section-sub">Tell us what you are making and we will get back to you.</p>
-          <div className="actions">
+          <div className="actions" data-reveal>
             <MagneticLink className="button button-primary" {...bookingLink}>
               Book a consultation
             </MagneticLink>

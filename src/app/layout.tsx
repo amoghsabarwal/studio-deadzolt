@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter_Tight, JetBrains_Mono } from "next/font/google";
 import Cursor from "@/components/Cursor";
+import PageTransition from "@/components/PageTransition";
 import SceneCanvas from "@/components/scene/SceneCanvas";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
@@ -40,6 +41,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <SiteHeader />
         <main id="main">{children}</main>
         <SiteFooter />
+        <PageTransition />
         <Cursor />
       </body>
     </html>

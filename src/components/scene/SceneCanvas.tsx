@@ -1,6 +1,6 @@
 "use client";
 
-import { Environment, Lightformer } from "@react-three/drei";
+import { Environment, Lightformer, PerformanceMonitor } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import {
   Bloom,
@@ -11,7 +11,7 @@ import {
 } from "@react-three/postprocessing";
 import { BlendFunction } from "postprocessing";
 import { usePathname } from "next/navigation";
-import { Suspense, useSyncExternalStore } from "react";
+import { Suspense, useEffect, useState, useSyncExternalStore } from "react";
 import { AgXToneMapping, Vector2 } from "three";
 import { getReducedMotion, subscribeReducedMotion } from "@/lib/story";
 import ChapterPieces from "./ChapterPieces";
@@ -30,9 +30,14 @@ function usePrefersReducedMotion() {
 // The holographic studio the Blender models were lit with, plus a few light
 // panels on top so the chrome keeps crisp highlights from the camera's side.
 // Everything is served locally, so nothing is fetched from a CDN.
-function StudioLights() {
+function StudioLights({ rich }: { rich: boolean }) {
   return (
-    <Environment files="/models/env/holo-studio.hdr" resolution={1024} frames={1} environmentIntensity={0.8}>
+    <Environment
+      files="/models/env/holo-studio.hdr"
+      resolution={rich ? 1024 : 512}
+      frames={1}
+      environmentIntensity={0.8}
+    >
       {/* Key: a dim softbox in front so the chrome never reflects pure black,
           crossed by slanted strips. Flat, bevelled faces mirror these as crisp
           streaks that sweep across the surface as the star turns. */}
@@ -59,9 +64,18 @@ function StudioLights() {
 }
 
 function Effects({ rich }: { rich: boolean }) {
+  // Phones and struggling GPUs keep the bloom and vignette and skip the rest.
+  if (!rich) {
+    return (
+      <EffectComposer multisampling={0}>
+        <Bloom mipmapBlur intensity={0.35} luminanceThreshold={0.9} luminanceSmoothing={0.2} />
+        <Vignette offset={0.25} darkness={0.75} />
+      </EffectComposer>
+    );
+  }
   return (
-    <EffectComposer multisampling={rich ? 4 : 0}>
-      <Bloom mipmapBlur intensity={rich ? 0.5 : 0.35} luminanceThreshold={0.9} luminanceSmoothing={0.2} />
+    <EffectComposer multisampling={4}>
+      <Bloom mipmapBlur intensity={0.5} luminanceThreshold={0.9} luminanceSmoothing={0.2} />
       <ChromaticAberration
         offset={new Vector2(0.0004, 0.0004)}
         radialModulation
@@ -77,7 +91,9 @@ function Effects({ rich }: { rich: boolean }) {
 export default function SceneCanvas() {
   const pathname = usePathname();
   const reducedMotion = usePrefersReducedMotion();
-  const isHome = pathname === "/";
+  // The 3D stays at full strength where it carries content: the home story,
+  // and the works pages where it stands in for project imagery.
+  const dimmed = pathname !== "/" && !pathname.startsWith("/works");
 
   // Events come from the whole page so the star can be hovered and dragged
   // while the canvas itself stays behind the content.
@@ -89,28 +105,54 @@ export default function SceneCanvas() {
     () => window.innerWidth > 760 && window.devicePixelRatio <= 2,
     () => true,
   );
+  // Drops resolution and effects if the frame rate can't keep up.
+  const [struggling, setStruggling] = useState(false);
+  const full = rich && !struggling;
+
+  // The four discipline pieces load once the page has settled, so the star
+  // and the page itself get the bandwidth first.
+  const [piecesReady, setPiecesReady] = useState(false);
+  useEffect(() => {
+    const start = () => setPiecesReady(true);
+    // Safari has no requestIdleCallback, so it gets a plain delay.
+    if (typeof window.requestIdleCallback === "function") {
+      const id = window.requestIdleCallback(start, { timeout: 2500 });
+      return () => window.cancelIdleCallback(id);
+    }
+    const id = setTimeout(start, 1500);
+    return () => clearTimeout(id);
+  }, []);
 
   return (
-    <div className="scene" data-dimmed={!isHome} aria-hidden="true">
+    <div className="scene" data-dimmed={dimmed} aria-hidden="true">
       {eventSource && (
         <Canvas
           eventSource={eventSource}
           eventPrefix="client"
           camera={{ position: [0, 0, 7], fov: 40 }}
-          dpr={[1, rich ? 1.75 : 1.25]}
+          dpr={struggling ? 1 : [1, rich ? 1.75 : 1.25]}
           frameloop={reducedMotion ? "demand" : "always"}
-          gl={{ antialias: false, alpha: true, toneMapping: AgXToneMapping, toneMappingExposure: 1.25 }}
+          gl={{
+            antialias: false,
+            alpha: true,
+            powerPreference: "high-performance",
+            toneMapping: AgXToneMapping,
+            toneMappingExposure: 1.25,
+          }}
         >
+          <PerformanceMonitor onDecline={() => setStruggling(true)} />
           {/* The hero star waits only for its own model and the lighting; the
               chapter pieces load behind it. */}
           <Suspense fallback={null}>
-            <StudioLights />
+            <StudioLights rich={rich} />
             <Star animate={!reducedMotion} />
           </Suspense>
-          <Suspense fallback={null}>
-            <ChapterPieces animate={!reducedMotion} />
-          </Suspense>
-          <Effects rich={rich} />
+          {piecesReady && (
+            <Suspense fallback={null}>
+              <ChapterPieces animate={!reducedMotion} />
+            </Suspense>
+          )}
+          <Effects rich={full} />
         </Canvas>
       )}
     </div>

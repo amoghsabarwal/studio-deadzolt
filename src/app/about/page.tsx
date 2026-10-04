@@ -11,13 +11,15 @@ export default function AboutPage() {
   return (
     <section className="page about">
       <header className="page-head">
-        <p className="label">
+        <p className="label" data-enter>
           {site.founder} · Founder · {site.location}
         </p>
-        <h1 className="display page-title">About</h1>
+        <h1 className="display page-title" data-enter>
+          About
+        </h1>
       </header>
 
-      <div className="about-grid">
+      <div className="about-grid" data-enter>
         <div>
           <p className="studio-hello">{site.about[0]}</p>
           <p className="studio-body">{site.about[1]}</p>

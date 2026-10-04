@@ -5,6 +5,7 @@ import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
 import { MathUtils, type Group, type Mesh, type MeshPhysicalMaterial } from "three";
 import { setCursorLabel } from "@/lib/cursor";
+import { getFocus } from "@/lib/focus";
 import { getStory, subscribeStory } from "@/lib/story";
 import { REAL_CHROME } from "./materials";
 import { DISCIPLINE_SPOT, NARROW_SPOT } from "./spots";
@@ -112,7 +113,9 @@ export default function Star({ animate }: { animate: boolean }) {
     const feature = !story.active || story.chapter === 0;
     const tx = wide ? pose.x * viewport.width : feature ? 0 : viewport.width * NARROW_SPOT.x;
     const ty = wide ? pose.y * viewport.height : feature ? viewport.height * 0.2 : viewport.height * NARROW_SPOT.y;
-    const base = wide ? pose.scale : feature ? pose.scale * 0.55 : pose.scale > 0 ? NARROW_SPOT.scale : 0;
+    // When a work or case study puts its own piece in focus, the star steps aside.
+    const yields = getFocus().discipline !== null;
+    const base = yields ? 0 : wide ? pose.scale : feature ? pose.scale * 0.55 : pose.scale > 0 ? NARROW_SPOT.scale : 0;
     const ts = base * (1 + hover.current * 0.06);
 
     const k = animate ? 2.6 : 1000;
