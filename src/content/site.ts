@@ -195,12 +195,15 @@ export type Plan = {
   includes: string[];
   cta: string;
   featured?: boolean;
+  // The card's holographic foil: silver, full holo or brand red.
+  foil: "silver" | "holo" | "red";
 };
 
 // Ways to work together. Every plan starts with the free consultation call.
 export const plans: Plan[] = [
   {
     name: "Starter",
+    foil: "silver",
     price: "$500",
     note: "One-off",
     summary: "One focused piece: a logo refresh, a product render or a short motion loop.",
@@ -209,6 +212,7 @@ export const plans: Plan[] = [
   },
   {
     name: "Project",
+    foil: "holo",
     price: "$1,000",
     note: "Per project",
     summary: "A defined piece of work, from a new identity to a 3D product film.",
@@ -223,6 +227,7 @@ export const plans: Plan[] = [
   },
   {
     name: "Studio partner",
+    foil: "red",
     price: "$5,000",
     note: "Per month",
     summary: "Design, 3D and motion on call for brands that ship all the time.",

@@ -26,9 +26,19 @@ export default function SmoothScroll() {
     };
   }, []);
 
+  // A new page starts at the top, or at its #section when the link named one
+  // (like Pricing from the works page). The jump waits a frame so the page's
+  // own scroll effects (pinned sections) are in place first.
   useEffect(() => {
     window.scrollTo(0, 0);
     ScrollTrigger.refresh();
+    const id = decodeURIComponent(window.location.hash.slice(1));
+    if (!id) return;
+    const frame = requestAnimationFrame(() => {
+      ScrollTrigger.refresh();
+      document.getElementById(id)?.scrollIntoView();
+    });
+    return () => cancelAnimationFrame(frame);
   }, [pathname]);
 
   return null;

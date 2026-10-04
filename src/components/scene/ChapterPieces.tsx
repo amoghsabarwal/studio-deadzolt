@@ -4,6 +4,7 @@ import { useGLTF } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import { MathUtils, type Group } from "three";
+import { getFocus } from "@/lib/focus";
 import { getStory } from "@/lib/story";
 import { applyRealChrome } from "./materials";
 import { DISCIPLINE_SPOT, NARROW_SPOT } from "./spots";
@@ -12,6 +13,7 @@ type Motion = "spin" | "dial" | "swing" | "tumble";
 
 type Piece = {
   chapter: number;
+  discipline: string;
   url: string;
   scale: number;
   // Rest pose of the model inside its group, so each one reads well face-on.
@@ -22,19 +24,22 @@ type Piece = {
 
 // One Blender piece per discipline chapter. As the story reaches a
 // discipline, the star shrinks away and that chapter's piece grows in its
-// place.
+// place. The same pieces stand in for project imagery elsewhere: hovering a
+// work brings its discipline's piece in beside the pointer, and a case study
+// holds it as the hero object.
 const PIECES: Piece[] = [
-  { chapter: 2, url: "/models/orb-3d-experience.glb", scale: 1.15, rotation: [0.2, 0, 0], motion: "spin" },
+  { chapter: 2, discipline: "3d-experience", url: "/models/orb-3d-experience.glb", scale: 1.15, rotation: [0.2, 0, 0], motion: "spin" },
   {
     chapter: 3,
+    discipline: "motion-direction",
     url: "/models/knob-motion-direction.glb",
     scale: 1.45,
-    rotation: [-0.6, 0, 0],
+    rotation: [0.6, 0, 0],
     offset: [0, -0.3, 0],
     motion: "dial",
   },
-  { chapter: 4, url: "/models/pendant-branding.glb", scale: 1.05, offset: [0, -0.27, 0], motion: "swing" },
-  { chapter: 5, url: "/models/loop-art-direction.glb", scale: 1.35, motion: "tumble" },
+  { chapter: 4, discipline: "branding", url: "/models/pendant-branding.glb", scale: 1.05, offset: [0, -0.27, 0], motion: "swing" },
+  { chapter: 5, discipline: "art-direction", url: "/models/loop-art-direction.glb", scale: 1.35, motion: "tumble" },
 ];
 
 function ChapterPiece({ piece, animate }: { piece: Piece; animate: boolean }) {
@@ -49,6 +54,7 @@ function ChapterPiece({ piece, animate }: { piece: Piece; animate: boolean }) {
   const root = useRef<Group>(null);
   const tilt = useRef<Group>(null);
   const turn = useRef<Group>(null);
+  const dial = useRef<Group>(null);
   const viewport = useThree((s) => s.viewport);
   const wide = viewport.width > viewport.height;
   const lastScroll = useRef(0);
@@ -57,11 +63,29 @@ function ChapterPiece({ piece, animate }: { piece: Piece; animate: boolean }) {
     if (!root.current || !tilt.current || !turn.current) return;
     const dt = Math.min(delta, 0.05);
     const story = getStory();
-    const active = story.active && story.chapter === piece.chapter;
+    const focus = getFocus();
+    const focused = focus.discipline === piece.discipline;
+    const inStory = story.active && story.chapter === piece.chapter && !focus.discipline;
 
-    const tx = viewport.width * (wide ? DISCIPLINE_SPOT.x : NARROW_SPOT.x);
-    const ty = viewport.height * (wide ? DISCIPLINE_SPOT.y : NARROW_SPOT.y);
-    const ts = active ? piece.scale * (wide ? 1 : NARROW_SPOT.scale * 1.1) : 0;
+    let tx = viewport.width * (wide ? DISCIPLINE_SPOT.x : NARROW_SPOT.x);
+    let ty = viewport.height * (wide ? DISCIPLINE_SPOT.y : NARROW_SPOT.y);
+    let ts = inStory ? piece.scale * (wide ? 1 : NARROW_SPOT.scale * 1.1) : 0;
+    if (focused && focus.mode === "hover") {
+      // A preview to the right of the list that follows the pointer up and down.
+      tx = viewport.width * 0.3;
+      ty = MathUtils.clamp(state.pointer.y, -0.6, 0.6) * viewport.height * 0.5;
+      ts = piece.scale * 0.7;
+    } else if (focused) {
+      // Case study hero: beside the title on wide screens, above it on phones.
+      // Scrolling past the hero tucks it into the top corner (wide) or away
+      // (phones), so it never sits on top of the reading.
+      const away = MathUtils.clamp(window.scrollY / (window.innerHeight * 0.7), 0, 1);
+      const hero = { x: wide ? 0.27 : 0, y: wide ? 0.04 : 0.22, s: wide ? 0.85 : 0.55 };
+      const corner = { x: wide ? 0.36 : 0, y: wide ? 0.26 : 0.5, s: wide ? 0.3 : 0 };
+      tx = viewport.width * MathUtils.lerp(hero.x, corner.x, away);
+      ty = viewport.height * MathUtils.lerp(hero.y, corner.y, away);
+      ts = piece.scale * MathUtils.lerp(hero.s, corner.s, away);
+    }
 
     const k = animate ? 3.2 : 1000;
     const r = root.current;
@@ -88,8 +112,12 @@ function ChapterPiece({ piece, animate }: { piece: Piece; animate: boolean }) {
         g.rotation.y += dt * 0.35 + scrollSpin;
         break;
       case "dial":
-        // The knob turns with the scroll, like a dial being dialled up.
-        g.rotation.y = MathUtils.damp(g.rotation.y, -story.progress * Math.PI * 1.5 + Math.sin(t * 0.4) * 0.1, 4, dt);
+        // The knob turns about its own axis with the scroll, like a dial
+        // being dialled up, while it keeps facing the camera.
+        if (dial.current) {
+          const d = dial.current;
+          d.rotation.y = MathUtils.damp(d.rotation.y, -story.progress * Math.PI * 1.5 + Math.sin(t * 0.4) * 0.1, 4, dt);
+        }
         break;
       case "swing":
         g.rotation.z = Math.sin(t * 1.1) * 0.06;
@@ -107,7 +135,9 @@ function ChapterPiece({ piece, animate }: { piece: Piece; animate: boolean }) {
       <group ref={tilt}>
         <group ref={turn}>
           <group rotation={piece.rotation ?? [0, 0, 0]} position={piece.offset ?? [0, 0, 0]}>
-            <primitive object={model} />
+            <group ref={dial}>
+              <primitive object={model} />
+            </group>
           </group>
         </group>
       </group>
@@ -125,4 +155,3 @@ export default function ChapterPieces({ animate }: { animate: boolean }) {
   );
 }
 
-PIECES.forEach((piece) => useGLTF.preload(piece.url));

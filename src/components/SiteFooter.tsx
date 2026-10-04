@@ -22,29 +22,33 @@ export default function SiteFooter() {
         </div>
 
         <nav className="footer-col" aria-label="Footer">
-          <p className="label">Studio</p>
+          <p className="label" data-scramble>Studio</p>
           <ul>
             {pages.map((p) => (
               <li key={p.href}>
-                <Link href={p.href}>{p.label}</Link>
+                <Link href={p.href} data-scramble-hover>
+                  {p.label}
+                </Link>
               </li>
             ))}
           </ul>
         </nav>
 
         <div className="footer-col">
-          <p className="label">Services</p>
+          <p className="label" data-scramble>Services</p>
           <ul>
             {disciplines.map((d) => (
               <li key={d.slug}>
-                <Link href={`/#${d.slug}`}>{d.name}</Link>
+                <Link href={`/#${d.slug}`} data-scramble-hover>
+                  {d.name}
+                </Link>
               </li>
             ))}
           </ul>
         </div>
 
         <div className="footer-col">
-          <p className="label">Contact</p>
+          <p className="label" data-scramble>Contact</p>
           <ul>
             <li>
               <a href={`mailto:${site.email}`}>{site.email}</a>
@@ -53,6 +57,10 @@ export default function SiteFooter() {
           </ul>
         </div>
       </div>
+
+      {/* The wordmark across the full width, in chrome that turns with the
+          pointer or the phone's tilt. */}
+      <div className="footer-giant" role="img" aria-label={site.name} data-wipe-in />
 
       <div className="footer-bottom label">
         <span>© {new Date().getFullYear()} {site.name}</span>

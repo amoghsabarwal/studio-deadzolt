@@ -5,7 +5,9 @@ import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
 import { MathUtils, type Group, type Mesh, type MeshPhysicalMaterial } from "three";
 import { setCursorLabel } from "@/lib/cursor";
+import { getFocus } from "@/lib/focus";
 import { getStory, subscribeStory } from "@/lib/story";
+import { getTilt } from "@/lib/tilt";
 import { REAL_CHROME } from "./materials";
 import { DISCIPLINE_SPOT, NARROW_SPOT } from "./spots";
 
@@ -112,7 +114,9 @@ export default function Star({ animate }: { animate: boolean }) {
     const feature = !story.active || story.chapter === 0;
     const tx = wide ? pose.x * viewport.width : feature ? 0 : viewport.width * NARROW_SPOT.x;
     const ty = wide ? pose.y * viewport.height : feature ? viewport.height * 0.2 : viewport.height * NARROW_SPOT.y;
-    const base = wide ? pose.scale : feature ? pose.scale * 0.55 : pose.scale > 0 ? NARROW_SPOT.scale : 0;
+    // When a work or case study puts its own piece in focus, the star steps aside.
+    const yields = getFocus().discipline !== null;
+    const base = yields ? 0 : wide ? pose.scale : feature ? pose.scale * 0.55 : pose.scale > 0 ? NARROW_SPOT.scale : 0;
     const ts = base * (1 + hover.current * 0.06);
 
     const k = animate ? 2.6 : 1000;
@@ -139,9 +143,12 @@ export default function Star({ animate }: { animate: boolean }) {
 
     if (!animate) return;
 
-    // Cursor parallax: the star leans towards the pointer.
-    tilt.current.rotation.x = MathUtils.damp(tilt.current.rotation.x, -state.pointer.y * 0.35, 3, dt);
-    tilt.current.rotation.y = MathUtils.damp(tilt.current.rotation.y, state.pointer.x * 0.5, 3, dt);
+    // The star leans towards the pointer, or with the phone as it tilts.
+    const gyro = getTilt();
+    const lx = gyro.source === "gyro" ? gyro.x * 0.9 : state.pointer.x * 0.5;
+    const ly = gyro.source === "gyro" ? -gyro.y * 0.7 : state.pointer.y * 0.35;
+    tilt.current.rotation.x = MathUtils.damp(tilt.current.rotation.x, -ly, 3, dt);
+    tilt.current.rotation.y = MathUtils.damp(tilt.current.rotation.y, lx, 3, dt);
 
     const scrollY = window.scrollY;
     const scrollSpeed = (scrollY - lastScroll.current) / Math.max(dt, 0.001);

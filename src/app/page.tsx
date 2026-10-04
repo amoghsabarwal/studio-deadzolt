@@ -1,6 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import MagneticLink from "@/components/MagneticLink";
+import HoloLayers from "@/components/HoloLayers";
+import StudioClock from "@/components/StudioClock";
+import TiltHint from "@/components/TiltHint";
 import ChapterNav from "@/components/story/ChapterNav";
 import StoryDriver from "@/components/story/StoryDriver";
 import {
@@ -20,6 +23,8 @@ import {
 
 export default function Home() {
   const manifestoWords = site.manifesto.split(" ");
+  // Words that catch the light as the manifesto is read.
+  const KEY_WORDS = new Set(["chrome-finished", "desire,", "forever."]);
   const selected = projects.slice(0, 5);
 
   return (
@@ -28,7 +33,7 @@ export default function Home() {
       <ChapterNav />
 
       <noscript>
-        <style>{".intro{display:none}"}</style>
+        <style>{".intro{display:none}[data-hero-title]{visibility:visible}"}</style>
       </noscript>
       <div className="intro" data-intro aria-hidden="true">
         <Image src="/brand/wordmark.svg" alt="" width={583} height={61} className="intro-mark" />
@@ -43,13 +48,14 @@ export default function Home() {
             <span className="dot" aria-hidden="true" />
             Brand, 3D and motion studio · {site.location}
           </p>
-          <h1 className="hero-title">
-            Building brands people <em>remember.</em>
+          <h1 className="hero-title" data-hero-title>
+            Building brands people <em className="wipe">remember.</em>
           </h1>
           <p className="hero-sub">
             Studio Deadzolt designs identities, 3D product worlds and motion for brands that want to be
             impossible to mistake for anything else.
           </p>
+          <TiltHint />
           <div className="actions">
             <a className="button button-primary" {...bookingLink}>
               Book a consultation
@@ -62,18 +68,23 @@ export default function Home() {
         <p className="label drag-hint" aria-hidden="true">
           Drag to spin
         </p>
-        <ul className="hero-foot label" aria-label="Disciplines">
-          {disciplines.map((d) => (
-            <li key={d.slug}>{d.name}</li>
-          ))}
-        </ul>
+        <div className="hero-foot label">
+          <ul aria-label="Disciplines">
+            {disciplines.map((d) => (
+              <li key={d.slug}>{d.name}</li>
+            ))}
+          </ul>
+          <p className="hero-clock">
+            Indore <StudioClock />
+          </p>
+        </div>
       </section>
 
       <section id="manifesto" data-chapter className="chapter manifesto">
-        <p className="label">Manifesto</p>
+        <p className="label" data-scramble>Manifesto</p>
         <p className="manifesto-text" data-manifesto>
           {manifestoWords.map((word, i) => (
-            <span key={i} data-word>
+            <span key={i} data-word className={KEY_WORDS.has(word) ? "key-word" : undefined}>
               {word}{" "}
             </span>
           ))}
@@ -95,7 +106,7 @@ export default function Home() {
                   <ol className="panel-projects">
                     {list.map((p) => (
                       <li key={p.slug}>
-                        <Link href={`/works/${p.slug}`} className="row-link">
+                        <Link href={`/works/${p.slug}`} className="row-link" data-cursor="View">
                           <span>{p.title}</span>
                           <span className="label">{p.date}</span>
                         </Link>
@@ -111,13 +122,20 @@ export default function Home() {
 
       <section id="work" data-chapter className="chapter work">
         <div className="section-head">
-          <p className="label">Selected work</p>
-          <h2 className="section-title">Recent projects</h2>
+          <p className="label" data-scramble>Selected work</p>
+          <h2 className="section-title" data-split>
+            Recent projects
+          </h2>
         </div>
-        <ol className="work-list" data-reveal>
+        <ol className="work-list" data-stagger>
           {selected.map((p) => (
             <li key={p.slug}>
-              <Link href={`/works/${p.slug}`} className="work-row">
+              <Link
+                href={`/works/${p.slug}`}
+                className="work-row"
+                data-focus={p.disciplines[0]}
+                data-cursor="View"
+              >
                 <span className="work-title">{p.title}</span>
                 <span className="label work-tags">{disciplineNames(p)}</span>
                 <span className="label work-date">{p.year}</span>
@@ -132,15 +150,17 @@ export default function Home() {
 
       <section id="pricing" data-chapter className="chapter pricing">
         <div className="section-head">
-          <p className="label">Work with the studio</p>
-          <h2 className="section-title">Start with a conversation.</h2>
+          <p className="label" data-scramble>Work with the studio</p>
+          <h2 className="section-title" data-split>
+            Start with a conversation.
+          </h2>
           <p className="section-sub">
             Every project begins with a free consultation. You leave with a clear scope and a fixed quote,
             whether or not we work together.
           </p>
         </div>
 
-        <ol className="process" data-reveal>
+        <ol className="process" data-stagger data-process>
           {process.map((step, i) => (
             <li key={step.title}>
               <span className="label">{String(i + 1).padStart(2, "0")}</span>
@@ -150,13 +170,23 @@ export default function Home() {
           ))}
         </ol>
 
-        <div className="plans" data-reveal>
+        <TiltHint />
+        <div className="plans" data-stagger>
           {plans.map((plan) => (
-            <article key={plan.name} className="plan" data-featured={plan.featured || undefined}>
+            <article
+              key={plan.name}
+              className="plan"
+              data-featured={plan.featured || undefined}
+              data-holo
+              data-tier={plan.foil}
+            >
+              <HoloLayers />
               <header>
                 <p className="label">{plan.note}</p>
                 <h3 className="plan-name">{plan.name}</h3>
-                <p className="plan-price">{plan.price}</p>
+                <p className="plan-price" data-count>
+                  {plan.price}
+                </p>
                 <p className="plan-summary">{plan.summary}</p>
               </header>
               <ul className="plan-list">
@@ -173,12 +203,14 @@ export default function Home() {
       </section>
 
       <section id="contact" data-chapter className="chapter contact">
-        <div className="contact-copy" data-reveal>
-          <p className="label">Contact</p>
-          <h2 className="section-title">Have a brand to build?</h2>
+        <div className="contact-copy">
+          <p className="label" data-scramble>Contact</p>
+          <h2 className="section-title" data-split>
+            Have a brand to build?
+          </h2>
           <p className="section-sub">Tell us what you are making and we will get back to you.</p>
-          <div className="actions">
-            <MagneticLink className="button button-primary" {...bookingLink}>
+          <div className="actions" data-reveal>
+            <MagneticLink className="button button-primary button-foil" {...bookingLink}>
               Book a consultation
             </MagneticLink>
             <a className="button" href={`mailto:${site.email}`}>
