@@ -11,9 +11,10 @@ import {
 } from "@react-three/postprocessing";
 import { BlendFunction } from "postprocessing";
 import { usePathname } from "next/navigation";
-import { useSyncExternalStore } from "react";
+import { Suspense, useSyncExternalStore } from "react";
 import { ACESFilmicToneMapping, Vector2 } from "three";
 import { getReducedMotion, subscribeReducedMotion } from "@/lib/story";
+import ChapterPieces from "./ChapterPieces";
 import Star from "./Star";
 
 // One canvas for the whole site, mounted in the root layout so it survives
@@ -26,13 +27,12 @@ function usePrefersReducedMotion() {
   return useSyncExternalStore(subscribeReducedMotion, getReducedMotion, () => true);
 }
 
-// A photo-studio environment built from light panels, rendered locally so
-// nothing is fetched from a CDN. Long softboxes give chrome its crisp
-// highlights; the coloured rims echo the holographic logo.
+// The holographic studio the Blender models were lit with, plus a few light
+// panels on top so the chrome keeps crisp highlights from the camera's side.
+// Everything is served locally, so nothing is fetched from a CDN.
 function StudioLights() {
   return (
-    <Environment resolution={512} frames={1}>
-      <color attach="background" args={["#050505"]} />
+    <Environment files="/models/env/holo-studio.hdr" resolution={512} frames={1} environmentIntensity={0.8}>
       {/* Key: a huge dim softbox in front so the chrome never reflects pure
           black, with brighter strips across it for crisp highlights. */}
       <Lightformer form="rect" intensity={0.6} position={[0, 0, 5]} scale={[16, 10, 1]} />
@@ -56,7 +56,7 @@ function StudioLights() {
 function Effects({ rich }: { rich: boolean }) {
   return (
     <EffectComposer multisampling={rich ? 4 : 0}>
-      <Bloom mipmapBlur intensity={rich ? 0.7 : 0.45} luminanceThreshold={0.82} luminanceSmoothing={0.2} />
+      <Bloom mipmapBlur intensity={rich ? 0.5 : 0.35} luminanceThreshold={0.9} luminanceSmoothing={0.2} />
       <ChromaticAberration
         offset={new Vector2(0.0004, 0.0004)}
         radialModulation
@@ -110,8 +110,15 @@ export default function SceneCanvas() {
           frameloop={reducedMotion ? "demand" : "always"}
           gl={{ antialias: false, alpha: true, toneMapping: ACESFilmicToneMapping, toneMappingExposure: 1.1 }}
         >
-          <StudioLights />
-          <Star animate={!reducedMotion} />
+          {/* The hero star waits only for its own model and the lighting; the
+              chapter pieces load behind it. */}
+          <Suspense fallback={null}>
+            <StudioLights />
+            <Star animate={!reducedMotion} />
+          </Suspense>
+          <Suspense fallback={null}>
+            <ChapterPieces animate={!reducedMotion} />
+          </Suspense>
           {!reducedMotion && <ResponsiveDust />}
           <Effects rich={rich} />
         </Canvas>
