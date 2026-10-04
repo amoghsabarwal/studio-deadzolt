@@ -23,6 +23,7 @@ import {
   subscribeScenePaused,
 } from "@/lib/story";
 import { getFocus } from "@/lib/focus";
+import { getLite, subscribeLite, switchToLite } from "@/lib/lite";
 import { getTilt } from "@/lib/tilt";
 import ChapterPieces, { PIECE_DISCIPLINES } from "./ChapterPieces";
 import Space from "./Space";
@@ -35,22 +36,6 @@ import Star from "./Star";
 // sitting small in the corner elsewhere.
 
 const noop = () => () => {};
-
-type Hints = Navigator & { connection?: { saveData?: boolean }; deviceMemory?: number };
-
-// Devices that ask to save data, have little memory or no WebGL get a still
-// image of the star in space instead of the live scene.
-function prefersLite() {
-  const nav = navigator as Hints;
-  if (nav.connection?.saveData) return true;
-  if (nav.deviceMemory !== undefined && nav.deviceMemory <= 2) return true;
-  if (nav.hardwareConcurrency !== undefined && nav.hardwareConcurrency <= 2) return true;
-  try {
-    return !document.createElement("canvas").getContext("webgl2");
-  } catch {
-    return true;
-  }
-}
 
 function usePrefersReducedMotion() {
   return useSyncExternalStore(subscribeReducedMotion, getReducedMotion, () => true);
@@ -102,6 +87,32 @@ function TiltedStudio() {
     const r = scene.environmentRotation;
     r.y = MathUtils.damp(r.y, tilt.x * amount, 3, Math.min(delta, 0.05));
     r.x = MathUtils.damp(r.x, tilt.y * amount * 0.4, 3, Math.min(delta, 0.05));
+  });
+  return null;
+}
+
+// Watches the first few frames once the scene is running: if any takes
+// longer than a quarter of a second, the device is too slow for the live
+// scene and the still takes over. The very first frame is skipped, since it
+// includes compiling shaders, and frames are only timed while the tab is on
+// screen and the scene isn't paused.
+const WATCH_FRAMES = 5;
+const SLOW_FRAME_MS = 250;
+
+function SlowStartWatch() {
+  const seen = useRef({ count: -1, last: 0 });
+  useFrame(() => {
+    const s = seen.current;
+    if (s.count >= WATCH_FRAMES) return;
+    const now = performance.now();
+    const gap = now - s.last;
+    s.last = now;
+    if (document.visibilityState !== "visible" || getScenePaused()) {
+      s.count = -1;
+      return;
+    }
+    s.count += 1;
+    if (s.count > 0 && gap > SLOW_FRAME_MS) switchToLite();
   });
   return null;
 }
@@ -229,9 +240,12 @@ export default function SceneCanvas() {
     () => window.innerWidth > 760 && window.devicePixelRatio <= 2,
     () => true,
   );
-  const lite = useSyncExternalStore(noop, prefersLite, () => false);
+  const lite = useSyncExternalStore(subscribeLite, getLite, () => false);
   // Drops resolution and effects if the frame rate can't keep up.
   const [struggling, setStruggling] = useState(false);
+  // A second drop after resolution and effects have already stepped down
+  // means the device can't carry the scene, so it swaps to the still.
+  const decline = () => (struggling ? switchToLite() : setStruggling(true));
   const full = rich && !struggling;
 
   // The discipline pieces and the space objects are staged in one at a time
@@ -277,7 +291,8 @@ export default function SceneCanvas() {
             toneMappingExposure: 1,
           }}
         >
-          <PerformanceMonitor onDecline={() => setStruggling(true)} />
+          <PerformanceMonitor onDecline={decline} />
+          {!reducedMotion && <SlowStartWatch />}
           <Space rich={full} animate={!reducedMotion} />
           {/* The hero star waits only for its own model and the lighting; the
               chapter pieces load behind it. */}

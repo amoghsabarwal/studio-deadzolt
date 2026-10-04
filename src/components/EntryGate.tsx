@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { getLite } from "@/lib/lite";
 import { ENTERED_KEY, getSceneReady, markEntered, subscribeEntry } from "@/lib/story";
 import { isGyroEnabled, needsMotionPermission, requestMotionPermission, startGyro } from "@/lib/tilt";
 
@@ -30,7 +31,7 @@ export default function EntryGate() {
   const [ready, setReady] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [gone, setGone] = useState(false);
-  const tasks = MODELS.length + 2;
+  const [tasks, setTasks] = useState(MODELS.length + 2);
 
   const leave = () => {
     setLeaving(true);
@@ -63,10 +64,14 @@ export default function EntryGate() {
     document.documentElement.dataset.entry = "open";
     let alive = true;
     const tick = () => alive && setDone((d) => d + 1);
+    // The space objects are fetched ahead only for the live scene; the still
+    // image needs none of them.
+    const models = getLite() ? [] : MODELS;
+    if (models.length !== MODELS.length) queueMicrotask(() => setTasks(models.length + 2));
     const work = [
       document.fonts.ready.then(tick),
       sceneDrawn().then(tick),
-      ...MODELS.map((url) =>
+      ...models.map((url) =>
         fetch(url)
           .then((r) => r.arrayBuffer())
           .catch(() => null)
