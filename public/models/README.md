@@ -11,6 +11,9 @@ shapes and materials can be tweaked and rebuilt rather than hand-edited.
 | `knob-motion-direction.glb` | Motion Direction | 122k (spun-metal top, fluted grip, dial, red insert and ring) | 970 KB |
 | `pendant-branding.glb` | Branding | 80k (engraved DEADZOLT STUDIO front, 2000 back) | 620 KB |
 | `loop-art-direction.glb` | Art Direction | 65k (rounded-square twisted band) | 390 KB |
+| `asteroids-space.glb` | Space journey | 4k (six bevelled faceted rocks, separate nodes) | 40 KB |
+| `moon-space.glb` | Space journey | 70k (cratered chrome moon) | 540 KB |
+| `probe-space.glb` | Space journey | 21k (DZ-01 probe: engraved body, star emblem, solar wings, dish, red lights) | 200 KB |
 | `env/holo-studio.hdr` | Environment for all of the above | 1024×512 | 950 KB |
 
 `previews/*.webp` are 1600px Cycles stills of each object, usable as posters
@@ -24,7 +27,10 @@ or reduced-motion fallbacks.
   `three/examples/jsm/libs/meshopt_decoder.module.js`.
 - Chrome materials carry `KHR_materials_iridescence` (factor 1, IOR 1.7,
   thickness 120–520 nm), which `GLTFLoader` maps to `MeshPhysicalMaterial`.
-- Red parts (knob indicator and ring) are emissive `#FF1F1F`.
+- Red parts (knob indicator and ring, probe running lights) are emissive `#FF1F1F`.
+- The asteroid rocks and the probe's parts are separate nodes, positioned by
+  their node transforms; drift or spin them individually if you like.
+- The probe's solar cells use `PanelGlass`, a dark navy clear-coated glass.
 - Normals come straight from each shape's distance field, so keep the
   exported normals: don't call `computeVertexNormals()`.
 - Units are roughly the size of the current extruded star (about 3 units
