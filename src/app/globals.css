@@ -236,54 +236,6 @@ main {
   width: 100%;
 }
 
-/* Chapter nav (home only): a quiet column of numbers. */
-.chapter-nav {
-  position: fixed;
-  right: var(--gutter);
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 5;
-}
-
-.chapter-nav ol {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.chapter-nav a {
-  display: flex;
-  flex-direction: row-reverse;
-  align-items: center;
-  gap: 10px;
-  font-family: var(--mono);
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: rgba(237, 237, 237, 0.3);
-  transition: color 0.3s;
-}
-
-.chapter-nav .chapter-label {
-  opacity: 0;
-  transform: translateX(6px);
-  transition: opacity 0.3s, transform 0.4s var(--ease);
-}
-
-.chapter-nav a[aria-current="step"] {
-  color: var(--paper);
-}
-
-.chapter-nav a[aria-current="step"] .chapter-num {
-  color: var(--red);
-}
-
-.chapter-nav a[aria-current="step"] .chapter-label,
-.chapter-nav:hover .chapter-label {
-  opacity: 1;
-  transform: none;
-}
-
 /* Sections */
 .chapter {
   position: relative;
@@ -1487,10 +1439,6 @@ main {
   }
 
   .site-header ul li:not(:last-child) {
-    display: none;
-  }
-
-  .chapter-nav {
     display: none;
   }
 
