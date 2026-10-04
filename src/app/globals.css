@@ -235,26 +235,85 @@ main {
 }
 
 .arrival {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding-bottom: 48px;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100svh;
+  padding-bottom: 0;
+  overflow: hidden;
 }
 
 .arrival-meta {
   display: flex;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 24px;
 }
 
+/* The headline splits around the star: one line top-left, one bottom-right. */
 .arrival-title {
-  font-size: clamp(2.2rem, 10.5vw, 11.5rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 4vh 0 3vh;
+  font-size: clamp(2.4rem, 9.4vw, 10.5rem);
   mix-blend-mode: difference;
+  pointer-events: none;
 }
 
-.scroll-cue {
-  margin-top: 40px;
+.arrival-line {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.04em;
+}
+
+.arrival-line > span {
+  display: inline-block;
+}
+
+.arrival-line-b {
+  text-align: right;
+}
+
+.drag-hint {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, 9.5rem);
+  pointer-events: none;
+}
+
+.marquee {
+  margin: 0 calc(var(--gutter) * -1);
+  border-top: 1px solid var(--line);
+  overflow: hidden;
+  white-space: nowrap;
+  font-family: var(--display);
+  font-weight: 800;
+  font-stretch: 125%;
+  text-transform: uppercase;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  padding: 14px 0;
+}
+
+.marquee-track {
+  display: inline-flex;
+  animation: marquee 28s linear infinite;
+}
+
+.marquee-group span {
+  padding-right: 2.2em;
+}
+
+.marquee i {
+  font-style: normal;
+  color: var(--red);
+  padding-left: 2.2em;
+}
+
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
 }
 
 .manifesto {
@@ -274,103 +333,170 @@ main {
   max-width: 17ch;
 }
 
-.discipline {
-  display: grid;
-  align-content: center;
-  gap: 56px;
+/* Disciplines: a pinned track of full-screen panels that scrolls sideways. */
+.disciplines {
+  position: relative;
+  overflow: hidden;
   border-top: 1px solid var(--line);
 }
 
-.discipline-head {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: clamp(16px, 3vw, 40px);
-  align-items: start;
+.disciplines-track {
+  display: flex;
+  flex-direction: column;
 }
 
-.chapter-number {
+.panel {
+  position: relative;
+  min-height: 100svh;
+  padding: 120px var(--gutter) 64px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  overflow: hidden;
+}
+
+/* Added by the story driver when the track is pinned and scrolls sideways. */
+.is-sideways .disciplines-track {
+  flex-direction: row;
+  width: max-content;
+}
+
+.is-sideways .panel {
+  width: 100vw;
+  height: 100svh;
+  border-bottom: 0;
+  border-right: 1px solid var(--line);
+}
+
+.panel-ghost {
+  position: absolute;
+  right: 4vw;
+  bottom: -6vh;
   font-family: var(--display);
   font-weight: 900;
   font-stretch: 62%;
-  font-size: clamp(5rem, 14vw, 13rem);
-  line-height: 0.78;
+  font-size: 78vh;
+  line-height: 0.8;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(237, 237, 237, 0.14);
+  pointer-events: none;
+  user-select: none;
+}
+
+.panel-body {
+  position: relative;
+  width: min(560px, 46vw);
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.panel-name {
+  font-size: clamp(2.2rem, 5vw, 5.4rem);
+}
+
+.panel-name::first-letter {
   color: var(--red);
 }
 
-.discipline-name {
-  font-size: clamp(1.9rem, 5.6vw, 6rem);
-}
-
-.discipline-line {
-  margin-top: 20px;
-  max-width: 38ch;
+.panel-line {
   color: var(--dim);
-  font-size: clamp(1rem, 1.4vw, 1.2rem);
+  font-size: clamp(1rem, 1.3vw, 1.15rem);
+  max-width: 40ch;
 }
 
-.project-rows,
-.works-list {
+.panel-projects {
+  margin-top: 12px;
   border-top: 1px solid var(--line);
-  max-width: min(980px, 60vw);
 }
 
-.project-rows li,
-.works-list li {
+.panel-projects li {
   border-bottom: 1px solid var(--line);
 }
 
-.project-row {
+.panel-project {
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.4fr) auto;
-  gap: 24px;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  gap: 16px;
   align-items: baseline;
-  padding: 22px 0;
+  padding: 16px 0;
   transition: padding 0.5s var(--ease), color 0.3s;
 }
 
-.project-row-title,
+.panel-project-title,
 .works-title {
   font-family: var(--display);
   font-weight: 800;
   font-stretch: 110%;
-  font-size: clamp(1.1rem, 1.8vw, 1.5rem);
+  font-size: clamp(1rem, 1.5vw, 1.35rem);
   text-transform: uppercase;
   letter-spacing: -0.01em;
   line-height: 1.05;
 }
 
-.project-row-summary {
-  color: var(--dim);
-  font-size: 15px;
-}
-
-.project-row:hover,
+.panel-project:hover,
 .works-row:hover {
   padding-left: 16px;
   color: var(--red);
 }
 
-.studio {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: clamp(32px, 6vw, 96px);
-  align-items: center;
+.works-list {
   border-top: 1px solid var(--line);
 }
 
-.studio-copy {
+.works-list li {
+  border-bottom: 1px solid var(--line);
+}
+
+/* Studio: a big pull quote, then the signature row. */
+.studio {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  justify-content: center;
+  gap: 48px;
+  border-top: 1px solid var(--line);
+}
+
+.studio-quote p {
+  font-family: var(--display);
+  font-weight: 700;
+  font-stretch: 100%;
+  font-size: clamp(1.7rem, 3.8vw, 3.9rem);
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  max-width: 24ch;
+}
+
+.studio-quote p::before {
+  content: "“";
+  color: var(--red);
+}
+
+.studio-quote p::after {
+  content: "”";
+  color: var(--red);
+}
+
+.studio-foot {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr);
+  gap: clamp(32px, 6vw, 96px);
+  align-items: end;
+}
+
+.studio-sign {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .studio-hello {
   font-family: var(--display);
   font-weight: 800;
   font-stretch: 100%;
-  font-size: clamp(1.8rem, 3.6vw, 3.4rem);
-  line-height: 1;
-  letter-spacing: -0.03em;
+  font-size: clamp(1.3rem, 2vw, 1.8rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
 }
 
 .studio-body {
@@ -403,18 +529,31 @@ main {
   filter: grayscale(1) contrast(1.1);
 }
 
+/* Contact: the star takes the centre, the question wraps around it. */
 .contact {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100svh;
   text-align: center;
-  gap: 40px;
+  padding-bottom: 72px;
+}
+
+.contact > .label {
+  text-align: left;
+}
+
+.contact .contact-link {
+  justify-self: center;
 }
 
 .contact-title {
-  font-size: clamp(3rem, 10vw, 10.5rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-size: clamp(2.6rem, 9vw, 9.5rem);
   mix-blend-mode: difference;
+  pointer-events: none;
+  padding: 2vh 0;
 }
 
 .contact-link {
@@ -429,7 +568,9 @@ main {
   padding: 16px 28px;
   border: 1px solid var(--paper);
   border-radius: 999px;
-  transition: background 0.3s, color 0.3s, border-color 0.3s;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(8px);
+  transition: background 0.3s, color 0.3s, border-color 0.3s, transform 0.4s var(--ease);
 }
 
 .contact-link:hover {
@@ -564,6 +705,115 @@ main {
   margin: 80px 0 64px;
 }
 
+/* Intro curtain (home only). A noscript style hides it without JavaScript. */
+.intro {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: var(--ink);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: var(--gutter);
+}
+
+.intro-mark {
+  width: clamp(160px, 22vw, 320px);
+}
+
+.intro-count {
+  font-size: clamp(2rem, 6vw, 5rem);
+  color: var(--paper);
+  letter-spacing: 0;
+}
+
+/* Custom cursor, mouse only. */
+.has-cursor,
+.has-cursor * {
+  cursor: none !important;
+}
+
+.has-cursor input,
+.has-cursor textarea {
+  cursor: text !important;
+}
+
+.cursor {
+  display: none;
+}
+
+.has-cursor .cursor {
+  display: block;
+}
+
+.cursor-hidden .cursor {
+  opacity: 0;
+}
+
+.cursor-dot,
+.cursor-ring {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 60;
+  pointer-events: none;
+}
+
+.cursor-dot {
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  background: var(--red);
+}
+
+.cursor-ring {
+  width: 36px;
+  height: 36px;
+  margin: -18px 0 0 -18px;
+  border: 1px solid rgba(237, 237, 237, 0.5);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  mix-blend-mode: difference;
+  transition: width 0.35s var(--ease), height 0.35s var(--ease), margin 0.35s var(--ease),
+    background 0.35s, border-color 0.35s;
+}
+
+.cursor-ring span {
+  font-family: var(--mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.cursor-ring.is-link {
+  width: 64px;
+  height: 64px;
+  margin: -32px 0 0 -32px;
+  border-color: var(--paper);
+}
+
+.cursor-ring.has-label {
+  width: 84px;
+  height: 84px;
+  margin: -42px 0 0 -42px;
+  background: var(--paper);
+  border-color: var(--paper);
+}
+
+.cursor-ring.has-label span {
+  opacity: 1;
+}
+
+.is-dragging,
+.is-dragging * {
+  user-select: none;
+}
+
 /* Footer */
 .site-footer {
   display: flex;
@@ -607,21 +857,20 @@ main {
     gap: 4px;
   }
 
-  .discipline-head {
-    grid-template-columns: 1fr;
-    gap: 8px;
+  .panel-body {
+    width: 100%;
   }
 
-  .project-rows {
-    max-width: none;
+  .panel-ghost {
+    font-size: 48vh;
+    right: -4vw;
   }
 
-  .project-row {
-    grid-template-columns: 1fr;
-    gap: 6px;
+  .drag-hint {
+    transform: translate(-50%, 4rem);
   }
 
-  .studio,
+  .studio-foot,
   .about-grid,
   .about-images {
     grid-template-columns: 1fr;
@@ -644,6 +893,14 @@ main {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .intro {
+    display: none;
+  }
+
+  .marquee-track {
+    animation: none;
+  }
+
   *,
   *::before,
   *::after {
