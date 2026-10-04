@@ -1,19 +1,18 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useState } from "react";
 import { ENTERED_KEY, getSceneReady, markEntered, subscribeEntry } from "@/lib/story";
 import { isGyroEnabled, needsMotionPermission, requestMotionPermission, startGyro } from "@/lib/tilt";
 
 // The first moment on the site: the 3D, the fonts and the space objects load
-// behind a short branded screen, so nothing pops in afterwards. On iPhones it
-// ends with one Enter tap, which is also when iOS lets the site ask for
-// motion. Everywhere else it opens by itself as soon as things are loaded,
-// and never later than CAP. Returning and campaign visitors skip it (see
-// ENTRY_SKIP_SCRIPT); on iPhones they're asked for motion on their first tap.
+// behind a short branded screen, so nothing pops in afterwards. It opens by
+// itself as soon as they're ready, and never later than CAP (a CSS failsafe
+// in globals.css lifts it even if scripts are held up). Returning and
+// campaign visitors skip it (see ENTRY_SKIP_SCRIPT). On iPhones the site asks
+// for motion on the visitor's first tap.
 
 const CAP = 1200;
 const MODELS = ["/models/asteroids-space.glb", "/models/probe-space.glb"];
-const noop = () => () => {};
 
 function sceneDrawn() {
   return new Promise<void>((resolve) => {
@@ -31,11 +30,6 @@ export default function EntryGate() {
   const [ready, setReady] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [gone, setGone] = useState(false);
-  const needsTap = useSyncExternalStore(
-    noop,
-    () => needsMotionPermission() && window.matchMedia("(pointer: coarse)").matches,
-    () => false,
-  );
   const tasks = MODELS.length + 2;
 
   const leave = () => {
@@ -48,8 +42,7 @@ export default function EntryGate() {
     setTimeout(() => setGone(true), 800);
   };
 
-  // On iPhones, a visitor who didn't tap Enter (they skipped the screen) is
-  // asked for motion on their first tap anywhere.
+  // iPhones only allow motion from a tap, so the first tap anywhere asks.
   useEffect(() => {
     if (!needsMotionPermission()) return;
     const ask = async () => {
@@ -88,12 +81,11 @@ export default function EntryGate() {
     };
   }, []);
 
-  // Without a permission to ask for, the screen opens on its own.
   useEffect(() => {
-    if (!ready || needsTap || leaving) return;
-    const id = setTimeout(leave, 250);
+    if (!ready || leaving) return;
+    const id = setTimeout(leave, 150);
     return () => clearTimeout(id);
-  }, [ready, needsTap, leaving]);
+  }, [ready, leaving]);
 
   if (gone) return null;
   const pct = Math.round((Math.min(done, tasks) / tasks) * 100);
@@ -102,29 +94,13 @@ export default function EntryGate() {
     <div className="entry" data-leaving={leaving || undefined} data-ready={ready || undefined}>
       <div className="entry-core">
         {/* eslint-disable-next-line @next/next/no-img-element -- tiny brand mark, must paint with the HTML */}
-        <img className="entry-star" src="/brand/star.webp" alt="" width={120} height={120} />
+        <img className="entry-star" src="/brand/star-glow.webp" alt="" width={120} height={120} />
         <p className="label entry-status" aria-live="polite">
           {ready ? "Ready" : `Loading the studio · ${pct}%`}
         </p>
         <div className="entry-bar" aria-hidden="true">
           <span style={{ transform: `scaleX(${ready ? 1 : pct / 100})` }} />
         </div>
-        {needsTap && (
-          <>
-            <button
-              type="button"
-              className="button button-primary entry-enter"
-              disabled={!ready}
-              onClick={async () => {
-                if (await requestMotionPermission()) startGyro();
-                leave();
-              }}
-            >
-              Enter
-            </button>
-            <p className="label entry-note">Allow motion to tilt the 3D with your phone</p>
-          </>
-        )}
       </div>
     </div>
   );

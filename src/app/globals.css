@@ -1028,13 +1028,22 @@ main {
   place-items: center;
   background: radial-gradient(ellipse at 50% 45%, #10121c 0%, #000 70%);
   transition: opacity 0.7s var(--ease), visibility 0.7s;
-  /* If scripts are slow or fail, the screen lifts by itself. */
-  animation: entry-failsafe 0.6s 3s forwards;
+  /* A hard cap: if scripts are slow or busy, the screen lifts by itself. The fade is opacity only so it runs
+     on the compositor even while the main thread is compiling shaders. */
+  will-change: opacity;
+  animation:
+    entry-failsafe 0.5s 1.6s forwards,
+    entry-off 0s 2.1s forwards;
 }
 
 @keyframes entry-failsafe {
   to {
     opacity: 0;
+  }
+}
+
+@keyframes entry-off {
+  to {
     visibility: hidden;
     pointer-events: none;
   }
@@ -1051,11 +1060,6 @@ html[data-entry="open"] {
   overflow: hidden;
 }
 
-/* Once scripts run, they decide when it lifts. */
-html[data-entry="open"] .entry {
-  animation: none;
-}
-
 .entry-core {
   display: flex;
   flex-direction: column;
@@ -1070,7 +1074,6 @@ html[data-entry="open"] .entry {
   height: 96px;
   object-fit: contain;
   animation: entry-spin 6s linear infinite;
-  mix-blend-mode: screen;
   filter: drop-shadow(0 0 24px rgba(160, 180, 255, 0.25));
 }
 
@@ -1097,15 +1100,6 @@ html[data-entry="open"] .entry {
   background: linear-gradient(90deg, var(--paper), var(--red));
   transform-origin: left;
   transition: transform 0.4s var(--ease);
-}
-
-.entry-enter {
-  margin-top: 10px;
-  min-width: 160px;
-}
-
-.entry-enter:disabled {
-  opacity: 0.35;
 }
 
 @keyframes entry-spin {
