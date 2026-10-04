@@ -23,8 +23,8 @@ export const site = {
     { label: "Instagram", href: "https://www.instagram.com/deadzolt/" },
     { label: "X", href: "https://x.com/deadzoltt" },
   ],
-  // Business promises shown around the booking buttons. PLACEHOLDERS until
-  // the studio confirms each one; change or delete freely.
+  // Business promises shown around the booking buttons. The 48-hour promise
+  // is confirmed by the studio; the craft line is still to be confirmed.
   speed: "First frames in 48 hours",
   assurance: "Free 30-min call · fixed quote in writing · no lock\u2011in",
   craft: "Every frame built from scratch in Cinema 4D and Octane. No templates, no stock.",
@@ -220,8 +220,6 @@ export type Plan = {
 };
 
 // Ways to work together. Every plan starts with the free 30-minute call.
-// The monthly plan's terms (unlimited requests, pausing) are placeholders
-// until the studio confirms them.
 export const plans: Plan[] = [
   {
     name: "Starter",
@@ -257,8 +255,10 @@ export const proof: { clients: string[]; quote?: { text: string; name: string; r
   clients: [],
 };
 
-// Questions answered between the plans and the closing ask. PLACEHOLDER
-// answers until the studio confirms them.
+// Questions answered between the plans and the closing ask. Confirmed by the
+// studio: 48 hours, one to three weeks, unlimited requests one at a time,
+// pausing with unused days carried over, USD invoices. The revision counts
+// are still to be confirmed.
 export const faq: { q: string; a: string }[] = [
   {
     q: "What do I get for $500 or $1,000?",
