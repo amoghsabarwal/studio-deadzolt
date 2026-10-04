@@ -8,9 +8,12 @@ type StoryState = {
   progress: number;
   // Whether a page with a scroll story is mounted.
   active: boolean;
+  // Whether something else holds the stage (the showreel), so the star
+  // steps aside.
+  stage: boolean;
 };
 
-const state: StoryState = { chapter: 0, progress: 0, active: false };
+const state: StoryState = { chapter: 0, progress: 0, active: false, stage: false };
 const listeners = new Set<() => void>();
 
 export function getStory() {

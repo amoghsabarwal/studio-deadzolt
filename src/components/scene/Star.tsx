@@ -8,7 +8,6 @@ import { setCursorLabel } from "@/lib/cursor";
 import { getFocus } from "@/lib/focus";
 import { getStory, subscribeStory } from "@/lib/story";
 import { getTilt } from "@/lib/tilt";
-import Grounding from "./Grounding";
 import { REAL_CHROME, withSurfaceDetail } from "./materials";
 import { DISCIPLINE_SPOT, NARROW_SPOT } from "./spots";
 
@@ -115,8 +114,9 @@ export default function Star({ animate }: { animate: boolean }) {
     const feature = !story.active || story.chapter === 0;
     const tx = wide ? pose.x * viewport.width : feature ? 0 : viewport.width * NARROW_SPOT.x;
     const ty = wide ? pose.y * viewport.height : feature ? viewport.height * 0.2 : viewport.height * NARROW_SPOT.y;
-    // When a work or case study puts its own piece in focus, the star steps aside.
-    const yields = getFocus().discipline !== null;
+    // When a work or case study puts its own piece in focus, or the showreel
+    // takes the screen, the star steps aside.
+    const yields = getFocus().discipline !== null || story.stage;
     const base = yields ? 0 : wide ? pose.scale : feature ? pose.scale * 0.55 : pose.scale > 0 ? NARROW_SPOT.scale : 0;
     const ts = base * (1 + hover.current * 0.06);
 
@@ -185,7 +185,6 @@ export default function Star({ animate }: { animate: boolean }) {
 
   return (
     <group ref={root}>
-      <Grounding radius={2.1} floor={-2.3} />
       <group ref={tilt}>
         <group ref={spin}>
           <mesh

@@ -68,7 +68,7 @@ float dzFbm(vec3 p) {
 }
 `;
 
-export const SURFACE = { micro: 0.05, spun: 0.03, smudge: 0.16, coatSmudge: 0.22 };
+export const SURFACE = { micro: 0.04, spun: 0.03, smudge: 0.1, coatSmudge: 0.16 };
 
 export function withSurfaceDetail(material: MeshPhysicalMaterial) {
   material.onBeforeCompile = (shader: WebGLProgramParametersWithUniforms) => {

@@ -11,17 +11,18 @@ import {
   Vignette,
 } from "@react-three/postprocessing";
 import { BlendFunction } from "postprocessing";
-import { usePathname } from "next/navigation";
-import { Suspense, useEffect, useState, useSyncExternalStore } from "react";
+import { Suspense, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { AgXToneMapping, MathUtils, Vector2 } from "three";
 import { getReducedMotion, subscribeReducedMotion } from "@/lib/story";
 import { getTilt } from "@/lib/tilt";
 import ChapterPieces from "./ChapterPieces";
+import Space from "./Space";
 import Star from "./Star";
 
 // One canvas for the whole site, mounted in the root layout so it survives
-// page navigation. On the home page the star moves from chapter to chapter
-// as the story scrolls; elsewhere it sits small and dimmed in the corner.
+// page navigation: deep space that the visitor flies through as they scroll,
+// with the chrome star moving from chapter to chapter on the home page and
+// sitting small in the corner elsewhere.
 
 const noop = () => () => {};
 
@@ -29,39 +30,40 @@ function usePrefersReducedMotion() {
   return useSyncExternalStore(subscribeReducedMotion, getReducedMotion, () => true);
 }
 
-// The holographic studio the Blender models were lit with, plus a few light
-// panels on top so the chrome keeps crisp highlights from the camera's side.
-// Everything is served locally, so nothing is fetched from a CDN.
-function StudioLights({ rich }: { rich: boolean }) {
+// Light for chrome in space: the reflections are a dark sky with a few hot
+// sources, which is what makes metal look expensive. A warm sun high to the
+// right (it also lights the planet's rim), a cool rim from behind, a dull
+// red-brown bounce from the planet below, faint coloured gas, and two thin
+// strips that draw crisp highlights along the bevels.
+function SpaceLights({ rich }: { rich: boolean }) {
   return (
-    <Environment
-      files="/models/env/holo-studio.hdr"
-      resolution={rich ? 1024 : 512}
-      frames={1}
-      environmentIntensity={0.8}
-    >
-      {/* Key: a dim softbox in front so the chrome never reflects pure black,
-          crossed by slanted strips. Flat, bevelled faces mirror these as crisp
-          streaks that sweep across the surface as the star turns. */}
-      <Lightformer form="rect" intensity={0.12} position={[0, 0, 5]} scale={[16, 10, 1]} />
-      <Lightformer form="rect" intensity={5} position={[0, 2.4, 4.8]} scale={[12, 0.7, 1]} />
-      <Lightformer form="rect" intensity={2} position={[0, -1.6, 4.8]} scale={[12, 0.9, 1]} />
-      <Lightformer form="rect" intensity={3} position={[-1.1, 0, 4.7]} rotation={[0, Math.PI, 0.55]} scale={[0.22, 14, 1]} />
-      <Lightformer form="rect" intensity={1.2} position={[-3.2, 0, 4.7]} rotation={[0, Math.PI, 0.55]} scale={[1.6, 14, 1]} />
-      <Lightformer form="rect" intensity={4} position={[1.6, 0, 4.7]} rotation={[0, Math.PI, 0.55]} scale={[0.12, 14, 1]} />
-      <Lightformer form="rect" intensity={2.5} position={[0.2, 0, 4.7]} rotation={[0, Math.PI, 0.55]} scale={[0.06, 14, 1]} />
-      <Lightformer form="rect" intensity={2} position={[0.75, 0, 4.7]} rotation={[0, Math.PI, 0.55]} scale={[0.5, 14, 1]} />
-      {/* Overhead and side strips for crisp edge highlights. */}
-      <Lightformer form="rect" intensity={6} position={[0, 6, 0]} scale={[10, 1, 1]} />
-      <Lightformer form="rect" intensity={3} position={[-6, 0, 1]} scale={[0.5, 10, 1]} />
-      <Lightformer form="rect" intensity={3} position={[6, 0, 1]} scale={[0.5, 10, 1]} />
-      <Lightformer form="rect" intensity={1} position={[0, 0, -6]} scale={[12, 6, 1]} />
-      {/* Holographic accents from the logo palette. */}
-      <Lightformer form="ring" intensity={5} color="#ff3da8" position={[-4, -2.5, 4]} scale={2} />
-      <Lightformer form="ring" intensity={5} color="#38d9ff" position={[4.5, 2.5, 3]} scale={1.8} />
-      <Lightformer form="circle" intensity={4} color="#ffe14d" position={[3.5, -3, 3.5]} scale={1.4} />
-      <Lightformer form="rect" intensity={3} color="#3dff8a" position={[-4, 3.5, 2]} scale={[3, 0.6, 1]} />
-    </Environment>
+    <>
+      <Environment resolution={rich ? 512 : 256} frames={1} environmentIntensity={1}>
+        <color attach="background" args={["#020306"]} />
+        {/* Sun, and the haze around it. */}
+        <Lightformer form="circle" intensity={14} color="#fff1e0" position={[6, 5, -3]} scale={1.6} />
+        <Lightformer form="circle" intensity={1.4} color="#ffd9bd" position={[6, 5, -3.2]} scale={6} />
+        {/* Cool rim from behind, and the planet's dull bounce from below. */}
+        <Lightformer form="rect" intensity={3} color="#8fa6ff" position={[-5, 2, -6]} rotation={[0, 0.6, 0]} scale={[3, 9, 1]} />
+        <Lightformer form="rect" intensity={1.2} color="#5a2a22" position={[0, -6, 2]} rotation={[-Math.PI / 2, 0, 0]} scale={[16, 10, 1]} />
+        {/* Faint gas the chrome picks up as smears of colour. */}
+        <Lightformer form="rect" intensity={0.35} color="#3b4f7a" position={[-4, 4, 4]} scale={[8, 4, 1]} />
+        <Lightformer form="rect" intensity={0.3} color="#7a1f2e" position={[5, -2, 5]} scale={[6, 3, 1]} />
+        {/* A soft graded panel behind the camera, so a face-on star shows a
+            gentle sweep from light to dark rather than flat grey. */}
+        <Lightformer form="rect" intensity={1} position={[1, 3, 6]} rotation={[0.35, 0, 0]} scale={[10, 2.4, 1]} />
+        <Lightformer form="rect" intensity={0.06} position={[0, 0, 6.5]} scale={[16, 10, 1]} />
+        {/* Thin strips for the bevel highlights, kept off the face. */}
+        <Lightformer form="rect" intensity={6} position={[0, 6, 1]} scale={[12, 0.25, 1]} />
+        <Lightformer form="rect" intensity={4} position={[-3.5, 0, 4.5]} rotation={[0, Math.PI, 0.55]} scale={[0.1, 14, 1]} />
+        <Lightformer form="rect" intensity={3} position={[2.2, 0, 4.5]} rotation={[0, Math.PI, 0.55]} scale={[0.06, 14, 1]} />
+        {/* Holographic accents from the logo palette, small and far off. */}
+        <Lightformer form="ring" intensity={3} color="#ff3da8" position={[-5, -3, 3]} scale={1.2} />
+        <Lightformer form="ring" intensity={3} color="#38d9ff" position={[5, 3, 2]} scale={1} />
+      </Environment>
+      <directionalLight position={[6, 5, -3]} intensity={2.5} color="#fff1e0" />
+      <directionalLight position={[-5, 2, -6]} intensity={1.2} color="#8fa6ff" />
+    </>
   );
 }
 
@@ -78,40 +80,51 @@ function TiltedStudio() {
   return null;
 }
 
+// Bloom only on genuinely hot pixels (stars, the sun's glints), grain to
+// keep the dark sky filmic, and on larger screens a lens fringe that appears
+// only while the visitor is moving through space.
+const FRINGE = new Vector2(0, 0);
+
 function Effects({ rich }: { rich: boolean }) {
-  // Phones and struggling GPUs keep the bloom and vignette and skip the rest.
-  // Multisampling is costly at phone resolutions, so their edges are
-  // smoothed with SMAA instead, which keeps the chrome outlines clean.
+  const last = useRef(0);
+  useFrame((_, delta) => {
+    const dt = Math.min(delta, 0.05);
+    const y = window.scrollY;
+    const speed = Math.abs(y - last.current) / Math.max(dt, 0.001) / Math.max(window.innerHeight, 1);
+    last.current = y;
+    const target = Math.min(speed * 0.0012, 0.0025);
+    const f = FRINGE;
+    f.x = f.y = MathUtils.damp(f.x, target, 6, dt);
+  });
+  // Phones keep bloom, grain and vignette. Multisampling is costly at phone
+  // resolutions, so their edges are smoothed with SMAA instead.
   if (!rich) {
     return (
       <EffectComposer multisampling={0}>
-        <Bloom mipmapBlur intensity={0.35} luminanceThreshold={0.9} luminanceSmoothing={0.2} />
-        <Vignette offset={0.25} darkness={0.75} />
+        <Bloom mipmapBlur intensity={0.6} luminanceThreshold={1} luminanceSmoothing={0.25} />
+        <Noise opacity={0.035} blendFunction={BlendFunction.OVERLAY} />
+        <Vignette offset={0.3} darkness={0.7} />
         <SMAA />
       </EffectComposer>
     );
   }
   return (
     <EffectComposer multisampling={4}>
-      <Bloom mipmapBlur intensity={0.5} luminanceThreshold={0.9} luminanceSmoothing={0.2} />
+      <Bloom mipmapBlur intensity={0.8} luminanceThreshold={1} luminanceSmoothing={0.25} />
       <ChromaticAberration
-        offset={new Vector2(0.0004, 0.0004)}
+        offset={FRINGE}
         radialModulation
-        modulationOffset={0.4}
+        modulationOffset={0.3}
         blendFunction={BlendFunction.NORMAL}
       />
-      <Noise opacity={0.045} blendFunction={BlendFunction.OVERLAY} />
-      <Vignette offset={0.25} darkness={0.75} />
+      <Noise opacity={0.04} blendFunction={BlendFunction.OVERLAY} />
+      <Vignette offset={0.3} darkness={0.7} />
     </EffectComposer>
   );
 }
 
 export default function SceneCanvas() {
-  const pathname = usePathname();
   const reducedMotion = usePrefersReducedMotion();
-  // The 3D stays at full strength where it carries content: the home story,
-  // and the works pages where it stands in for project imagery.
-  const dimmed = pathname !== "/" && !pathname.startsWith("/works");
 
   // Events come from the whole page so the star can be hovered and dragged
   // while the canvas itself stays behind the content.
@@ -142,7 +155,7 @@ export default function SceneCanvas() {
   }, []);
 
   return (
-    <div className="scene" data-dimmed={dimmed} aria-hidden="true">
+    <div className="scene" aria-hidden="true">
       {eventSource && (
         <Canvas
           eventSource={eventSource}
@@ -154,17 +167,19 @@ export default function SceneCanvas() {
           frameloop={reducedMotion ? "demand" : "always"}
           gl={{
             antialias: false,
-            alpha: true,
+            // Opaque, so the sky, tone mapping and grain are one image.
+            alpha: false,
             powerPreference: "high-performance",
             toneMapping: AgXToneMapping,
-            toneMappingExposure: 1.25,
+            toneMappingExposure: 1,
           }}
         >
           <PerformanceMonitor onDecline={() => setStruggling(true)} />
+          <Space rich={full} animate={!reducedMotion} />
           {/* The hero star waits only for its own model and the lighting; the
               chapter pieces load behind it. */}
           <Suspense fallback={null}>
-            <StudioLights rich={rich} />
+            <SpaceLights rich={rich} />
             {!reducedMotion && <TiltedStudio />}
             <Star animate={!reducedMotion} />
           </Suspense>

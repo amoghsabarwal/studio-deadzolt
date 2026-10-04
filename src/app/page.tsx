@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import MagneticLink from "@/components/MagneticLink";
+import Showreel from "@/components/Showreel";
 import HoloLayers from "@/components/HoloLayers";
 import StudioClock from "@/components/StudioClock";
 import TiltHint from "@/components/TiltHint";
@@ -77,6 +78,8 @@ export default function Home() {
           </p>
         </div>
       </section>
+
+      <Showreel />
 
       <section id="manifesto" data-chapter className="chapter manifesto">
         <p className="label" data-scramble>Manifesto</p>

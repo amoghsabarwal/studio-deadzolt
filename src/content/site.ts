@@ -235,13 +235,8 @@ export const plans: Plan[] = [
   },
 ];
 
-// The chapters of the home page scroll story, in order. The 3D scene reads
-// the active chapter to decide where the star sits.
-export const chapters = [
-  { id: "arrival", label: "Studio" },
-  { id: "manifesto", label: "Manifesto" },
-  ...disciplines.map((d) => ({ id: d.slug, label: d.name })),
-  { id: "work", label: "Work" },
-  { id: "pricing", label: "Pricing" },
-  { id: "contact", label: "Contact" },
-] as const;
+// The studio showreel, shown right after the hero on the home page.
+export const showreel = {
+  youtubeId: "FXHr9nYslgA",
+  title: "Studio Deadzolt showreel",
+};

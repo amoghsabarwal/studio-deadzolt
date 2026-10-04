@@ -7,7 +7,6 @@ import { MathUtils, type Group } from "three";
 import { getFocus } from "@/lib/focus";
 import { getStory } from "@/lib/story";
 import { getTilt } from "@/lib/tilt";
-import Grounding from "./Grounding";
 import { applyRealChrome } from "./materials";
 import { DISCIPLINE_SPOT, NARROW_SPOT } from "./spots";
 
@@ -151,7 +150,6 @@ function ChapterPiece({ piece, animate }: { piece: Piece; animate: boolean }) {
 
   return (
     <group ref={root} scale={0} visible={false}>
-      <Grounding radius={1.7} floor={-1.9} />
       <group
         ref={tilt}
         onClick={(e) => {
