@@ -52,7 +52,7 @@ export default function BookingDialog() {
       <button type="button" className="booking-close label" onClick={() => dialog.current?.close()}>
         Close ✕
       </button>
-      {from && <iframe src={bookingEmbed(from)} title="Book a call with Studio Deadzolt" />}
+      {from && <iframe src={bookingEmbed(from, location.host)} title="Book a call with Studio Deadzolt" />}
     </dialog>
   );
 }

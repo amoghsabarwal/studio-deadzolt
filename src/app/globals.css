@@ -684,11 +684,6 @@ main {
   background: rgba(10, 10, 10, 0.92);
 }
 
-.plan[data-featured] {
-  border-color: rgba(237, 237, 237, 0.3);
-  background: linear-gradient(180deg, rgba(237, 237, 237, 0.08), rgba(10, 10, 10, 0.92) 60%);
-}
-
 .plan header {
   display: flex;
   flex-direction: column;
@@ -739,6 +734,184 @@ main {
 
 .plan .button {
   width: 100%;
+}
+
+.plan-fine {
+  margin-top: -16px;
+  text-align: center;
+}
+
+.plan[data-featured] {
+  border-color: rgba(255, 31, 31, 0.35);
+  background: linear-gradient(180deg, rgba(255, 31, 31, 0.1), rgba(10, 10, 10, 0.92) 60%);
+}
+
+/* The one speed promise, beside the booking buttons. */
+.speed-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: center;
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--paper);
+}
+
+.speed-chip::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--red);
+  box-shadow: 0 0 8px var(--red);
+}
+
+.section-head .speed-chip {
+  align-self: flex-start;
+}
+
+/* How the monthly plan runs, and the craft promise. */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+
+.steps li {
+  display: flex;
+  gap: 14px;
+  align-items: baseline;
+  font-size: 15px;
+}
+
+.craft-line {
+  margin-top: 28px;
+  color: var(--dim);
+  font-size: 14px;
+}
+
+/* Questions before booking. */
+.faq {
+  position: relative;
+  padding: 40px var(--gutter) 80px;
+}
+
+.faq-list {
+  max-width: 820px;
+  border-top: 1px solid var(--line);
+}
+
+.faq-item {
+  border-bottom: 1px solid var(--line);
+}
+
+.faq-item summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  padding: 22px 0;
+  font-size: clamp(1rem, 1.3vw, 1.15rem);
+  cursor: pointer;
+  list-style: none;
+}
+
+.faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq-mark {
+  position: relative;
+  flex: none;
+  width: 12px;
+  height: 12px;
+}
+
+.faq-mark::before,
+.faq-mark::after {
+  content: "";
+  position: absolute;
+  inset: 5.5px 0 auto;
+  height: 1px;
+  background: var(--paper);
+  transition: transform 0.4s var(--ease);
+}
+
+.faq-mark::after {
+  transform: rotate(90deg);
+}
+
+.faq-item[open] .faq-mark::after {
+  transform: rotate(0deg);
+}
+
+.faq-item p {
+  max-width: 62ch;
+  padding-bottom: 24px;
+  color: var(--dim);
+}
+
+/* Named proof under the reel, only when there is some. */
+.proof {
+  padding: 24px 0 8px;
+  overflow: hidden;
+}
+
+.proof-track {
+  display: flex;
+  gap: 64px;
+  width: max-content;
+  animation: proof-drift 40s linear infinite;
+  font-size: clamp(1.1rem, 1.8vw, 1.5rem);
+  color: var(--dim);
+  white-space: nowrap;
+}
+
+@keyframes proof-drift {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .proof-track {
+    animation: none;
+  }
+}
+
+.proof-quote {
+  max-width: 640px;
+  margin: 28px auto 0;
+  padding: 0 var(--gutter);
+  text-align: center;
+}
+
+.proof-quote figcaption {
+  margin-top: 10px;
+}
+
+.reel-book {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.reel-book .cta-note {
+  margin-top: 0;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 /* Closing call to action */
@@ -1534,6 +1707,40 @@ main {
 
 /* Phones */
 @media (max-width: 760px) {
+  /* The plans swipe sideways, the monthly plan first. */
+  .plans {
+    display: flex;
+    max-width: none;
+    margin: 0 calc(-1 * var(--gutter));
+    padding: 4px var(--gutter) 12px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding: 0 var(--gutter);
+    scrollbar-width: none;
+  }
+
+  .plans::-webkit-scrollbar {
+    display: none;
+  }
+
+  .plans .plan {
+    flex: 0 0 86%;
+    scroll-snap-align: start;
+  }
+
+  .plans .plan[data-featured] {
+    order: -1;
+  }
+
+  /* The plans carry the speed promise; the hero keeps its button and note in view. */
+  .hero .speed-chip {
+    display: none;
+  }
+
+  .steps {
+    grid-template-columns: 1fr;
+  }
+
   .contact {
     grid-template-columns: 1fr;
   }

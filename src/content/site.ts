@@ -23,6 +23,13 @@ export const site = {
     { label: "Instagram", href: "https://www.instagram.com/deadzolt/" },
     { label: "X", href: "https://x.com/deadzoltt" },
   ],
+  // Business promises shown around the booking buttons. PLACEHOLDERS until
+  // the studio confirms each one; change or delete freely.
+  speed: "First frames in 48 hours",
+  assurance: "Free 30-min call · fixed quote in writing · no lock\u2011in",
+  craft: "Every frame built from scratch in Cinema 4D and Octane. No templates, no stock.",
+  // How the monthly plan runs, shown under the plans. Placeholder.
+  steps: ["Request in Slack", "Frames for review in 48h", "Exports for every platform"],
   // What the studio makes. All of it is motion graphics.
   services: ["Launch films", "Product animation", "Brand motion", "Social content", "Logo animation", "3D motion"],
 };
@@ -37,9 +44,11 @@ export function bookingLink(from: string) {
   return { href: url.toString(), target: "_blank", rel: "noopener noreferrer", "data-book": from };
 }
 
-// Calendly's embedded calendar, in the site's colours.
-export function bookingEmbed(from: string) {
+// Calendly's embedded calendar, in the site's colours. Calendly only posts
+// the "booked" event back to embeds that name the page's host.
+export function bookingEmbed(from: string, host: string) {
   const url = new URL(bookingLink(from).href);
+  url.searchParams.set("embed_domain", host);
   url.searchParams.set("embed_type", "Inline");
   url.searchParams.set("hide_gdpr_banner", "1");
   url.searchParams.set("background_color", "0a0b10");
@@ -195,11 +204,15 @@ export type Plan = {
   summary: string;
   includes: string[];
   featured?: boolean;
+  // A small line under the button.
+  fine?: string;
   // The card's holographic foil: silver, full holo or brand red.
   foil: "silver" | "holo" | "red";
 };
 
 // Ways to work together. Every plan starts with the free 30-minute call.
+// The monthly plan's terms (unlimited requests, pausing) are placeholders
+// until the studio confirms them.
 export const plans: Plan[] = [
   {
     name: "Starter",
@@ -216,15 +229,47 @@ export const plans: Plan[] = [
     note: "Per project",
     summary: "A launch film or product animation, from storyboard to final render.",
     includes: ["Storyboard and style frames", "Fixed scope and price", "Weekly check-ins", "Final renders and source files"],
-    featured: true,
   },
   {
-    name: "Studio partner",
+    name: "Motion subscription",
     foil: "red",
     price: "$5,000",
     note: "Per month",
-    summary: "Motion on call for brands that ship all the time.",
-    includes: ["Ongoing motion requests", "Priority turnaround", "Monthly planning call", "Launch, product and social"],
+    summary: "One monthly fee, unlimited motion requests, one at a time. Pause or cancel any time.",
+    includes: ["Unlimited requests, one at a time", "Priority turnaround", "Monthly planning call", "Launch, product and social"],
+    featured: true,
+    fine: "Pause or cancel any time",
+  },
+];
+
+// Named proof under the reel. It shows only once there are real entries:
+// client names, and optionally one quote. Never fill these with made-up names.
+export const proof: { clients: string[]; quote?: { text: string; name: string; role: string } } = {
+  clients: [],
+};
+
+// Questions answered between the plans and the closing ask. PLACEHOLDER
+// answers until the studio confirms them.
+export const faq: { q: string; a: string }[] = [
+  {
+    q: "What do I get for $500 or $1,000?",
+    a: "$500 covers one short piece, like a logo animation or a product loop. $1,000 covers a full launch film or product animation, from storyboard to final render. The call ends with a fixed quote, so you know before anything starts.",
+  },
+  {
+    q: "How fast is it?",
+    a: "First frames land within 48 hours of the brief. A full film usually takes one to three weeks, depending on length.",
+  },
+  {
+    q: "How many revisions do I get?",
+    a: "Two rounds on Starter, and revisions at storyboard, style frame and animation stages on Project. The subscription takes requests one at a time with no revision cap.",
+  },
+  {
+    q: "Can I pause the monthly plan?",
+    a: "Yes. Pause or cancel any time, with no lock-in. Unused days carry over when you resume.",
+  },
+  {
+    q: "You're in India. How do time zones and payment work?",
+    a: "Work is async, with updates waiting for you each morning and calls booked at a time that suits you. Invoices are in USD.",
   },
 ];
 
