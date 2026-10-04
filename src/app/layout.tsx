@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { Inter_Tight, JetBrains_Mono } from "next/font/google";
+import BookingDialog from "@/components/BookingDialog";
 import Cursor from "@/components/Cursor";
 import HoloDriver from "@/components/HoloDriver";
 import PageTransition from "@/components/PageTransition";
@@ -47,6 +49,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <PageTransition />
         <TextFx />
         <Cursor />
+        <BookingDialog />
+        <Analytics />
       </body>
     </html>
   );

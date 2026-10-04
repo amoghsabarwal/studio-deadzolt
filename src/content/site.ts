@@ -3,40 +3,50 @@
 export const site = {
   name: "Studio Deadzolt",
   founder: "Amogh Sabarwal",
-  tagline: "Building brands people remember.",
+  tagline: "Motion graphics people can't scroll past.",
   email: "amoghsabarwal@gmail.com",
   url: "https://deadzolt.studio",
   location: "Indore, M.P.",
   description:
-    "Studio Deadzolt is the design practice of Amogh Sabarwal: a designer obsessed with building brands that people remember.",
-  manifesto:
-    "A Y2K-born design studio for electric, chrome-finished web, visuals and objects. Identities, worlds, experiences, noise, desire, internet. 2000 to forever.",
+    "Studio Deadzolt is the motion graphics studio of Amogh Sabarwal, making launch films, product animation and social content for startups and brands.",
   about: [
     "Hi, I'm Amogh, founder of Studio Deadzolt.",
-    "I'm a brand designer who loves sitting with a problem until every piece falls into place, building identities that are original, intentional, and impossible to mistake for anything else.",
+    "I make motion graphics for startups and brands: launch films, product animation and social content, built so people stop scrolling and look.",
   ],
-  // Where every "Book a consultation" button on the site goes: the studio's
-  // Calendly page, which opens in a new tab.
+  // Where every booking button goes: the studio's Calendly page. With
+  // JavaScript it opens over the site (BookingDialog); without, in a new tab.
   booking: "https://calendly.com/amoghsabarwal/30min",
-  services: [
-    "Creative direction",
-    "Brand strategy",
-    "Identity",
-    "Digital design",
-    "Motion",
-    "Print and packaging",
-    "Art direction",
-    "Copywriting",
-    "Tone of voice",
+  // The one call to action, worded the same everywhere, and its promise.
+  cta: "Book a free call",
+  ctaNote: "30 minutes. You leave with a fixed quote in writing.",
+  socials: [
+    { label: "Instagram", href: "https://www.instagram.com/deadzolt/" },
+    { label: "X", href: "https://x.com/deadzoltt" },
   ],
+  // What the studio makes. All of it is motion graphics.
+  services: ["Launch films", "Product animation", "Brand motion", "Social content", "Logo animation", "3D motion"],
 };
 
-// Extra attributes for booking links: a web booking page opens in a new tab,
-// an email link opens the mail app as usual.
-export const bookingLink = {
-  href: site.booking,
-  ...(site.booking.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {}),
-};
+// Attributes for a booking button. `from` names where on the site it sits;
+// it travels to Calendly as utm_content and to analytics, so bookings show
+// which button brought them.
+export function bookingLink(from: string) {
+  const url = new URL(site.booking);
+  url.searchParams.set("utm_source", "deadzolt.studio");
+  url.searchParams.set("utm_content", from);
+  return { href: url.toString(), target: "_blank", rel: "noopener noreferrer", "data-book": from };
+}
+
+// Calendly's embedded calendar, in the site's colours.
+export function bookingEmbed(from: string) {
+  const url = new URL(bookingLink(from).href);
+  url.searchParams.set("embed_type", "Inline");
+  url.searchParams.set("hide_gdpr_banner", "1");
+  url.searchParams.set("background_color", "0a0b10");
+  url.searchParams.set("text_color", "ededed");
+  url.searchParams.set("primary_color", "ff1f1f");
+  return url.toString();
+}
 
 export type DisciplineSlug = "3d-experience" | "motion-direction" | "branding" | "art-direction";
 
@@ -87,7 +97,7 @@ export const projects: Project[] = [
     year: 2026,
     disciplines: ["3d-experience"],
     summary:
-      "A conceptual 3D product film exploring Daily Objects' NODE wireless ecosystem through a warm, tactile visual world.",
+      "A 3D product film for Daily Objects' NODE wireless ecosystem, set in a warm, tactile visual world.",
     body: "Built entirely from scratch in Cinema 4D and Octane, this project reimagines the NODE ecosystem within a carefully constructed domestic environment.",
   },
   {
@@ -97,7 +107,7 @@ export const projects: Project[] = [
     year: 2026,
     disciplines: ["art-direction"],
     summary:
-      "A collection of self-initiated posters translating the music and visual identities of artists I listen to into graphic experiments.",
+      "Posters translating the music and visual identities of artists into graphic experiments.",
     body: "Sound Studies is an ongoing collection of personal poster work created around artists, albums, and tracks that have influenced my listening.",
   },
   {
@@ -107,7 +117,7 @@ export const projects: Project[] = [
     year: 2025,
     disciplines: ["art-direction"],
     summary:
-      "A research-driven exploration of cloth simulation, using digital fabric to experiment with movement, form, and material behavior.",
+      "Cloth simulation in motion: digital fabric exploring movement, form and material behaviour.",
     body: "This project began as an R&D study while learning and experimenting with cloth simulation in 3D.",
   },
   {
@@ -137,7 +147,7 @@ export const projects: Project[] = [
     year: 2025,
     disciplines: ["3d-experience", "motion-direction"],
     summary:
-      "A conceptual 3D spec ad exploring Solana Seeker as a gateway between the physical device and the constantly evolving world of Web3.",
+      "A 3D product film for Solana Seeker, a gateway between the physical device and the world of Web3.",
     body: "This project is a speculative product film for Solana Seeker, built around the idea of making an inherently digital ecosystem feel physical.",
   },
   {
@@ -147,7 +157,7 @@ export const projects: Project[] = [
     year: 2024,
     disciplines: ["branding"],
     summary:
-      "A self-initiated apparel project turning graphic experimentation into a small collection of wearable pieces.",
+      "Graphic experiments turned into a small collection of wearable pieces.",
     body: "Not Your Average Tee is a collection I designed, developed, and released as an exploration of how my visual language could exist beyond the screen.",
   },
   {
@@ -157,7 +167,7 @@ export const projects: Project[] = [
     year: 2024,
     disciplines: ["3d-experience"],
     summary:
-      "A conceptual 3D product study reimagining the Solflare Card through custom modeling, materials, and lighting.",
+      "The Solflare Card reimagined through custom modelling, materials and lighting.",
     body: "Created entirely from scratch in Cinema 4D and Octane, this project is a focused product visualization of the Solflare Card.",
   },
 ];
@@ -178,50 +188,34 @@ export function disciplineNames(project: Project) {
   return project.disciplines.map((d) => getDiscipline(d).name).join(" · ");
 }
 
-// How a project runs, shown on the home page above the pricing.
-export const process = [
-  { title: "Consultation", line: "A short call about your brand, goals and timeline." },
-  { title: "Proposal", line: "Scope, deliverables and a fixed quote, in writing." },
-  { title: "Design", line: "Identity, 3D and motion, with a review at every stage." },
-  { title: "Handover", line: "Final files, guidelines and everything you need to launch." },
-];
-
 export type Plan = {
   name: string;
   price: string;
   note: string;
   summary: string;
   includes: string[];
-  cta: string;
   featured?: boolean;
   // The card's holographic foil: silver, full holo or brand red.
   foil: "silver" | "holo" | "red";
 };
 
-// Ways to work together. Every plan starts with the free consultation call.
+// Ways to work together. Every plan starts with the free 30-minute call.
 export const plans: Plan[] = [
   {
     name: "Starter",
     foil: "silver",
     price: "$500",
     note: "One-off",
-    summary: "One focused piece: a logo refresh, a product render or a short motion loop.",
-    includes: ["One deliverable", "Two rounds of revisions", "Source files", "Free consultation call"],
-    cta: "Book a consultation",
+    summary: "One short motion piece: a logo animation, a product loop or a social clip.",
+    includes: ["One animation", "Two rounds of revisions", "Exports for every platform", "Free call to start"],
   },
   {
     name: "Project",
     foil: "holo",
     price: "$1,000",
     note: "Per project",
-    summary: "A defined piece of work, from a new identity to a 3D product film.",
-    includes: [
-      "Brand identity or 3D visuals",
-      "Fixed scope and price",
-      "Weekly check-ins",
-      "Source files and handover",
-    ],
-    cta: "Start a project",
+    summary: "A launch film or product animation, from storyboard to final render.",
+    includes: ["Storyboard and style frames", "Fixed scope and price", "Weekly check-ins", "Final renders and source files"],
     featured: true,
   },
   {
@@ -229,19 +223,13 @@ export const plans: Plan[] = [
     foil: "red",
     price: "$5,000",
     note: "Per month",
-    summary: "Design, 3D and motion on call for brands that ship all the time.",
-    includes: ["Ongoing design requests", "Priority turnaround", "Monthly planning call", "Design, 3D and motion"],
-    cta: "Talk about a retainer",
+    summary: "Motion on call for brands that ship all the time.",
+    includes: ["Ongoing motion requests", "Priority turnaround", "Monthly planning call", "Launch, product and social"],
   },
 ];
 
-// The chapters of the home page scroll story, in order. The 3D scene reads
-// the active chapter to decide where the star sits.
-export const chapters = [
-  { id: "arrival", label: "Studio" },
-  { id: "manifesto", label: "Manifesto" },
-  ...disciplines.map((d) => ({ id: d.slug, label: d.name })),
-  { id: "work", label: "Work" },
-  { id: "pricing", label: "Pricing" },
-  { id: "contact", label: "Contact" },
-] as const;
+// The studio showreel, shown right after the hero on the home page.
+export const showreel = {
+  youtubeId: "FXHr9nYslgA",
+  title: "Studio Deadzolt showreel",
+};

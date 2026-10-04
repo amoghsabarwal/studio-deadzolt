@@ -23,7 +23,6 @@ export default function AboutPage() {
         <div>
           <p className="studio-hello">{site.about[0]}</p>
           <p className="studio-body">{site.about[1]}</p>
-          <p className="studio-body">{site.manifesto}</p>
         </div>
         <div>
           <p className="label">Services</p>
@@ -50,8 +49,8 @@ export default function AboutPage() {
         />
       </div>
 
-      <a className="button" {...bookingLink}>
-        Book a consultation <span aria-hidden="true">→</span>
+      <a className="button" {...bookingLink("about")}>
+        {site.cta} <span aria-hidden="true">→</span>
       </a>
     </section>
   );

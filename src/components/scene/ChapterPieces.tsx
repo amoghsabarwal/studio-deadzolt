@@ -5,16 +5,13 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import { MathUtils, type Group } from "three";
 import { getFocus } from "@/lib/focus";
-import { getStory } from "@/lib/story";
 import { getTilt } from "@/lib/tilt";
-import Grounding from "./Grounding";
 import { applyRealChrome } from "./materials";
 import { DISCIPLINE_SPOT, NARROW_SPOT } from "./spots";
 
 type Motion = "spin" | "dial" | "swing" | "tumble";
 
 type Piece = {
-  chapter: number;
   discipline: string;
   url: string;
   scale: number;
@@ -24,15 +21,12 @@ type Piece = {
   motion: Motion;
 };
 
-// One Blender piece per discipline chapter. As the story reaches a
-// discipline, the star shrinks away and that chapter's piece grows in its
-// place. The same pieces stand in for project imagery elsewhere: hovering a
-// work brings its discipline's piece in beside the pointer, and a case study
+// One Blender piece per kind of work. They stand in for project imagery:
+// hovering a work brings its piece in beside the pointer, and a case study
 // holds it as the hero object.
 const PIECES: Piece[] = [
-  { chapter: 2, discipline: "3d-experience", url: "/models/orb-3d-experience.glb", scale: 1.15, rotation: [0.2, 0, 0], motion: "spin" },
+  { discipline: "3d-experience", url: "/models/orb-3d-experience.glb", scale: 1.15, rotation: [0.2, 0, 0], motion: "spin" },
   {
-    chapter: 3,
     discipline: "motion-direction",
     url: "/models/knob-motion-direction.glb",
     scale: 1.45,
@@ -40,8 +34,8 @@ const PIECES: Piece[] = [
     offset: [0, -0.3, 0],
     motion: "dial",
   },
-  { chapter: 4, discipline: "branding", url: "/models/pendant-branding.glb", scale: 1.05, offset: [0, -0.27, 0], motion: "swing" },
-  { chapter: 5, discipline: "art-direction", url: "/models/loop-art-direction.glb", scale: 1.35, motion: "tumble" },
+  { discipline: "branding", url: "/models/pendant-branding.glb", scale: 1.05, offset: [0, -0.27, 0], motion: "swing" },
+  { discipline: "art-direction", url: "/models/loop-art-direction.glb", scale: 1.35, motion: "tumble" },
 ];
 
 function ChapterPiece({ piece, animate }: { piece: Piece; animate: boolean }) {
@@ -66,14 +60,12 @@ function ChapterPiece({ piece, animate }: { piece: Piece; animate: boolean }) {
   useFrame((state, delta) => {
     if (!root.current || !tilt.current || !turn.current) return;
     const dt = Math.min(delta, 0.05);
-    const story = getStory();
     const focus = getFocus();
     const focused = focus.discipline === piece.discipline;
-    const inStory = story.active && story.chapter === piece.chapter && !focus.discipline;
 
     let tx = viewport.width * (wide ? DISCIPLINE_SPOT.x : NARROW_SPOT.x);
     let ty = viewport.height * (wide ? DISCIPLINE_SPOT.y : NARROW_SPOT.y);
-    let ts = inStory ? piece.scale * (wide ? 1 : NARROW_SPOT.scale * 1.1) : 0;
+    let ts = 0;
     if (focused && focus.mode === "hover") {
       // A preview to the right of the list that follows the pointer up and down.
       tx = viewport.width * 0.3;
@@ -131,12 +123,9 @@ function ChapterPiece({ piece, animate }: { piece: Piece; animate: boolean }) {
         g.rotation.y += dt * 0.35 + scrollSpin;
         break;
       case "dial":
-        // The knob turns about its own axis with the scroll, like a dial
-        // being dialled up, while it keeps facing the camera.
-        if (dial.current) {
-          const d = dial.current;
-          d.rotation.y = MathUtils.damp(d.rotation.y, -story.progress * Math.PI * 1.5 + Math.sin(t * 0.4) * 0.1, 4, dt);
-        }
+        // The knob turns slowly about its own axis, like a dial being
+        // dialled up, while it keeps facing the camera.
+        if (dial.current) dial.current.rotation.y = Math.sin(t * 0.4) * 0.6;
         break;
       case "swing":
         g.rotation.z = Math.sin(t * 1.1) * 0.06;
@@ -151,7 +140,6 @@ function ChapterPiece({ piece, animate }: { piece: Piece; animate: boolean }) {
 
   return (
     <group ref={root} scale={0} visible={false}>
-      <Grounding radius={1.7} floor={-1.9} />
       <group
         ref={tilt}
         onClick={(e) => {

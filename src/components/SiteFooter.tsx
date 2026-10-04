@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import Keepsake from "@/components/Keepsake";
-import { bookingLink, disciplines, site } from "@/content/site";
+import { bookingLink, site } from "@/content/site";
 
 const pages = [
   { href: "/", label: "Home" },
@@ -13,14 +13,12 @@ const pages = [
 export default function SiteFooter() {
   return (
     <footer className="site-footer">
-      <Keepsake />
-
       <div className="footer-top">
         <div className="footer-brand">
           <Image src="/brand/wordmark.svg" alt={site.name} width={583} height={61} className="footer-mark" />
           <p>{site.tagline}</p>
-          <a className="button button-primary" {...bookingLink}>
-            Book a consultation
+          <a className="button button-primary" {...bookingLink("footer")}>
+            {site.cta}
           </a>
         </div>
 
@@ -40,12 +38,8 @@ export default function SiteFooter() {
         <div className="footer-col">
           <p className="label" data-scramble>Services</p>
           <ul>
-            {disciplines.map((d) => (
-              <li key={d.slug}>
-                <Link href={`/#${d.slug}`} data-scramble-hover>
-                  {d.name}
-                </Link>
-              </li>
+            {site.services.slice(0, 4).map((s) => (
+              <li key={s}>{s}</li>
             ))}
           </ul>
         </div>
@@ -56,6 +50,13 @@ export default function SiteFooter() {
             <li>
               <a href={`mailto:${site.email}`}>{site.email}</a>
             </li>
+            {site.socials.map((s) => (
+              <li key={s.label}>
+                <a href={s.href} target="_blank" rel="noopener noreferrer" data-scramble-hover>
+                  {s.label}
+                </a>
+              </li>
+            ))}
             <li>{site.location}, India</li>
           </ul>
         </div>
@@ -64,6 +65,8 @@ export default function SiteFooter() {
       {/* The wordmark across the full width, in chrome that turns with the
           pointer or the phone's tilt. */}
       <div className="footer-giant" role="img" aria-label={site.name} data-wipe-in />
+
+      <Keepsake />
 
       <div className="footer-bottom label">
         <span>© {new Date().getFullYear()} {site.name}</span>

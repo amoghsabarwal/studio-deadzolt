@@ -8,9 +8,12 @@ type StoryState = {
   progress: number;
   // Whether a page with a scroll story is mounted.
   active: boolean;
+  // Whether something else holds the stage (the showreel), so the star
+  // steps aside.
+  stage: boolean;
 };
 
-const state: StoryState = { chapter: 0, progress: 0, active: false };
+const state: StoryState = { chapter: 0, progress: 0, active: false, stage: false };
 const listeners = new Set<() => void>();
 
 export function getStory() {
@@ -41,4 +44,26 @@ export function subscribeReducedMotion(onChange: () => void) {
 
 export function getReducedMotion() {
   return window.matchMedia(reducedMotionQuery).matches;
+}
+
+// The 3D pauses while the showreel plays on screen, so the video gets the
+// device's full attention.
+let paused = false;
+const pauseListeners = new Set<() => void>();
+
+export function getScenePaused() {
+  return paused;
+}
+
+export function setScenePaused(next: boolean) {
+  if (next === paused) return;
+  paused = next;
+  pauseListeners.forEach((l) => l());
+}
+
+export function subscribeScenePaused(listener: () => void) {
+  pauseListeners.add(listener);
+  return () => {
+    pauseListeners.delete(listener);
+  };
 }

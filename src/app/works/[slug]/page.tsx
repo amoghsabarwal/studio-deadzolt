@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import CaseFocus from "@/components/CaseFocus";
 import HoloLayers from "@/components/HoloLayers";
 import Reveals from "@/components/Reveals";
-import { bookingLink, disciplineNames, getDiscipline, getProject, projects } from "@/content/site";
+import { bookingLink, disciplineNames, getDiscipline, getProject, projects, site } from "@/content/site";
 
 export const dynamicParams = false;
 
@@ -94,12 +94,12 @@ export default async function CaseStudyPage({ params }: PageProps<"/works/[slug]
           <p className="label" data-scramble>Work with the studio</p>
           <h2 className="section-title">Want something like this?</h2>
           <p className="section-sub">
-            Book a free consultation. You leave with a clear scope and a fixed quote.
+            {site.ctaNote}
           </p>
         </div>
         <div className="actions">
-          <a className="button button-primary" {...bookingLink}>
-            Book a consultation
+          <a className="button button-primary" {...bookingLink("case")}>
+            {site.cta}
           </a>
           <Link href="/#pricing" className="button">
             See pricing
