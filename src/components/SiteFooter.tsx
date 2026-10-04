@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import Keepsake from "@/components/Keepsake";
 import { bookingLink, disciplines, site } from "@/content/site";
 
 const pages = [
@@ -12,6 +13,8 @@ const pages = [
 export default function SiteFooter() {
   return (
     <footer className="site-footer">
+      <Keepsake />
+
       <div className="footer-top">
         <div className="footer-brand">
           <Image src="/brand/wordmark.svg" alt={site.name} width={583} height={61} className="footer-mark" />

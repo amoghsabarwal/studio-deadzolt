@@ -4,7 +4,6 @@ import MagneticLink from "@/components/MagneticLink";
 import HoloLayers from "@/components/HoloLayers";
 import StudioClock from "@/components/StudioClock";
 import TiltHint from "@/components/TiltHint";
-import ChapterNav from "@/components/story/ChapterNav";
 import StoryDriver from "@/components/story/StoryDriver";
 import {
   bookingLink,
@@ -30,7 +29,6 @@ export default function Home() {
   return (
     <>
       <StoryDriver />
-      <ChapterNav />
 
       <noscript>
         <style>{".intro{display:none}[data-hero-title]{visibility:visible}"}</style>
