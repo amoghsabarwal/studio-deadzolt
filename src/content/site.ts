@@ -15,10 +15,9 @@ export const site = {
     "Hi, I'm Amogh, founder of Studio Deadzolt.",
     "I'm a brand designer who loves sitting with a problem until every piece falls into place, building identities that are original, intentional, and impossible to mistake for anything else.",
   ],
-  // Where every "Book a consultation" button on the site goes. Paste the
-  // Calendly link here (for example "https://calendly.com/your-name/30min")
-  // and every button switches to it. Until then it opens an email.
-  booking: "mailto:amoghsabarwal@gmail.com?subject=Consultation%20with%20Studio%20Deadzolt",
+  // Where every "Book a consultation" button on the site goes: the studio's
+  // Calendly page, which opens in a new tab.
+  booking: "https://calendly.com/amoghsabarwal/30min",
   services: [
     "Creative direction",
     "Brand strategy",
