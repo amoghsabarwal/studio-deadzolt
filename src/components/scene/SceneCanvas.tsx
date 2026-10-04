@@ -14,9 +14,11 @@ import { BlendFunction } from "postprocessing";
 import { Suspense, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { AgXToneMapping, MathUtils, Vector2 } from "three";
 import {
+  getEntered,
   getReducedMotion,
   getScenePaused,
   markSceneReady,
+  subscribeEntry,
   subscribeReducedMotion,
   subscribeScenePaused,
 } from "@/lib/story";
@@ -165,10 +167,13 @@ export default function SceneCanvas() {
   const [struggling, setStruggling] = useState(false);
   const full = rich && !struggling;
 
-  // The four discipline pieces load once the page has settled, so the star
-  // and the page itself get the bandwidth first.
+  // The discipline pieces and the space objects load once the visitor is in
+  // and the page has settled, so the entry screen and the star get the
+  // device first.
+  const entered = useSyncExternalStore(subscribeEntry, getEntered, () => false);
   const [piecesReady, setPiecesReady] = useState(false);
   useEffect(() => {
+    if (!entered) return;
     const start = () => setPiecesReady(true);
     // Safari has no requestIdleCallback, so it gets a plain delay.
     if (typeof window.requestIdleCallback === "function") {
@@ -177,7 +182,7 @@ export default function SceneCanvas() {
     }
     const id = setTimeout(start, 1500);
     return () => clearTimeout(id);
-  }, []);
+  }, [entered]);
 
   // With no 3D to draw, the entry screen needn't wait for it.
   useEffect(() => {
