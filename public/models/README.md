@@ -29,8 +29,10 @@ or reduced-motion fallbacks.
   exported normals: don't call `computeVertexNormals()`.
 - Units are roughly the size of the current extruded star (about 3 units
   across); objects are centred on the origin.
-- Orientation: the star, orb, pendant and loop face +Z. In the orb, the ring and moon carry their own node transforms, so keep the scene graph as loaded (towards the default
-  camera). The knob stands upright on +Y; spin it around Y.
+- Orientation: the star, orb, pendant and loop face +Z (towards the default
+  camera). The knob stands upright on +Y; spin it around Y. In the orb the
+  ring and moon carry their own node transforms, so keep the scene graph as
+  loaded.
 
 ## Environment
 
