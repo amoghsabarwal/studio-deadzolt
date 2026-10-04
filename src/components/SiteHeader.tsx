@@ -6,9 +6,9 @@ import { usePathname } from "next/navigation";
 import { site } from "@/content/site";
 
 const nav = [
-  { href: "/work", label: "Work" },
-  { href: "/studio", label: "Studio" },
-  { href: "/contact", label: "Contact" },
+  { href: "/", label: "index" },
+  { href: "/works", label: "works" },
+  { href: "/about", label: "about" },
 ];
 
 export default function SiteHeader() {
@@ -22,7 +22,8 @@ export default function SiteHeader() {
       <nav aria-label="Main">
         <ul>
           {nav.map((item) => {
-            const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+            const active =
+              item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
             return (
               <li key={item.href}>
                 <Link href={item.href} aria-current={active ? "page" : undefined}>
@@ -31,6 +32,11 @@ export default function SiteHeader() {
               </li>
             );
           })}
+          <li>
+            <a href={`mailto:${site.email}`} className="nav-cta">
+              get in touch
+            </a>
+          </li>
         </ul>
       </nav>
     </header>

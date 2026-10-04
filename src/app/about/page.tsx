@@ -1,0 +1,56 @@
+import type { Metadata } from "next";
+import Image from "next/image";
+import { site } from "@/content/site";
+
+export const metadata: Metadata = {
+  title: "About",
+  description: site.description,
+};
+
+export default function AboutPage() {
+  return (
+    <section className="page about">
+      <header className="page-head">
+        <p className="label">
+          {site.founder} · Founder · {site.location}
+        </p>
+        <h1 className="display page-title">About</h1>
+      </header>
+
+      <div className="about-grid">
+        <div>
+          <p className="studio-hello">{site.about[0]}</p>
+          <p className="studio-body">{site.about[1]}</p>
+          <p className="studio-body">{site.manifesto}</p>
+        </div>
+        <div>
+          <p className="label">Services</p>
+          <ul className="services">
+            {site.services.map((s) => (
+              <li key={s}>{s}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      <div className="about-images">
+        <Image
+          src="/brand/pendant.webp"
+          alt="A chrome pendant of the Deadzolt mark hanging on a chain"
+          width={996}
+          height={558}
+        />
+        <Image
+          src="/brand/type-panel.webp"
+          alt="Brand typography: Y2K-born design for electric, chrome-finished web, visual and objects"
+          width={996}
+          height={559}
+        />
+      </div>
+
+      <a className="contact-link" href={`mailto:${site.email}`}>
+        get in touch <span aria-hidden="true">→</span>
+      </a>
+    </section>
+  );
+}

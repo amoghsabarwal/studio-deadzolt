@@ -1,34 +1,44 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Archivo, Inter_Tight, JetBrains_Mono } from "next/font/google";
 import SceneCanvas from "@/components/scene/SceneCanvas";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
+import SmoothScroll from "@/components/SmoothScroll";
 import { site } from "@/content/site";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Display: Archivo's width axis gives wide Y2K headlines and condensed
+// numerals from one family. Text: Inter Tight. Labels: JetBrains Mono.
+const display = Archivo({
+  variable: "--font-display",
+  subsets: ["latin"],
+  axes: ["wdth"],
+});
+
+const text = Inter_Tight({
+  variable: "--font-text",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const mono = JetBrains_Mono({
+  variable: "--font-mono",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
-    default: `${site.name}: design and development studio`,
+    default: `${site.name}: ${site.tagline}`,
     template: `%s · ${site.name}`,
   },
-  description: site.intro,
+  description: site.description,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html lang="en" className={`${display.variable} ${text.variable} ${mono.variable}`}>
       <body>
+        <SmoothScroll />
         <SceneCanvas />
         <a href="#main" className="skip-link">
           Skip to content

@@ -3,26 +3,16 @@
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useRef, useSyncExternalStore } from "react";
-import { PMREMGenerator, Shape, type Mesh } from "three";
+import { MathUtils, PMREMGenerator, Shape, type Group, type Mesh } from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
+import { getReducedMotion, getStory, subscribeReducedMotion, subscribeStory } from "@/lib/story";
 
 // One canvas for the whole site, mounted in the root layout so it survives
-// page navigation. Phase 2 replaces the placeholder star with the scroll world.
-
-const reducedMotionQuery = "(prefers-reduced-motion: reduce)";
-
-function subscribeReducedMotion(onChange: () => void) {
-  const mql = window.matchMedia(reducedMotionQuery);
-  mql.addEventListener("change", onChange);
-  return () => mql.removeEventListener("change", onChange);
-}
+// page navigation. On the home page the star moves from chapter to chapter
+// as the story scrolls; elsewhere it sits small and dimmed in the corner.
 
 function usePrefersReducedMotion() {
-  return useSyncExternalStore(
-    subscribeReducedMotion,
-    () => window.matchMedia(reducedMotionQuery).matches,
-    () => true,
-  );
+  return useSyncExternalStore(subscribeReducedMotion, getReducedMotion, () => true);
 }
 
 // Rough trace of the Deadzolt star: five uneven spikes joined by soft curves.
@@ -64,40 +54,76 @@ function StudioEnvironment() {
   return <primitive object={env} attach="environment" />;
 }
 
+type Pose = { x: number; y: number; scale: number; turn: number };
+
+// Where the star sits for each chapter of the home page story. x and y are
+// fractions of the visible viewport; turn is extra rotation in radians.
+const STORY_POSES: Pose[] = [
+  { x: 0, y: 0.02, scale: 1.25, turn: 0 }, // arrival
+  { x: 0.3, y: 0.05, scale: 0.55, turn: 1.2 }, // manifesto
+  { x: 0.27, y: 0, scale: 0.8, turn: 2.4 }, // 3D experience
+  { x: 0.27, y: 0.04, scale: 0.8, turn: 3.6 }, // motion direction
+  { x: 0.27, y: -0.02, scale: 0.8, turn: 4.8 }, // branding
+  { x: 0.27, y: 0.02, scale: 0.8, turn: 6 }, // art direction
+  { x: 0.42, y: 0.34, scale: 0.28, turn: 7.2 }, // studio
+  { x: 0, y: 0.2, scale: 0.9, turn: 8.4 }, // contact
+];
+const PAGE_POSE: Pose = { x: 0.34, y: 0.28, scale: 0.4, turn: 0 };
+
 function ChromeStar({ animate }: { animate: boolean }) {
+  const group = useRef<Group>(null);
   const mesh = useRef<Mesh>(null);
   const shape = useStarShape();
   const viewport = useThree((state) => state.viewport);
-  // Sit to the right of the headline on wide screens, centred on phones.
+  const invalidate = useThree((state) => state.invalidate);
   const wide = viewport.width > viewport.height;
-  const x = wide ? viewport.width * 0.25 : 0;
-  const y = wide ? 0.2 : viewport.height * 0.24;
-  const scale = wide ? 0.8 : 0.5;
+
+  // With reduced motion the canvas only renders on demand, so redraw when
+  // the chapter changes.
+  useEffect(() => subscribeStory(() => invalidate()), [invalidate]);
 
   useFrame((state, delta) => {
-    if (!animate || !mesh.current) return;
-    mesh.current.rotation.y += delta * 0.35;
-    mesh.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.4) * 0.25;
+    if (!group.current || !mesh.current) return;
+    const story = getStory();
+    const pose = story.active ? STORY_POSES[story.chapter] ?? STORY_POSES[0] : PAGE_POSE;
+    // On narrow screens the copy fills the width, so the star only takes the
+    // stage on the first and last chapters and tucks into a corner otherwise.
+    const feature = !story.active || story.chapter === 0 || story.chapter === STORY_POSES.length - 1;
+    const tx = wide ? pose.x * viewport.width : feature ? 0 : viewport.width * 0.3;
+    const ty = wide ? pose.y * viewport.height : feature ? viewport.height * 0.2 : viewport.height * 0.38;
+    const ts = wide ? pose.scale : feature ? pose.scale * 0.6 : 0.2;
+    const g = group.current;
+    const k = animate ? 3 : 1000;
+    g.position.x = MathUtils.damp(g.position.x, tx, k, delta);
+    g.position.y = MathUtils.damp(g.position.y, ty, k, delta);
+    g.scale.setScalar(MathUtils.damp(g.scale.x, ts, k, delta));
+    g.rotation.z = MathUtils.damp(g.rotation.z, pose.turn * 0.15, k, delta);
+    if (animate) {
+      mesh.current.rotation.y += delta * 0.35;
+      mesh.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.4) * 0.25;
+    }
   });
 
   return (
-    <mesh ref={mesh} position={[x, y, 0]} scale={scale} rotation={[0.2, 0.5, 0]}>
-      <extrudeGeometry
-        args={[
-          shape,
-          { depth: 0.35, bevelEnabled: true, bevelThickness: 0.12, bevelSize: 0.08, bevelSegments: 6 },
-        ]}
-      />
-      <meshPhysicalMaterial
-        color="#d9dde3"
-        metalness={1}
-        roughness={0.12}
-        iridescence={1}
-        iridescenceIOR={1.8}
-        iridescenceThicknessRange={[100, 800]}
-        clearcoat={1}
-      />
-    </mesh>
+    <group ref={group}>
+      <mesh ref={mesh} rotation={[0.2, 0.5, 0]}>
+        <extrudeGeometry
+          args={[
+            shape,
+            { depth: 0.35, bevelEnabled: true, bevelThickness: 0.12, bevelSize: 0.08, bevelSegments: 6 },
+          ]}
+        />
+        <meshPhysicalMaterial
+          color="#d9dde3"
+          metalness={1}
+          roughness={0.12}
+          iridescence={1}
+          iridescenceIOR={1.8}
+          iridescenceThicknessRange={[100, 800]}
+          clearcoat={1}
+        />
+      </mesh>
+    </group>
   );
 }
 
