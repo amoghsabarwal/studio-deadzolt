@@ -38,7 +38,7 @@ export default function StoryDriver() {
     const ctx = gsap.context(() => {
       // Intro: a counter runs to 100, the curtain lifts, the headline rises.
       const intro = document.querySelector<HTMLElement>("[data-intro]");
-      const lines = gsap.utils.toArray<HTMLElement>("[data-arrival-line] > span");
+      const lines = gsap.utils.toArray<HTMLElement>("[data-hero] > *");
       if (intro) {
         if (reduced || introAlreadySeen()) {
           intro.style.display = "none";
@@ -48,7 +48,7 @@ export default function StoryDriver() {
           const label = intro.querySelector("[data-intro-count]");
           const tl = gsap
             .timeline()
-            .set(lines, { yPercent: 110 })
+            .set(lines, { y: 40, opacity: 0 })
             .set(".site-header", { autoAlpha: 0 })
             .to(counter, {
               value: 100,
@@ -59,7 +59,7 @@ export default function StoryDriver() {
               },
             })
             .to(intro, { yPercent: -100, duration: 1.1, ease: "expo.inOut" })
-            .to(lines, { yPercent: 0, duration: 1.2, ease: "expo.out", stagger: 0.12 }, "-=0.5")
+            .to(lines, { y: 0, opacity: 1, duration: 1.2, ease: "expo.out", stagger: 0.08 }, "-=0.5")
             .to(".site-header", { autoAlpha: 1, duration: 0.8 }, "<")
             .set(intro, { display: "none" });
           // On a very slow device the timeline crawls, so never hold the page
@@ -107,26 +107,16 @@ export default function StoryDriver() {
       // Panel copy slides in as each discipline arrives.
       gsap.utils.toArray<HTMLElement>("[data-panel]").forEach((panel) => {
         const body = panel.querySelector(".panel-body");
-        const ghost = panel.querySelector(".panel-ghost");
         if (track) {
           gsap.from(body, {
-            x: 120,
+            x: 80,
             opacity: 0,
             ease: "power2.out",
-            scrollTrigger: { trigger: panel, containerAnimation: track, start: "left 90%", end: "left 35%", scrub: true },
+            scrollTrigger: { trigger: panel, containerAnimation: track, start: "left 90%", end: "left 40%", scrub: true },
           });
-          gsap.fromTo(
-            ghost,
-            { xPercent: 30 },
-            {
-              xPercent: -30,
-              ease: "none",
-              scrollTrigger: { trigger: panel, containerAnimation: track, start: "left right", end: "right left", scrub: true },
-            },
-          );
         } else {
           gsap.from(body, {
-            y: 60,
+            y: 40,
             opacity: 0,
             duration: 1.1,
             ease: "expo.out",
@@ -157,7 +147,7 @@ export default function StoryDriver() {
 
       gsap.utils.toArray<HTMLElement>("[data-reveal]").forEach((el) => {
         gsap.from(el, {
-          y: 48,
+          y: 32,
           opacity: 0,
           duration: 1.1,
           ease: "expo.out",
@@ -165,18 +155,12 @@ export default function StoryDriver() {
         });
       });
 
-      // The arrival headline parts as the story begins.
-      gsap.to(".arrival-line-a", {
-        xPercent: -12,
+      // The hero copy drifts up and fades as the story begins.
+      gsap.to("[data-hero]", {
+        y: -60,
         opacity: 0,
         ease: "none",
-        scrollTrigger: { trigger: "#arrival", start: "top top", end: "bottom top", scrub: true },
-      });
-      gsap.to(".arrival-line-b", {
-        xPercent: 12,
-        opacity: 0,
-        ease: "none",
-        scrollTrigger: { trigger: "#arrival", start: "top top", end: "bottom top", scrub: true },
+        scrollTrigger: { trigger: "#arrival", start: "top top", end: "bottom 30%", scrub: true },
       });
     });
 

@@ -3,15 +3,15 @@ import Link from "next/link";
 import MagneticLink from "@/components/MagneticLink";
 import ChapterNav from "@/components/story/ChapterNav";
 import StoryDriver from "@/components/story/StoryDriver";
-import { disciplines, projectsIn, site } from "@/content/site";
+import { disciplineNames, disciplines, plans, process, projects, projectsIn, site } from "@/content/site";
 
-// The home page is one scroll story in eight chapters. Each element with
-// data-chapter is a chapter; the 3D star moves to a new pose for each one.
-// On wide screens the four disciplines scroll sideways in a pinned track.
+// The home page is one scroll story. Each element with data-chapter is a
+// chapter; the 3D scene moves to a new pose for each one. On wide screens the
+// four disciplines scroll sideways in a pinned track.
 
 export default function Home() {
   const manifestoWords = site.manifesto.split(" ");
-  const marquee = disciplines.map((d) => d.name);
+  const selected = projects.slice(0, 5);
 
   return (
     <>
@@ -28,45 +28,40 @@ export default function Home() {
         </span>
       </div>
 
-      <section id="arrival" data-chapter className="chapter arrival">
-        <p className="label arrival-meta">
-          <span>{site.name}</span>
-          <span>{site.location}</span>
-          <span>2000—forever</span>
-        </p>
-
-        <h1 className="display arrival-title">
-          <span className="arrival-line arrival-line-a" data-arrival-line>
-            <span>Building brands</span>
-          </span>
-          <span className="arrival-line arrival-line-b" data-arrival-line>
-            <span>
-              people <em>remember.</em>
-            </span>
-          </span>
-        </h1>
-
-        <p className="label drag-hint" aria-hidden="true">
-          ( drag the star )
-        </p>
-
-        <div className="marquee" aria-hidden="true">
-          <div className="marquee-track">
-            {[0, 1].map((copy) => (
-              <span key={copy} className="marquee-group">
-                {marquee.map((m) => (
-                  <span key={m}>
-                    {m} <i>✦</i>{" "}
-                  </span>
-                ))}
-              </span>
-            ))}
+      <section id="arrival" data-chapter className="chapter hero">
+        <div className="hero-copy" data-hero>
+          <p className="eyebrow">
+            <span className="dot" aria-hidden="true" />
+            Brand, 3D and motion studio · {site.location}
+          </p>
+          <h1 className="hero-title">
+            Building brands people <em>remember.</em>
+          </h1>
+          <p className="hero-sub">
+            Studio Deadzolt designs identities, 3D product worlds and motion for brands that want to be
+            impossible to mistake for anything else.
+          </p>
+          <div className="actions">
+            <a className="button button-primary" href={site.booking}>
+              Book a consultation
+            </a>
+            <Link className="button" href="/works">
+              See the work
+            </Link>
           </div>
         </div>
+        <p className="label drag-hint" aria-hidden="true">
+          Drag to spin
+        </p>
+        <ul className="hero-foot label" aria-label="Disciplines">
+          {disciplines.map((d) => (
+            <li key={d.slug}>{d.name}</li>
+          ))}
+        </ul>
       </section>
 
       <section id="manifesto" data-chapter className="chapter manifesto">
-        <p className="label">01 / Manifesto</p>
+        <p className="label">Manifesto</p>
         <p className="manifesto-text" data-manifesto>
           {manifestoWords.map((word, i) => (
             <span key={i} data-word>
@@ -80,24 +75,19 @@ export default function Home() {
         <div className="disciplines-track" data-track>
           {disciplines.map((d, i) => {
             const list = projectsIn(d.slug);
-            const number = String(i + 2).padStart(2, "0");
             return (
               <section key={d.slug} id={d.slug} data-chapter data-panel className="panel">
-                <span className="panel-ghost" aria-hidden="true">
-                  {number}
-                </span>
                 <div className="panel-body">
                   <p className="label">
-                    {number} / {d.name}
+                    {String(i + 1).padStart(2, "0")} / {String(disciplines.length).padStart(2, "0")} · Services
                   </p>
-                  <h2 className="display panel-name">{d.name}</h2>
+                  <h2 className="panel-name">{d.name}</h2>
                   <p className="panel-line">{d.line}</p>
                   <ol className="panel-projects">
-                    {list.map((p, j) => (
+                    {list.map((p) => (
                       <li key={p.slug}>
-                        <Link href={`/works/${p.slug}`} className="panel-project">
-                          <span className="label">{String(j + 1).padStart(2, "0")}</span>
-                          <span className="panel-project-title">{p.title}</span>
+                        <Link href={`/works/${p.slug}`} className="row-link">
+                          <span>{p.title}</span>
                           <span className="label">{p.date}</span>
                         </Link>
                       </li>
@@ -110,40 +100,83 @@ export default function Home() {
         </div>
       </div>
 
-      <section id="studio" data-chapter className="chapter studio">
-        <p className="label">06 / Studio</p>
-        <blockquote className="studio-quote" data-reveal>
-          <p>{site.about[1]}</p>
-        </blockquote>
-        <div className="studio-foot">
-          <div className="studio-sign" data-reveal>
-            <p className="studio-hello">{site.about[0]}</p>
-            <ul className="services">
-              {site.services.map((s) => (
-                <li key={s}>{s}</li>
-              ))}
-            </ul>
-          </div>
-          <Image
-            className="studio-image"
-            src="/brand/pendant.webp"
-            alt="A chrome pendant of the Deadzolt mark hanging on a chain"
-            width={996}
-            height={558}
-            data-reveal
-          />
+      <section id="work" data-chapter className="chapter work">
+        <div className="section-head">
+          <p className="label">Selected work</p>
+          <h2 className="section-title">Recent projects</h2>
+        </div>
+        <ol className="work-list" data-reveal>
+          {selected.map((p) => (
+            <li key={p.slug}>
+              <Link href={`/works/${p.slug}`} className="work-row">
+                <span className="work-title">{p.title}</span>
+                <span className="label work-tags">{disciplineNames(p)}</span>
+                <span className="label work-date">{p.year}</span>
+              </Link>
+            </li>
+          ))}
+        </ol>
+        <Link href="/works" className="text-link">
+          All {projects.length} projects <span aria-hidden="true">→</span>
+        </Link>
+      </section>
+
+      <section id="pricing" data-chapter className="chapter pricing">
+        <div className="section-head">
+          <p className="label">Work with the studio</p>
+          <h2 className="section-title">Start with a conversation.</h2>
+          <p className="section-sub">
+            Every project begins with a free consultation. You leave with a clear scope and a fixed quote,
+            whether or not we work together.
+          </p>
+        </div>
+
+        <ol className="process" data-reveal>
+          {process.map((step, i) => (
+            <li key={step.title}>
+              <span className="label">{String(i + 1).padStart(2, "0")}</span>
+              <h3>{step.title}</h3>
+              <p>{step.line}</p>
+            </li>
+          ))}
+        </ol>
+
+        <div className="plans" data-reveal>
+          {plans.map((plan) => (
+            <article key={plan.name} className="plan" data-featured={plan.featured || undefined}>
+              <header>
+                <p className="label">{plan.note}</p>
+                <h3 className="plan-name">{plan.name}</h3>
+                <p className="plan-price">{plan.price}</p>
+                <p className="plan-summary">{plan.summary}</p>
+              </header>
+              <ul className="plan-list">
+                {plan.includes.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+              <a className={plan.featured ? "button button-primary" : "button"} href={site.booking}>
+                {plan.cta}
+              </a>
+            </article>
+          ))}
         </div>
       </section>
 
       <section id="contact" data-chapter className="chapter contact">
-        <p className="label">07 / Contact</p>
-        <h2 className="display contact-title">
-          <span>Got a brand</span>
-          <span>to build?</span>
-        </h2>
-        <MagneticLink className="contact-link" href={`mailto:${site.email}`}>
-          get in touch <span aria-hidden="true">→</span>
-        </MagneticLink>
+        <div className="contact-copy" data-reveal>
+          <p className="label">Contact</p>
+          <h2 className="section-title">Have a brand to build?</h2>
+          <p className="section-sub">Tell us what you are making and we will get back to you.</p>
+          <div className="actions">
+            <MagneticLink className="button button-primary" href={site.booking}>
+              Book a consultation
+            </MagneticLink>
+            <a className="button" href={`mailto:${site.email}`}>
+              {site.email}
+            </a>
+          </div>
+        </div>
       </section>
     </>
   );

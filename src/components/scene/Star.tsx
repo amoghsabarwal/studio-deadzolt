@@ -1,39 +1,50 @@
 "use client";
 
+import { useGLTF } from "@react-three/drei";
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { MathUtils, type Group, type Mesh, type MeshPhysicalMaterial } from "three";
 import { setCursorLabel } from "@/lib/cursor";
 import { getStory, subscribeStory } from "@/lib/story";
-import { createPuffyStarGeometry } from "./starShape";
+import { REAL_CHROME } from "./materials";
+import { DISCIPLINE_SPOT, NARROW_SPOT } from "./spots";
+
+const STAR_URL = "/models/deadzolt-star.glb";
+// The Blender star is about 3 units across; this scales it to suit the size
+// the poses below were tuned for.
+const STAR_SCALE = 1.15;
 
 type Pose = { x: number; y: number; scale: number; turn: number };
 
 // Where the star sits for each chapter of the home page story. x and y are
-// fractions of the visible viewport; turn is extra rotation in radians.
+// fractions of the visible viewport; turn is extra rotation in radians. In
+// the four discipline chapters the star shrinks away and that chapter's own
+// piece (ChapterPieces) takes its place.
 const STORY_POSES: Pose[] = [
-  { x: 0, y: 0, scale: 1.5, turn: 0 }, // arrival
-  { x: 0.28, y: 0.02, scale: 0.75, turn: 0.6 }, // manifesto
-  { x: 0.24, y: 0, scale: 1, turn: 1.2 }, // 3D experience
-  { x: 0.24, y: 0, scale: 1, turn: 1.8 }, // motion direction
-  { x: 0.24, y: 0, scale: 1, turn: 2.4 }, // branding
-  { x: 0.24, y: 0, scale: 1, turn: 3 }, // art direction
-  { x: 0.36, y: 0.26, scale: 0.42, turn: 3.6 }, // studio
-  { x: 0, y: 0.04, scale: 1.35, turn: 4.2 }, // contact
+  { x: 0.25, y: 0, scale: 0.95, turn: 0 }, // studio (hero copy sits on the left)
+  { x: 0.3, y: 0, scale: 0.7, turn: 0.6 }, // manifesto
+  { ...DISCIPLINE_SPOT, scale: 0, turn: 1.2 }, // 3D experience
+  { ...DISCIPLINE_SPOT, scale: 0, turn: 1.8 }, // motion direction
+  { ...DISCIPLINE_SPOT, scale: 0, turn: 2.4 }, // branding
+  { ...DISCIPLINE_SPOT, scale: 0, turn: 3 }, // art direction
+  { x: 0.33, y: 0.02, scale: 0.62, turn: 3.6 }, // work
+  { x: 0.33, y: 0.3, scale: 0, turn: 3.9 }, // pricing: the cards get the stage
+  { x: 0.24, y: 0, scale: 0.85, turn: 4.2 }, // contact
 ];
-const PAGE_POSE: Pose = { x: 0.34, y: 0.26, scale: 0.42, turn: 0 };
+const PAGE_POSE: Pose = { x: 0.36, y: 0.26, scale: 0.36, turn: 0 };
 
-// Iridescent film thickness per chapter, so the colour sheen drifts as the
-// story moves on.
+// Thin-film thickness per chapter, so the colour sheen drifts slowly as the
+// story moves on. Kept narrow so the finish reads as real foil, not rainbow.
 const FILM = [
-  [160, 900],
-  [260, 1000],
-  [340, 1100],
-  [420, 1200],
-  [300, 950],
-  [520, 1300],
-  [200, 800],
-  [160, 900],
+  [180, 520],
+  [220, 560],
+  [260, 600],
+  [300, 640],
+  [240, 560],
+  [320, 680],
+  [200, 540],
+  [200, 540],
+  [180, 520],
 ];
 
 export default function Star({ animate }: { animate: boolean }) {
@@ -47,8 +58,8 @@ export default function Star({ animate }: { animate: boolean }) {
   const invalidate = useThree((s) => s.invalidate);
   const wide = viewport.width > viewport.height;
 
-  const geometry = useMemo(() => createPuffyStarGeometry(), []);
-  useEffect(() => () => geometry.dispose(), [geometry]);
+  const { nodes } = useGLTF(STAR_URL) as unknown as { nodes: Record<string, Mesh> };
+  const geometry = nodes.DeadzoltStar.geometry;
 
   // Drag-to-spin with inertia, plus a little extra from scroll speed.
   const drag = useRef({ active: false, lastX: 0, lastY: 0, vx: 0, vy: 0 });
@@ -97,11 +108,12 @@ export default function Star({ animate }: { animate: boolean }) {
     const pose = story.active ? STORY_POSES[story.chapter] ?? STORY_POSES[0] : PAGE_POSE;
 
     // On narrow screens the copy fills the width, so the star takes the stage
-    // on the first and last chapters and tucks into the top corner otherwise.
-    const feature = !story.active || story.chapter === 0 || story.chapter === STORY_POSES.length - 1;
-    const tx = wide ? pose.x * viewport.width : feature ? 0 : viewport.width * 0.28;
-    const ty = wide ? pose.y * viewport.height : feature ? viewport.height * 0.14 : viewport.height * 0.36;
-    const ts = (wide ? pose.scale : feature ? pose.scale * 0.62 : 0.24) * (1 + hover.current * 0.06);
+    // above the hero copy and tucks into the top corner otherwise.
+    const feature = !story.active || story.chapter === 0;
+    const tx = wide ? pose.x * viewport.width : feature ? 0 : viewport.width * NARROW_SPOT.x;
+    const ty = wide ? pose.y * viewport.height : feature ? viewport.height * 0.2 : viewport.height * NARROW_SPOT.y;
+    const base = wide ? pose.scale : feature ? pose.scale * 0.55 : pose.scale > 0 ? NARROW_SPOT.scale : 0;
+    const ts = base * (1 + hover.current * 0.06);
 
     const k = animate ? 2.6 : 1000;
     const r = root.current;
@@ -109,6 +121,12 @@ export default function Star({ animate }: { animate: boolean }) {
     r.position.y = MathUtils.damp(r.position.y, ty, k, dt);
     r.scale.setScalar(MathUtils.damp(r.scale.x, ts, k, dt));
     r.rotation.z = MathUtils.damp(r.rotation.z, pose.turn * 0.2, k, dt);
+    r.visible = r.scale.x > 0.005;
+    // A hidden star gets no pointer-out event, so let go of its hover here.
+    if (!r.visible && hovered.current && !drag.current.active) {
+      hovered.current = false;
+      setCursorLabel("");
+    }
 
     hover.current = MathUtils.damp(hover.current, hovered.current ? 1 : 0, 6, dt);
 
@@ -116,7 +134,7 @@ export default function Star({ animate }: { animate: boolean }) {
       const film = FILM[story.active ? story.chapter : 0] ?? FILM[0];
       const range = material.current.iridescenceThicknessRange;
       range[0] = MathUtils.damp(range[0], film[0], 1.5, dt);
-      range[1] = MathUtils.damp(range[1], film[1] + hover.current * 300, 1.5, dt);
+      range[1] = MathUtils.damp(range[1], film[1] + hover.current * 200, 1.5, dt);
     }
 
     if (!animate) return;
@@ -162,7 +180,7 @@ export default function Star({ animate }: { animate: boolean }) {
       <group ref={tilt}>
         <group ref={spin}>
           <mesh
-            castShadow
+            scale={STAR_SCALE}
             onPointerDown={onPointerDown}
             onPointerOver={() => {
               hovered.current = true;
@@ -176,15 +194,8 @@ export default function Star({ animate }: { animate: boolean }) {
             <primitive object={geometry} attach="geometry" />
             <meshPhysicalMaterial
               ref={material}
-              color="#f2f4f7"
-              metalness={1}
-              roughness={0.06}
-              envMapIntensity={1.7}
-              iridescence={1}
-              iridescenceIOR={1.65}
-              iridescenceThicknessRange={[160, 900]}
-              clearcoat={1}
-              clearcoatRoughness={0.04}
+              {...REAL_CHROME}
+              iridescenceThicknessRange={[180, 520]}
             />
           </mesh>
         </group>
@@ -197,3 +208,5 @@ export default function Star({ animate }: { animate: boolean }) {
     </group>
   );
 }
+
+useGLTF.preload(STAR_URL);
