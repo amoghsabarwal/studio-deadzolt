@@ -16,7 +16,8 @@ type Card = {
 const MAX_X = 9; // degrees of tilt around the vertical axis
 const MAX_Y = 7; // and around the horizontal axis
 
-// Drives the holographic cards ([data-holo]) and the shared tilt input.
+// Drives the holographic cards ([data-holo]), the shared tilt input and the
+// scroll-speed lean (--skew) on the work lists.
 // Each visible card gets CSS variables every frame: --rx/--ry (tilt, deg),
 // --mx/--my (where the light hits, %), --hyp (0 at rest, 1 at full tilt) and
 // --on (how lit the foil is). The mouse drives a card while hovering it; on
@@ -79,10 +80,20 @@ export default function HoloDriver() {
 
     let frame = 0;
     let last = performance.now();
+    let lastScroll = window.scrollY;
+    let skew = 0;
+    const root = document.documentElement.style;
     const loop = (now: number) => {
       const dt = Math.min((now - last) / 1000, 0.05);
       last = now;
       const k = 1 - Math.exp(-8 * dt);
+
+      // Scroll speed, for the lists that lean as you scroll (--skew).
+      const velocity = (window.scrollY - lastScroll) / Math.max(dt, 0.001);
+      lastScroll = window.scrollY;
+      const target = Math.max(-3, Math.min(3, velocity * -0.0012));
+      skew += (target - skew) * (1 - Math.exp(-6 * dt));
+      if (Math.abs(skew) > 0.005 || Math.abs(target) > 0.005) root.setProperty("--skew", `${skew.toFixed(3)}deg`);
       const tilt = getTilt();
       cards.forEach((card) => {
         if (!card.visible) return;

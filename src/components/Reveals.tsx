@@ -9,6 +9,7 @@ import { getReducedMotion } from "@/lib/story";
 // [data-split] headings rise line by line from behind a mask,
 // [data-scramble] labels decode from random characters,
 // [data-count] numbers roll up to their value,
+// [data-process] steps light up along a line drawn by the scroll,
 // [data-stagger] lists bring their children up one after another,
 // [data-reveal] blocks rise and fade in.
 export function useReveals() {
@@ -26,6 +27,28 @@ export function useReveals() {
 
       gsap.utils.toArray<HTMLElement>("[data-count]").forEach((el) => {
         rollNumber(el, { trigger: { trigger: el, start: "top 90%" } });
+      });
+
+      // Process: a red line runs through the steps as you scroll, and each
+      // step's number lights up as the line reaches it.
+      gsap.utils.toArray<HTMLElement>("[data-process]").forEach((list) => {
+        const steps = Array.from(list.children) as HTMLElement[];
+        gsap.fromTo(
+          list,
+          { "--p": 0 },
+          {
+            "--p": 1,
+            ease: "none",
+            scrollTrigger: {
+              trigger: list,
+              start: "top 80%",
+              end: "bottom 45%",
+              scrub: 0.6,
+              onUpdate: (self) =>
+                steps.forEach((step, i) => step.classList.toggle("is-lit", self.progress >= i / steps.length + 0.02)),
+            },
+          },
+        );
       });
 
       gsap.utils.toArray<HTMLElement>("[data-stagger]").forEach((list) => {

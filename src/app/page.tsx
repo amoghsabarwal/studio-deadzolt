@@ -23,6 +23,8 @@ import {
 
 export default function Home() {
   const manifestoWords = site.manifesto.split(" ");
+  // Words that catch the light as the manifesto is read.
+  const KEY_WORDS = new Set(["chrome-finished", "desire,", "forever."]);
   const selected = projects.slice(0, 5);
 
   return (
@@ -81,7 +83,7 @@ export default function Home() {
         <p className="label" data-scramble>Manifesto</p>
         <p className="manifesto-text" data-manifesto>
           {manifestoWords.map((word, i) => (
-            <span key={i} data-word>
+            <span key={i} data-word className={KEY_WORDS.has(word) ? "key-word" : undefined}>
               {word}{" "}
             </span>
           ))}
@@ -157,7 +159,7 @@ export default function Home() {
           </p>
         </div>
 
-        <ol className="process" data-stagger>
+        <ol className="process" data-stagger data-process>
           {process.map((step, i) => (
             <li key={step.title}>
               <span className="label">{String(i + 1).padStart(2, "0")}</span>
