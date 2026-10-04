@@ -12,28 +12,13 @@ import math
 import os
 import sys
 
-import numpy as np
-
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import dz_lib as dz  # noqa: E402
-
-HALF = 0.17  # half-thickness of the slab
-CHAMFER = 0.045  # bevel width on the front and back edges
-EASE = 0.006  # hairline round on the bevel's own edges
-
-SQRT2 = math.sqrt(2)
-
-
-def star_sdf(x, y, z):
-    d2 = dz.star2d(x, z) + EASE
-    wz = np.abs(y) - HALF + EASE
-    bevel = (d2 + wz + CHAMFER) / SQRT2
-    return np.maximum(np.maximum(d2, wz), bevel) - EASE
 
 
 def main():
     dz.reset()
-    star = dz.build("DeadzoltStar", star_sdf, (-1.6, -0.22, -1.8), (1.6, 0.22, 1.8), 0.004, 60000)
+    star = dz.build("DeadzoltStar", dz.star_slab, (-1.6, -0.22, -1.8), (1.6, 0.22, 1.8), 0.004, 60000)
     dz.assign(star, dz.chrome("HoloChrome"))
     dz.export("deadzolt-star", [star])
 

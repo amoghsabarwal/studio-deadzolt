@@ -7,10 +7,10 @@ shapes and materials can be tweaked and rebuilt rather than hand-edited.
 | File | Chapter | Triangles | Size |
 | --- | --- | --- | --- |
 | `deadzolt-star.glb` | Hero (arrival, contact) | 60k (hard-surface slab, bevelled edges) | 455 KB |
-| `orb-3d-experience.glb` | 3D Experience | 55k (planet, ring, star moon) | 415 KB |
-| `knob-motion-direction.glb` | Motion Direction | 106k (knob, red insert, dial, glow ring) | 810 KB |
+| `orb-3d-experience.glb` | 3D Experience | 80k (seamed sphere, engraved bezel ring, star moon) | 625 KB |
+| `knob-motion-direction.glb` | Motion Direction | 122k (spun-metal top, fluted grip, dial, red insert and ring) | 970 KB |
 | `pendant-branding.glb` | Branding | 80k (engraved DEADZOLT STUDIO front, 2000 back) | 620 KB |
-| `loop-art-direction.glb` | Art Direction | 55k | 340 KB |
+| `loop-art-direction.glb` | Art Direction | 65k (rounded-square twisted band) | 390 KB |
 | `env/holo-studio.hdr` | Environment for all of the above | 1024×512 | 950 KB |
 
 `previews/*.webp` are 1600px Cycles stills of each object, usable as posters
@@ -29,7 +29,7 @@ or reduced-motion fallbacks.
   exported normals: don't call `computeVertexNormals()`.
 - Units are roughly the size of the current extruded star (about 3 units
   across); objects are centred on the origin.
-- Orientation: the star, orb, pendant and loop face +Z (towards the default
+- Orientation: the star, orb, pendant and loop face +Z. In the orb, the ring and moon carry their own node transforms, so keep the scene graph as loaded (towards the default
   camera). The knob stands upright on +Y; spin it around Y.
 
 ## Environment

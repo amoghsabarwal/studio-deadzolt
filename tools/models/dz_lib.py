@@ -220,6 +220,22 @@ def star_balloon(x, y, z, scale=1.0):
     return star_field().balloon(x / scale, z / scale, y / scale) * scale
 
 
+SQRT2 = math.sqrt(2)
+
+
+def chamfer_extrude(d2, z, half, chamfer, ease):
+    """Hard-surface extrusion: flat faces, a 45 degree chamfer on the front and
+    back edges, and a hairline round on the chamfer's own edges."""
+    d2 = d2 + ease
+    wz = np.abs(z) - half + ease
+    return np.maximum(np.maximum(d2, wz), (d2 + wz + chamfer) / SQRT2) - ease
+
+
+def star_slab(x, y, z, scale=1.0, half=0.17, chamfer=0.045, ease=0.006):
+    """The hard-surface star facing -Y, at the given scale."""
+    return chamfer_extrude(star2d(x / scale, z / scale), y / scale, half, chamfer, ease) * scale
+
+
 # ---------------------------------------------------------------------------
 # Meshing
 
