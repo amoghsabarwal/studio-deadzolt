@@ -15,8 +15,9 @@ export const site = {
     "Hi, I'm Amogh, founder of Studio Deadzolt.",
     "I'm a brand designer who loves sitting with a problem until every piece falls into place, building identities that are original, intentional, and impossible to mistake for anything else.",
   ],
-  // Where every "Book a consultation" button goes. Swap in a Cal.com or
-  // Calendly link here when there is one.
+  // Where every "Book a consultation" button on the site goes. Paste the
+  // Calendly link here (for example "https://calendly.com/your-name/30min")
+  // and every button switches to it. Until then it opens an email.
   booking: "mailto:amoghsabarwal@gmail.com?subject=Consultation%20with%20Studio%20Deadzolt",
   services: [
     "Creative direction",
@@ -29,6 +30,13 @@ export const site = {
     "Copywriting",
     "Tone of voice",
   ],
+};
+
+// Extra attributes for booking links: a web booking page opens in a new tab,
+// an email link opens the mail app as usual.
+export const bookingLink = {
+  href: site.booking,
+  ...(site.booking.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {}),
 };
 
 export type DisciplineSlug = "3d-experience" | "motion-direction" | "branding" | "art-direction";
@@ -189,20 +197,19 @@ export type Plan = {
   featured?: boolean;
 };
 
-// Ways to work together. Prices are left as text so they can be set to real
-// figures here without touching the layout.
+// Ways to work together. Every plan starts with the free consultation call.
 export const plans: Plan[] = [
   {
-    name: "Consultation",
-    price: "Free",
-    note: "30-minute call",
-    summary: "Talk through your brand, what it needs and what it would take.",
-    includes: ["Review of your current brand", "Recommended scope", "Honest timeline", "No obligation"],
+    name: "Starter",
+    price: "$500",
+    note: "One-off",
+    summary: "One focused piece: a logo refresh, a product render or a short motion loop.",
+    includes: ["One deliverable", "Two rounds of revisions", "Source files", "Free consultation call"],
     cta: "Book a consultation",
   },
   {
     name: "Project",
-    price: "Fixed quote",
+    price: "$1,000",
     note: "Per project",
     summary: "A defined piece of work, from a new identity to a 3D product film.",
     includes: [
@@ -216,8 +223,8 @@ export const plans: Plan[] = [
   },
   {
     name: "Studio partner",
-    price: "Monthly",
-    note: "Ongoing retainer",
+    price: "$5,000",
+    note: "Per month",
     summary: "Design, 3D and motion on call for brands that ship all the time.",
     includes: ["Ongoing design requests", "Priority turnaround", "Monthly planning call", "Design, 3D and motion"],
     cta: "Talk about a retainer",

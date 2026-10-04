@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { site } from "@/content/site";
+import { bookingLink, site } from "@/content/site";
 
 export const metadata: Metadata = {
   title: "About",
@@ -48,7 +48,7 @@ export default function AboutPage() {
         />
       </div>
 
-      <a className="button" href={site.booking}>
+      <a className="button" {...bookingLink}>
         Book a consultation <span aria-hidden="true">→</span>
       </a>
     </section>

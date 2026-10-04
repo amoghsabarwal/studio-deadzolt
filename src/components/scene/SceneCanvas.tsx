@@ -32,13 +32,18 @@ function usePrefersReducedMotion() {
 // Everything is served locally, so nothing is fetched from a CDN.
 function StudioLights() {
   return (
-    <Environment files="/models/env/holo-studio.hdr" resolution={512} frames={1} environmentIntensity={0.8}>
-      {/* Key: a huge dim softbox in front so the chrome never reflects pure
-          black, with brighter strips across it for crisp highlights. */}
-      <Lightformer form="rect" intensity={0.6} position={[0, 0, 5]} scale={[16, 10, 1]} />
+    <Environment files="/models/env/holo-studio.hdr" resolution={1024} frames={1} environmentIntensity={0.8}>
+      {/* Key: a dim softbox in front so the chrome never reflects pure black,
+          crossed by slanted strips. Flat, bevelled faces mirror these as crisp
+          streaks that sweep across the surface as the star turns. */}
+      <Lightformer form="rect" intensity={0.12} position={[0, 0, 5]} scale={[16, 10, 1]} />
       <Lightformer form="rect" intensity={5} position={[0, 2.4, 4.8]} scale={[12, 0.7, 1]} />
-      <Lightformer form="rect" intensity={3} position={[0, 0.6, 4.8]} scale={[12, 0.3, 1]} />
       <Lightformer form="rect" intensity={2} position={[0, -1.6, 4.8]} scale={[12, 0.9, 1]} />
+      <Lightformer form="rect" intensity={3} position={[-1.1, 0, 4.7]} rotation={[0, Math.PI, 0.55]} scale={[0.22, 14, 1]} />
+      <Lightformer form="rect" intensity={1.2} position={[-3.2, 0, 4.7]} rotation={[0, Math.PI, 0.55]} scale={[1.6, 14, 1]} />
+      <Lightformer form="rect" intensity={4} position={[1.6, 0, 4.7]} rotation={[0, Math.PI, 0.55]} scale={[0.12, 14, 1]} />
+      <Lightformer form="rect" intensity={2.5} position={[0.2, 0, 4.7]} rotation={[0, Math.PI, 0.55]} scale={[0.06, 14, 1]} />
+      <Lightformer form="rect" intensity={2} position={[0.75, 0, 4.7]} rotation={[0, Math.PI, 0.55]} scale={[0.5, 14, 1]} />
       {/* Overhead and side strips for crisp edge highlights. */}
       <Lightformer form="rect" intensity={6} position={[0, 6, 0]} scale={[10, 1, 1]} />
       <Lightformer form="rect" intensity={3} position={[-6, 0, 1]} scale={[0.5, 10, 1]} />

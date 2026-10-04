@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { site } from "@/content/site";
+import { bookingLink, site } from "@/content/site";
 
 const nav = [
   { href: "/works", label: "Work" },
@@ -32,7 +32,7 @@ export default function SiteHeader() {
             );
           })}
           <li>
-            <a href={site.booking} className="button button-primary button-small">
+            <a {...bookingLink} className="button button-primary button-small">
               Book a call
             </a>
           </li>
