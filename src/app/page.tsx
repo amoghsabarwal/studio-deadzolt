@@ -1,7 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import MagneticLink from "@/components/MagneticLink";
-import SplitWords from "@/components/SplitWords";
+import HoloLayers from "@/components/HoloLayers";
+import StudioClock from "@/components/StudioClock";
+import TiltHint from "@/components/TiltHint";
 import ChapterNav from "@/components/story/ChapterNav";
 import StoryDriver from "@/components/story/StoryDriver";
 import {
@@ -29,7 +31,7 @@ export default function Home() {
       <ChapterNav />
 
       <noscript>
-        <style>{".intro{display:none}"}</style>
+        <style>{".intro{display:none}[data-hero-title]{visibility:visible}"}</style>
       </noscript>
       <div className="intro" data-intro aria-hidden="true">
         <Image src="/brand/wordmark.svg" alt="" width={583} height={61} className="intro-mark" />
@@ -44,8 +46,8 @@ export default function Home() {
             <span className="dot" aria-hidden="true" />
             Brand, 3D and motion studio · {site.location}
           </p>
-          <h1 className="hero-title">
-            Building brands people <em>remember.</em>
+          <h1 className="hero-title" data-hero-title>
+            Building brands people <em className="wipe">remember.</em>
           </h1>
           <p className="hero-sub">
             Studio Deadzolt designs identities, 3D product worlds and motion for brands that want to be
@@ -63,15 +65,20 @@ export default function Home() {
         <p className="label drag-hint" aria-hidden="true">
           Drag to spin
         </p>
-        <ul className="hero-foot label" aria-label="Disciplines">
-          {disciplines.map((d) => (
-            <li key={d.slug}>{d.name}</li>
-          ))}
-        </ul>
+        <div className="hero-foot label">
+          <ul aria-label="Disciplines">
+            {disciplines.map((d) => (
+              <li key={d.slug}>{d.name}</li>
+            ))}
+          </ul>
+          <p className="hero-clock">
+            Indore <StudioClock />
+          </p>
+        </div>
       </section>
 
       <section id="manifesto" data-chapter className="chapter manifesto">
-        <p className="label">Manifesto</p>
+        <p className="label" data-scramble>Manifesto</p>
         <p className="manifesto-text" data-manifesto>
           {manifestoWords.map((word, i) => (
             <span key={i} data-word>
@@ -112,9 +119,9 @@ export default function Home() {
 
       <section id="work" data-chapter className="chapter work">
         <div className="section-head">
-          <p className="label">Selected work</p>
+          <p className="label" data-scramble>Selected work</p>
           <h2 className="section-title" data-split>
-            <SplitWords text="Recent projects" />
+            Recent projects
           </h2>
         </div>
         <ol className="work-list" data-stagger>
@@ -140,9 +147,9 @@ export default function Home() {
 
       <section id="pricing" data-chapter className="chapter pricing">
         <div className="section-head">
-          <p className="label">Work with the studio</p>
+          <p className="label" data-scramble>Work with the studio</p>
           <h2 className="section-title" data-split>
-            <SplitWords text="Start with a conversation." />
+            Start with a conversation.
           </h2>
           <p className="section-sub">
             Every project begins with a free consultation. You leave with a clear scope and a fixed quote,
@@ -160,13 +167,23 @@ export default function Home() {
           ))}
         </ol>
 
+        <TiltHint />
         <div className="plans" data-stagger>
           {plans.map((plan) => (
-            <article key={plan.name} className="plan" data-featured={plan.featured || undefined} data-spotlight>
+            <article
+              key={plan.name}
+              className="plan"
+              data-featured={plan.featured || undefined}
+              data-holo
+              data-tier={plan.foil}
+            >
+              <HoloLayers />
               <header>
                 <p className="label">{plan.note}</p>
                 <h3 className="plan-name">{plan.name}</h3>
-                <p className="plan-price">{plan.price}</p>
+                <p className="plan-price" data-count>
+                  {plan.price}
+                </p>
                 <p className="plan-summary">{plan.summary}</p>
               </header>
               <ul className="plan-list">
@@ -184,9 +201,9 @@ export default function Home() {
 
       <section id="contact" data-chapter className="chapter contact">
         <div className="contact-copy">
-          <p className="label">Contact</p>
+          <p className="label" data-scramble>Contact</p>
           <h2 className="section-title" data-split>
-            <SplitWords text="Have a brand to build?" />
+            Have a brand to build?
           </h2>
           <p className="section-sub">Tell us what you are making and we will get back to you.</p>
           <div className="actions" data-reveal>

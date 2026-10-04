@@ -1,7 +1,7 @@
 "use client";
 
 import { Environment, Lightformer, PerformanceMonitor } from "@react-three/drei";
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useFrame } from "@react-three/fiber";
 import {
   Bloom,
   ChromaticAberration,
@@ -12,8 +12,9 @@ import {
 import { BlendFunction } from "postprocessing";
 import { usePathname } from "next/navigation";
 import { Suspense, useEffect, useState, useSyncExternalStore } from "react";
-import { AgXToneMapping, Vector2 } from "three";
+import { AgXToneMapping, MathUtils, Vector2 } from "three";
 import { getReducedMotion, subscribeReducedMotion } from "@/lib/story";
+import { getTilt } from "@/lib/tilt";
 import ChapterPieces from "./ChapterPieces";
 import Star from "./Star";
 
@@ -61,6 +62,19 @@ function StudioLights({ rich }: { rich: boolean }) {
       <Lightformer form="rect" intensity={3} color="#3dff8a" position={[-4, 3.5, 2]} scale={[3, 0.6, 1]} />
     </Environment>
   );
+}
+
+// The studio turns a little with the visitor, so reflections slide across
+// every chrome surface: gently with the mouse, fully with a phone's tilt.
+function TiltedStudio() {
+  useFrame(({ scene }, delta) => {
+    const tilt = getTilt();
+    const amount = tilt.source === "gyro" ? 0.9 : 0.25;
+    const r = scene.environmentRotation;
+    r.y = MathUtils.damp(r.y, tilt.x * amount, 3, Math.min(delta, 0.05));
+    r.x = MathUtils.damp(r.x, tilt.y * amount * 0.4, 3, Math.min(delta, 0.05));
+  });
+  return null;
 }
 
 function Effects({ rich }: { rich: boolean }) {
@@ -145,6 +159,7 @@ export default function SceneCanvas() {
               chapter pieces load behind it. */}
           <Suspense fallback={null}>
             <StudioLights rich={rich} />
+            {!reducedMotion && <TiltedStudio />}
             <Star animate={!reducedMotion} />
           </Suspense>
           {piecesReady && (

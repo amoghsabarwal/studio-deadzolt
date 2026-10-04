@@ -4,6 +4,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useEffect } from "react";
 import { getReducedMotion, setStory } from "@/lib/story";
+import { revealLines, wipeFill } from "@/lib/motion/text";
 import { useReveals } from "../Reveals";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -36,13 +37,27 @@ export default function StoryDriver() {
     const wide = window.matchMedia("(min-width: 761px)").matches;
 
     let introTimeout = 0;
+    let titleSplit: { revert: () => void } | undefined;
+    const title = document.querySelector<HTMLElement>("[data-hero-title]");
+    // The headline rises line by line, then "remember." fills in.
+    const revealTitle = (delay: number) => {
+      if (!title || titleSplit) return;
+      titleSplit = revealLines(title, { delay });
+      title.style.visibility = "visible";
+      wipeFill(title, { delay: delay + 0.6 });
+    };
+
     const ctx = gsap.context(() => {
       // Intro: a counter runs to 100, the curtain lifts, the headline rises.
       const intro = document.querySelector<HTMLElement>("[data-intro]");
-      const lines = gsap.utils.toArray<HTMLElement>("[data-hero] > *");
+      const lines = gsap.utils.toArray<HTMLElement>("[data-hero] > *:not([data-hero-title])");
+      if (reduced) {
+        if (title) title.style.visibility = "visible";
+      }
       if (intro) {
         if (reduced || introAlreadySeen()) {
           intro.style.display = "none";
+          if (!reduced) revealTitle(0.1);
         } else {
           markIntroSeen();
           const counter = { value: 0 };
@@ -60,6 +75,7 @@ export default function StoryDriver() {
               },
             })
             .to(intro, { yPercent: -100, duration: 1.1, ease: "expo.inOut" })
+            .add(() => revealTitle(0), "-=0.55")
             .to(lines, { y: 0, opacity: 1, duration: 1.2, ease: "expo.out", stagger: 0.08 }, "-=0.5")
             .to(".site-header", { autoAlpha: 1, duration: 0.8 }, "<")
             .set(intro, { display: "none" });
@@ -67,6 +83,7 @@ export default function StoryDriver() {
           // behind the curtain for more than a few seconds.
           introTimeout = window.setTimeout(() => {
             if (tl.progress() < 1) tl.progress(1);
+            revealTitle(0);
           }, 6000);
         }
       }
@@ -172,6 +189,7 @@ export default function StoryDriver() {
     return () => {
       window.clearTimeout(introTimeout);
       ctx.revert();
+      titleSplit?.revert();
       document.querySelector("[data-disciplines]")?.classList.remove("is-sideways");
       setStory({ active: false, chapter: 0, progress: 0 });
     };

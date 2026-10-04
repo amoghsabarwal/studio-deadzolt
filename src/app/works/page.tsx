@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Reveals from "@/components/Reveals";
-import SplitWords from "@/components/SplitWords";
 import { disciplineNames, projects } from "@/content/site";
 
 export const metadata: Metadata = {
@@ -19,7 +18,7 @@ export default function WorksPage() {
           Index of works · {projects.length}
         </p>
         <h1 className="display page-title" data-split>
-          <SplitWords text="Works" />
+          Works
         </h1>
       </header>
       <ol className="works-list" data-stagger>

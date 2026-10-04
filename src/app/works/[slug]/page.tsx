@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import CaseFocus from "@/components/CaseFocus";
+import HoloLayers from "@/components/HoloLayers";
 import Reveals from "@/components/Reveals";
-import SplitWords from "@/components/SplitWords";
 import { bookingLink, disciplineNames, getDiscipline, getProject, projects } from "@/content/site";
 
 export const dynamicParams = false;
@@ -43,7 +43,7 @@ export default async function CaseStudyPage({ params }: PageProps<"/works/[slug]
           Case study · {number(index + 1)} / {number(projects.length)}
         </p>
         <h1 className="display case-title" data-split>
-          <SplitWords text={project.title} />
+          {project.title}
         </h1>
         <p className="case-summary" data-enter>
           {project.summary}
@@ -66,12 +66,12 @@ export default async function CaseStudyPage({ params }: PageProps<"/works/[slug]
       </dl>
 
       <section className="case-section" data-reveal>
-        <p className="label">Overview</p>
+        <p className="label" data-scramble>Overview</p>
         <p className="case-text">{project.body}</p>
       </section>
 
       <section className="case-section" data-reveal>
-        <p className="label">Practice</p>
+        <p className="label" data-scramble>Practice</p>
         <ul className="case-disciplines">
           {project.disciplines.map((slug) => {
             const discipline = getDiscipline(slug);
@@ -88,9 +88,10 @@ export default async function CaseStudyPage({ params }: PageProps<"/works/[slug]
         </ul>
       </section>
 
-      <section className="case-cta" data-spotlight data-reveal>
+      <section className="case-cta" data-holo data-reveal>
+        <HoloLayers />
         <div>
-          <p className="label">Work with the studio</p>
+          <p className="label" data-scramble>Work with the studio</p>
           <h2 className="section-title">Want something like this?</h2>
           <p className="section-sub">
             Book a free consultation. You leave with a clear scope and a fixed quote.

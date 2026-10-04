@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import { Inter_Tight, JetBrains_Mono } from "next/font/google";
 import Cursor from "@/components/Cursor";
+import HoloDriver from "@/components/HoloDriver";
 import PageTransition from "@/components/PageTransition";
 import SceneCanvas from "@/components/scene/SceneCanvas";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
 import SmoothScroll from "@/components/SmoothScroll";
+import TextFx from "@/components/TextFx";
 import { site } from "@/content/site";
 import "./globals.css";
 
@@ -41,7 +43,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <SiteHeader />
         <main id="main">{children}</main>
         <SiteFooter />
+        <HoloDriver />
         <PageTransition />
+        <TextFx />
         <Cursor />
       </body>
     </html>

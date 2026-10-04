@@ -6,8 +6,7 @@ import { clearHoverFocus, setHoverFocus } from "@/lib/focus";
 
 // A two-part cursor for mouse users: a dot that tracks exactly and a ring
 // that trails it, grows over links and shows hints like "drag" on the star or
-// "view" on a work. It also drives the other pointer effects: the 3D preview
-// beside a hovered work row and the light that follows the pointer on cards.
+// "view" on a work. It also brings in the 3D preview beside a hovered work row.
 export default function Cursor() {
   const dot = useRef<HTMLDivElement>(null);
   const ring = useRef<HTMLDivElement>(null);
@@ -32,13 +31,6 @@ export default function Cursor() {
       const focus = el?.closest<HTMLElement>("[data-focus]")?.dataset.focus;
       if (focus) setHoverFocus(focus);
       else clearHoverFocus();
-
-      const card = el?.closest<HTMLElement>("[data-spotlight]");
-      if (card) {
-        const box = card.getBoundingClientRect();
-        card.style.setProperty("--mx", `${e.clientX - box.left}px`);
-        card.style.setProperty("--my", `${e.clientY - box.top}px`);
-      }
     };
     const loop = () => {
       pos.x += (target.x - pos.x) * 0.18;

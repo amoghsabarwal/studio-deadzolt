@@ -7,6 +7,7 @@ import { MathUtils, type Group, type Mesh, type MeshPhysicalMaterial } from "thr
 import { setCursorLabel } from "@/lib/cursor";
 import { getFocus } from "@/lib/focus";
 import { getStory, subscribeStory } from "@/lib/story";
+import { getTilt } from "@/lib/tilt";
 import { REAL_CHROME } from "./materials";
 import { DISCIPLINE_SPOT, NARROW_SPOT } from "./spots";
 
@@ -142,9 +143,12 @@ export default function Star({ animate }: { animate: boolean }) {
 
     if (!animate) return;
 
-    // Cursor parallax: the star leans towards the pointer.
-    tilt.current.rotation.x = MathUtils.damp(tilt.current.rotation.x, -state.pointer.y * 0.35, 3, dt);
-    tilt.current.rotation.y = MathUtils.damp(tilt.current.rotation.y, state.pointer.x * 0.5, 3, dt);
+    // The star leans towards the pointer, or with the phone as it tilts.
+    const gyro = getTilt();
+    const lx = gyro.source === "gyro" ? gyro.x * 0.9 : state.pointer.x * 0.5;
+    const ly = gyro.source === "gyro" ? -gyro.y * 0.7 : state.pointer.y * 0.35;
+    tilt.current.rotation.x = MathUtils.damp(tilt.current.rotation.x, -ly, 3, dt);
+    tilt.current.rotation.y = MathUtils.damp(tilt.current.rotation.y, lx, 3, dt);
 
     const scrollY = window.scrollY;
     const scrollSpeed = (scrollY - lastScroll.current) / Math.max(dt, 0.001);
