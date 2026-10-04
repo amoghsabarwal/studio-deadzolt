@@ -1,5 +1,7 @@
 import Link from "next/link";
 import BookingEmbed from "@/components/BookingEmbed";
+import Faq from "@/components/Faq";
+import ProofStrip from "@/components/ProofStrip";
 import Showreel from "@/components/Showreel";
 import HoloLayers from "@/components/HoloLayers";
 import StudioClock from "@/components/StudioClock";
@@ -36,8 +38,9 @@ export default function Home() {
             <a className="button" href="#showreel">
               Watch the reel
             </a>
+            <span className="speed-chip label">{site.speed}</span>
           </div>
-          <p className="cta-note">{site.ctaNote}</p>
+          <p className="cta-note">{site.assurance}</p>
         </div>
         <div className="hero-foot label">
           <ul aria-label="What the studio makes">
@@ -52,6 +55,7 @@ export default function Home() {
       </section>
 
       <Showreel />
+      <ProofStrip />
 
       <section id="work" data-chapter className="chapter work">
         <div className="section-head">
@@ -88,6 +92,7 @@ export default function Home() {
             Every project starts with a free 30-minute call. You leave with a clear scope and a fixed quote,
             whether or not we work together.
           </p>
+          <span className="speed-chip label">{site.speed}</span>
         </div>
 
         <TiltHint />
@@ -118,10 +123,23 @@ export default function Home() {
               >
                 {site.cta}
               </a>
+              {plan.fine && <p className="plan-fine label">{plan.fine}</p>}
             </article>
           ))}
         </div>
+
+        <ol className="steps" aria-label="How the monthly plan runs">
+          {site.steps.map((step, i) => (
+            <li key={step}>
+              <span className="label">{String(i + 1).padStart(2, "0")}</span>
+              {step}
+            </li>
+          ))}
+        </ol>
+        <p className="craft-line">{site.craft}</p>
       </section>
+
+      <Faq />
 
       <section id="contact" data-chapter className="chapter contact">
         <div className="contact-copy">
@@ -132,6 +150,7 @@ export default function Home() {
           <p className="section-sub">
             Pick a time that suits you. {site.ctaNote}
           </p>
+          <p className="cta-note">{site.assurance}</p>
           <p className="contact-alt">
             Prefer email? <a href={`mailto:${site.email}`}>{site.email}</a>
           </p>

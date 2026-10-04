@@ -26,7 +26,7 @@ export default function BookingEmbed({ from }: { from: string }) {
 
   return (
     <div ref={box} className="booking-embed">
-      {near && <iframe src={bookingEmbed(from)} title="Book a call with Studio Deadzolt" loading="lazy" />}
+      {near && <iframe src={bookingEmbed(from, location.host)} title="Book a call with Studio Deadzolt" loading="lazy" />}
     </div>
   );
 }

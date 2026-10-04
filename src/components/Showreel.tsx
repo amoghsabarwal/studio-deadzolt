@@ -9,14 +9,10 @@ import { getReducedMotion, setScenePaused, setStory } from "@/lib/story";
 gsap.registerPlugin(ScrollTrigger);
 
 const { youtubeId, title } = showreel;
-const POSTERS = [
-  `https://i.ytimg.com/vi/${youtubeId}/maxresdefault.jpg`,
-  `https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`,
-];
 
 // Opens YouTube's connections early, once the visitor shows interest.
 function preconnect() {
-  for (const href of ["https://www.youtube-nocookie.com", "https://i.ytimg.com", "https://www.google.com"]) {
+  for (const href of ["https://www.youtube-nocookie.com", "https://www.google.com"]) {
     if (document.head.querySelector(`link[rel="preconnect"][href="${href}"]`)) continue;
     const link = document.createElement("link");
     link.rel = "preconnect";
@@ -32,7 +28,6 @@ export default function Showreel() {
   const root = useRef<HTMLElement>(null);
   const frame = useRef<HTMLDivElement>(null);
   const [playing, setPlaying] = useState(false);
-  const [poster, setPoster] = useState(0);
   const [inView, setInView] = useState(false);
 
   // The 3D pauses while the reel plays on screen.
@@ -96,24 +91,10 @@ export default function Showreel() {
             onClick={() => setPlaying(true)}
             aria-label={`Play the ${title}`}
           >
-            {/* A branded poster underneath, for when YouTube's image can't load. */}
+            {/* A branded poster, served from the site. Swap in a reel frame later. */}
             <span className="reel-fallback" aria-hidden="true">
               <span>Showreel</span>
             </span>
-            {poster < POSTERS.length && (
-              // eslint-disable-next-line @next/next/no-img-element -- a remote poster that falls back on error
-              <img
-                src={POSTERS[poster]}
-                alt=""
-                loading="lazy"
-                decoding="async"
-                onError={() => setPoster((p) => p + 1)}
-                onLoad={(e) => {
-                  // YouTube answers a missing size with a small grey frame.
-                  if (e.currentTarget.naturalWidth < 200) setPoster((p) => p + 1);
-                }}
-              />
-            )}
             <span className="reel-hud label" aria-hidden="true">
               <span>Showreel</span>
               <span>Deadzolt · {new Date().getFullYear()}</span>
@@ -130,11 +111,14 @@ export default function Showreel() {
       </div>
       <div className="reel-cta">
         <p>
-          Motion graphics for startups and brands. <span>{site.ctaNote}</span>
+          Motion graphics for startups and brands.
         </p>
-        <a className="button button-primary" {...bookingLink("reel")}>
-          {site.cta}
-        </a>
+        <div className="reel-book">
+          <a className="button button-primary" {...bookingLink("reel")}>
+            {site.cta}
+          </a>
+          <p className="cta-note">{site.assurance}</p>
+        </div>
       </div>
     </section>
   );
