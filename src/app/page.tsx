@@ -3,7 +3,16 @@ import Link from "next/link";
 import MagneticLink from "@/components/MagneticLink";
 import ChapterNav from "@/components/story/ChapterNav";
 import StoryDriver from "@/components/story/StoryDriver";
-import { disciplineNames, disciplines, plans, process, projects, projectsIn, site } from "@/content/site";
+import {
+  bookingLink,
+  disciplineNames,
+  disciplines,
+  plans,
+  process,
+  projects,
+  projectsIn,
+  site,
+} from "@/content/site";
 
 // The home page is one scroll story. Each element with data-chapter is a
 // chapter; the 3D scene moves to a new pose for each one. On wide screens the
@@ -42,7 +51,7 @@ export default function Home() {
             impossible to mistake for anything else.
           </p>
           <div className="actions">
-            <a className="button button-primary" href={site.booking}>
+            <a className="button button-primary" {...bookingLink}>
               Book a consultation
             </a>
             <Link className="button" href="/works">
@@ -155,7 +164,7 @@ export default function Home() {
                   <li key={item}>{item}</li>
                 ))}
               </ul>
-              <a className={plan.featured ? "button button-primary" : "button"} href={site.booking}>
+              <a className={plan.featured ? "button button-primary" : "button"} {...bookingLink}>
                 {plan.cta}
               </a>
             </article>
@@ -169,7 +178,7 @@ export default function Home() {
           <h2 className="section-title">Have a brand to build?</h2>
           <p className="section-sub">Tell us what you are making and we will get back to you.</p>
           <div className="actions">
-            <MagneticLink className="button button-primary" href={site.booking}>
+            <MagneticLink className="button button-primary" {...bookingLink}>
               Book a consultation
             </MagneticLink>
             <a className="button" href={`mailto:${site.email}`}>

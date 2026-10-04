@@ -7,10 +7,14 @@ export default function MagneticLink({
   href,
   className,
   children,
+  target,
+  rel,
 }: {
   href: string;
   className?: string;
   children: ReactNode;
+  target?: string;
+  rel?: string;
 }) {
   const ref = useRef<HTMLAnchorElement>(null);
 
@@ -18,6 +22,8 @@ export default function MagneticLink({
     <a
       ref={ref}
       href={href}
+      target={target}
+      rel={rel}
       className={className}
       onPointerMove={(e) => {
         if (e.pointerType !== "mouse" || !ref.current) return;

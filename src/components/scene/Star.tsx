@@ -195,6 +195,7 @@ export default function Star({ animate }: { animate: boolean }) {
             <meshPhysicalMaterial
               ref={material}
               {...REAL_CHROME}
+              roughness={0.08}
               iridescenceThicknessRange={[180, 520]}
             />
           </mesh>

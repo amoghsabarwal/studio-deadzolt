@@ -90,16 +90,30 @@ export default function StoryDriver() {
         });
       }
 
-      gsap.utils.toArray<HTMLElement>("[data-chapter]").forEach((section, index) => {
-        const sideways = track && section.hasAttribute("data-panel");
-        ScrollTrigger.create({
-          trigger: section,
-          ...(sideways
-            ? { containerAnimation: track, start: "left 55%", end: "right 55%" }
-            : { start: "top 55%", end: "bottom 55%" }),
-          onToggle: (self) => self.isActive && setStory({ chapter: index }),
-          onUpdate: (self) => setStory({ progress: self.progress }),
+      // The active chapter is the furthest one whose trigger is live. The last
+      // sideways panel stays "live" once the track finishes, and a jump (like
+      // the Pricing link) can fire toggles out of order, so the order the
+      // toggles arrive in can't be trusted.
+      const chapterTriggers: ScrollTrigger[] = [];
+      const syncChapter = () => {
+        let chapter = -1;
+        chapterTriggers.forEach((t, i) => {
+          if (t.isActive) chapter = i;
         });
+        if (chapter >= 0) setStory({ chapter });
+      };
+      gsap.utils.toArray<HTMLElement>("[data-chapter]").forEach((section) => {
+        const sideways = track && section.hasAttribute("data-panel");
+        chapterTriggers.push(
+          ScrollTrigger.create({
+            trigger: section,
+            ...(sideways
+              ? { containerAnimation: track, start: "left 55%", end: "right 55%" }
+              : { start: "top 55%", end: "bottom 55%" }),
+            onToggle: syncChapter,
+            onUpdate: (self) => setStory({ progress: self.progress }),
+          }),
+        );
       });
 
       if (reduced) return;

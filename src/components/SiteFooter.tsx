@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { disciplines, site } from "@/content/site";
+import { bookingLink, disciplines, site } from "@/content/site";
 
 const pages = [
   { href: "/", label: "Home" },
@@ -16,7 +16,7 @@ export default function SiteFooter() {
         <div className="footer-brand">
           <Image src="/brand/wordmark.svg" alt={site.name} width={583} height={61} className="footer-mark" />
           <p>{site.tagline}</p>
-          <a className="button button-primary" href={site.booking}>
+          <a className="button button-primary" {...bookingLink}>
             Book a consultation
           </a>
         </div>
