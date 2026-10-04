@@ -45,12 +45,20 @@ def pendant_sdf(x, y, z):
     q = dz.length2(y, z - ring_c) - 0.2
     loop = dz.length2(q, x) - 0.06
     body = dz.smin(body, neck, 0.04)
-    return dz.smin(body, loop, 0.03)
+    body = dz.smin(body, loop, 0.03)
+
+    # Engraved like a hallmark: the studio name across the bottom bezel on the
+    # front, the year on the back.
+    front = dz.text2d(x, z, "DEADZOLT STUDIO", 0, -HALF_H + 0.066, 0.062, 0.014)
+    back = dz.text2d(x, z, "2000", 0, -HALF_H + 0.066, 0.062, 0.014)
+    cut_front = np.maximum(front, np.abs(y + 0.165) - 0.012)
+    cut_back = np.maximum(back, np.abs(y - 0.165) - 0.012)
+    return dz.smax(body, -np.minimum(cut_front, cut_back), 0.004)
 
 
 def main():
     dz.reset()
-    obj = dz.build("DeadzoltPendant", pendant_sdf, (-1.05, -0.3, -1.3), (1.05, 0.3, 1.7), 0.0055, 50000)
+    obj = dz.build("DeadzoltPendant", pendant_sdf, (-1.02, -0.22, -1.24), (1.02, 0.22, 1.66), 0.0035, 80000)
     dz.assign(obj, dz.chrome("HoloChrome"))
     dz.export("pendant-branding", [obj])
 

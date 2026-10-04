@@ -130,6 +130,55 @@ class HeightField:
 
 
 # ---------------------------------------------------------------------------
+# Engraving: a small monoline stroke font, as polylines in a 0..1 x 0..1 box.
+
+GLYPHS = {
+    "A": [[(0, 0), (0.5, 1), (1, 0)], [(0.22, 0.42), (0.78, 0.42)]],
+    "D": [[(0, 0), (0, 1), (0.55, 1), (0.85, 0.85), (1, 0.5), (0.85, 0.15), (0.55, 0), (0, 0)]],
+    "E": [[(1, 1), (0, 1), (0, 0), (1, 0)], [(0, 0.5), (0.75, 0.5)]],
+    "L": [[(0, 1), (0, 0), (1, 0)]],
+    "O": [[(0.5, 0), (0.15, 0.12), (0, 0.5), (0.15, 0.88), (0.5, 1), (0.85, 0.88), (1, 0.5),
+           (0.85, 0.12), (0.5, 0)]],
+    "S": [[(1, 0.9), (0.75, 1), (0.25, 1), (0, 0.8), (0.1, 0.58), (0.9, 0.42), (1, 0.2), (0.75, 0),
+           (0.25, 0), (0, 0.1)]],
+    "T": [[(0, 1), (1, 1)], [(0.5, 1), (0.5, 0)]],
+    "U": [[(0, 1), (0, 0.25), (0.25, 0), (0.75, 0), (1, 0.25), (1, 1)]],
+    "I": [[(0.5, 0), (0.5, 1)]],
+    "Z": [[(0, 1), (1, 1), (0, 0), (1, 0)]],
+    "0": [[(0.5, 0), (0.1, 0.15), (0, 0.5), (0.1, 0.85), (0.5, 1), (0.9, 0.85), (1, 0.5), (0.9, 0.15),
+           (0.5, 0)]],
+    "2": [[(0, 0.8), (0.25, 1), (0.75, 1), (1, 0.8), (1, 0.6), (0, 0), (1, 0)]],
+    " ": [],
+}
+
+
+def segment2d(x, y, ax, ay, bx, by):
+    pax, pay = x - ax, y - ay
+    bax, bay = bx - ax, by - ay
+    t = np.clip((pax * bax + pay * bay) / max(bax * bax + bay * bay, 1e-12), 0, 1)
+    return length2(pax - bax * t, pay - bay * t)
+
+
+def text2d(x, y, text, cx, cy, height, stroke, width=0.62, gap=0.38):
+    """Distance to a line of engraved capitals centred on (cx, cy)."""
+    adv = height * (width + gap)
+    left = cx - (len(text) * adv - height * gap) / 2
+    d = np.full(np.shape(x), 1e3)
+    for i, ch in enumerate(text):
+        ox = left + i * adv
+        # Only evaluate near this glyph.
+        near = (np.abs(x - (ox + height * width / 2)) < height) & (np.abs(y - cy) < height)
+        if not near.any():
+            continue
+        for line in GLYPHS[ch]:
+            for (ax, ay), (bx, by) in zip(line, line[1:]):
+                seg = segment2d(x, y, ox + ax * height * width, cy - height / 2 + ay * height,
+                                ox + bx * height * width, cy - height / 2 + by * height)
+                d = np.minimum(d, seg)
+    return d - stroke / 2
+
+
+# ---------------------------------------------------------------------------
 # The Deadzolt star, traced from public/brand/star.webp
 
 STAR_CORE = (-0.08, 0.12, 0.62)
