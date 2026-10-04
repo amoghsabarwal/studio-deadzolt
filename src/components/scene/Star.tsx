@@ -6,7 +6,7 @@ import { useEffect, useRef } from "react";
 import { MathUtils, type Group, type Mesh, type MeshPhysicalMaterial } from "three";
 import { setCursorLabel } from "@/lib/cursor";
 import { getFocus } from "@/lib/focus";
-import { getStory, subscribeStory } from "@/lib/story";
+import { getEntrance, getStory, markSceneReady, subscribeStory } from "@/lib/story";
 import { getTilt } from "@/lib/tilt";
 import { REAL_CHROME, withSurfaceDetail } from "./materials";
 import { NARROW_SPOT } from "./spots";
@@ -58,6 +58,12 @@ export default function Star({ animate }: { animate: boolean }) {
 
   const { nodes } = useGLTF(STAR_URL) as unknown as { nodes: Record<string, Mesh> };
   const geometry = nodes.DeadzoltStar.geometry;
+
+  // Tells the entry screen the star has loaded and drawn.
+  useEffect(() => {
+    const id = requestAnimationFrame(() => requestAnimationFrame(markSceneReady));
+    return () => cancelAnimationFrame(id);
+  }, []);
 
   // Drag-to-spin with inertia, plus a little extra from scroll speed.
   const drag = useRef({ active: false, lastX: 0, lastY: 0, vx: 0, vy: 0 });
@@ -134,6 +140,10 @@ export default function Star({ animate }: { animate: boolean }) {
 
     hover.current = MathUtils.damp(hover.current, hovered.current ? 1 : 0, 6, dt);
 
+    // On entering, the star rushes in from deep space and spins to a stop.
+    const rush = 1 - getEntrance();
+    tilt.current.position.z = animate ? -rush * 40 : 0;
+
     if (material.current) {
       const film = FILM[story.active ? story.chapter : 0] ?? FILM[0];
       const range = material.current.iridescenceThicknessRange;
@@ -173,7 +183,7 @@ export default function Star({ animate }: { animate: boolean }) {
     u.y += MathUtils.clamp(scrollSpeed * 0.00008, -0.05, 0.05);
     const t = state.clock.elapsedTime;
     const s = spin.current;
-    s.rotation.y = u.y + Math.sin(t * 0.35) * 0.5;
+    s.rotation.y = u.y + Math.sin(t * 0.35) * 0.5 + rush * 4;
     s.rotation.x = u.x + Math.sin(t * 0.27 + 1) * 0.16;
 
     if (halo.current) {

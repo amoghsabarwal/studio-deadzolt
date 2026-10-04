@@ -767,8 +767,11 @@ main {
   box-shadow: 0 0 8px var(--red);
 }
 
-.section-head .speed-chip {
-  align-self: flex-start;
+.pricing-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
 }
 
 /* How the monthly plan runs, and the craft promise. */
@@ -807,46 +810,6 @@ main {
 
 .faq-item {
   border-bottom: 1px solid var(--line);
-}
-
-.faq-item summary {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 24px;
-  padding: 22px 0;
-  font-size: clamp(1rem, 1.3vw, 1.15rem);
-  cursor: pointer;
-  list-style: none;
-}
-
-.faq-item summary::-webkit-details-marker {
-  display: none;
-}
-
-.faq-mark {
-  position: relative;
-  flex: none;
-  width: 12px;
-  height: 12px;
-}
-
-.faq-mark::before,
-.faq-mark::after {
-  content: "";
-  position: absolute;
-  inset: 5.5px 0 auto;
-  height: 1px;
-  background: var(--paper);
-  transition: transform 0.4s var(--ease);
-}
-
-.faq-mark::after {
-  transform: rotate(90deg);
-}
-
-.faq-item[open] .faq-mark::after {
-  transform: rotate(0deg);
 }
 
 .faq-item p {
@@ -940,22 +903,6 @@ main {
   border-bottom: 1px solid var(--line);
 }
 
-.booking-embed {
-  height: 700px;
-  border-radius: var(--radius);
-  overflow: hidden;
-  background: rgba(10, 11, 16, 0.85);
-  box-shadow: 0 0 0 1px var(--line);
-}
-
-.booking-embed iframe,
-.booking-dialog iframe {
-  display: block;
-  width: 100%;
-  height: 100%;
-  border: 0;
-}
-
 /* Calendly over the site, from any booking button. */
 .booking-dialog {
   width: min(1000px, calc(100vw - 32px));
@@ -969,6 +916,12 @@ main {
   overflow: hidden;
 }
 
+.booking-dialog[open] {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+}
+
 .booking-dialog::backdrop {
   background: rgba(0, 0, 0, 0.7);
   -webkit-backdrop-filter: blur(8px);
@@ -976,16 +929,195 @@ main {
 }
 
 .booking-close {
-  position: absolute;
-  top: 12px;
-  right: 14px;
-  z-index: 1;
   padding: 8px 12px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.6);
+  background: transparent;
   color: var(--paper);
   cursor: pointer;
+}
+
+.booking-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 4px 10px;
+}
+
+.booking-bar p {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--paper);
+}
+
+/* Calendly's own page sits in a framed window; until it loads, the frame
+   says so instead of flashing white. */
+.booking-frame {
+  position: relative;
+  flex: 1;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #0f1016;
+  box-shadow: 0 0 0 1px var(--line);
+}
+
+.booking-frame iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  opacity: 0;
+  transition: opacity 0.5s var(--ease);
+}
+
+.booking-frame[data-loaded] iframe {
+  opacity: 1;
+}
+
+.booking-wait {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(100deg, transparent 30%, rgba(237, 237, 237, 0.05) 50%, transparent 70%) 0 0 / 250% 100%;
+  animation: booking-shimmer 1.6s linear infinite;
+}
+
+.booking-frame[data-loaded] .booking-wait {
+  display: none;
+}
+
+@keyframes booking-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -150% 0;
+  }
+}
+
+/* The closing booking card, in the same foil as the plans. */
+.call-card {
+  max-width: 520px;
+  justify-self: end;
+  width: 100%;
+}
+
+.call-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+
+.call-steps li {
+  display: flex;
+  gap: 14px;
+  align-items: baseline;
+}
+
+/* The entry screen: everything loads behind it, once per visit. */
+.entry {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(ellipse at 50% 45%, #10121c 0%, #000 70%);
+  transition: opacity 0.7s var(--ease), visibility 0.7s;
+  /* If scripts are slow or fail, the screen lifts by itself. */
+  animation: entry-failsafe 0.6s 3s forwards;
+}
+
+@keyframes entry-failsafe {
+  to {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+
+html[data-entered] .entry,
+.entry[data-leaving] {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+html[data-entry="open"] {
+  overflow: hidden;
+}
+
+/* Once scripts run, they decide when it lifts. */
+html[data-entry="open"] .entry {
+  animation: none;
+}
+
+.entry-core {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  padding: 0 var(--gutter);
+  text-align: center;
+}
+
+.entry-star {
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+  animation: entry-spin 6s linear infinite;
+  mix-blend-mode: screen;
+  filter: drop-shadow(0 0 24px rgba(160, 180, 255, 0.25));
+}
+
+.entry[data-leaving] .entry-core {
+  transform: scale(1.06);
+  transition: transform 0.7s var(--ease);
+}
+
+.entry-status {
+  min-width: 22ch;
+  color: var(--paper);
+}
+
+.entry-bar {
+  width: 180px;
+  height: 1px;
+  background: var(--line);
+  overflow: hidden;
+}
+
+.entry-bar span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--paper), var(--red));
+  transform-origin: left;
+  transition: transform 0.4s var(--ease);
+}
+
+.entry-enter {
+  margin-top: 10px;
+  min-width: 160px;
+}
+
+.entry-enter:disabled {
+  opacity: 0.35;
+}
+
+@keyframes entry-spin {
+  to {
+    transform: rotateY(360deg);
+  }
+}
+
+@keyframes entry-pulse {
+  50% {
+    opacity: 0.4;
+  }
 }
 
 /* The promise under every main booking button. */
@@ -1012,6 +1144,412 @@ main {
 
 .reel-cta span {
   color: var(--dim);
+}
+
+
+/* ---------- Motion system: holo scramble ---------- */
+@property --spin {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 0deg;
+}
+
+.holo-word {
+  display: inline-block;
+  white-space: pre;
+  text-align: left;
+}
+
+/* While the scramble runs, the text sits at half strength and a bar of the
+   star's foil sweeps across it. */
+.is-holo.has-bar {
+  background: linear-gradient(
+      90deg,
+      rgba(237, 237, 237, 0.5) calc(var(--bar, -30%) - 30%),
+      #ff3da8 calc(var(--bar, -30%) - 16%),
+      #ffe14d calc(var(--bar, -30%) - 6%),
+      #ffffff var(--bar, -30%),
+      #38d9ff calc(var(--bar, -30%) + 8%),
+      #a07cff calc(var(--bar, -30%) + 18%),
+      rgba(237, 237, 237, 0.5) calc(var(--bar, -30%) + 30%)
+    );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.is-holo.has-bar .holo-word {
+  color: transparent;
+}
+
+/* ---------- The booking button: orbit to arrow ---------- */
+.cta {
+  transition: background 0.3s, color 0.3s, border-color 0.3s, padding 0.16s var(--ease), transform 0.4s var(--ease);
+}
+
+.cta:hover {
+  padding-right: 16px;
+  border-color: #ffffff;
+}
+
+.cta-orbit {
+  position: relative;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-right: -4px;
+  animation: cta-spin 9s linear infinite;
+}
+
+.cta-orbit i {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2.5px;
+  height: 2.5px;
+  margin: -1.25px 0 0 -1.25px;
+  border-radius: 50%;
+  background: currentColor;
+  transform: rotate(calc(var(--i) * 45deg + var(--spin))) translateX(6px);
+  /* Leaving: springs back, softer. */
+  transition: transform 0.6s cubic-bezier(0.3, 1.45, 0.55, 1) calc(var(--i) * 26ms);
+}
+
+.cta:hover .cta-orbit i,
+.cta:focus-visible .cta-orbit i {
+  transform: translate(var(--x), var(--y));
+  /* Arriving: a stiffer spring. */
+  transition: transform 0.42s cubic-bezier(0.25, 1.75, 0.5, 1) calc(var(--i) * 26ms);
+}
+
+.cta-orbit i:nth-child(1) {
+  --x: -6px;
+  --y: 0px;
+}
+
+.cta-orbit i:nth-child(2) {
+  --x: -2px;
+  --y: 0px;
+}
+
+.cta-orbit i:nth-child(3) {
+  --x: 2px;
+  --y: 0px;
+}
+
+.cta-orbit i:nth-child(4) {
+  --x: 6px;
+  --y: 0px;
+}
+
+.cta-orbit i:nth-child(5) {
+  --x: 3px;
+  --y: -3px;
+}
+
+.cta-orbit i:nth-child(6) {
+  --x: 0px;
+  --y: -6px;
+}
+
+.cta-orbit i:nth-child(7) {
+  --x: 3px;
+  --y: 3px;
+}
+
+.cta-orbit i:nth-child(8) {
+  --x: 0px;
+  --y: 6px;
+}
+
+@keyframes cta-spin {
+  to {
+    --spin: 360deg;
+  }
+}
+
+/* ---------- Starlight hairlines ---------- */
+/* A dividing line lights up where the pointer passes, like starlight along
+   an edge. --hx/--hy are the pointer's position in the element (HoloDriver). */
+[data-hairline] {
+  position: relative;
+}
+
+[data-hairline]::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  background: radial-gradient(150px circle at var(--hx, -999px) var(--hy, -999px), rgba(205, 220, 255, 0.85), transparent 100%);
+  opacity: var(--hon, 0);
+  transition: opacity 0.4s;
+}
+
+[data-hairline="bottom"]::after {
+  inset: auto 0 -1px;
+  height: 1px;
+  background-position: 0 100%;
+}
+
+[data-hairline="top"]::after {
+  inset: -1px 0 auto;
+  height: 1px;
+}
+
+[data-hairline="box"]::after {
+  inset: -1px;
+  padding: 1px;
+  border-radius: inherit;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+@media (hover: none) {
+  [data-hairline]::after {
+    display: none;
+  }
+}
+
+/* ---------- Availability ---------- */
+.availability {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--paper);
+}
+
+.availability::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--red);
+  box-shadow: 0 0 0 0 rgba(255, 31, 31, 0.6);
+  animation: ping 2s ease-out infinite;
+}
+
+@keyframes ping {
+  70% {
+    box-shadow: 0 0 0 8px rgba(255, 31, 31, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 31, 31, 0);
+  }
+}
+
+/* ---------- Phone booking dock ---------- */
+.book-dock {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .book-dock {
+    position: fixed;
+    left: 50%;
+    bottom: calc(14px + env(safe-area-inset-bottom));
+    z-index: 60;
+    display: block;
+    transform: translate(-50%, 140%);
+    transition: transform 0.5s var(--ease);
+  }
+
+  .book-dock[data-shown] {
+    transform: translate(-50%, 0);
+  }
+
+  .book-dock .button {
+    min-height: 50px;
+    padding: 0 26px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.4);
+  }
+}
+
+/* ---------- Plans: the subscription's flywheel of stars ---------- */
+.flywheel {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.flywheel::before {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background-image: radial-gradient(1px 1px at 20% 30%, rgba(255, 255, 255, 0.7), transparent),
+    radial-gradient(1px 1px at 70% 20%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1.5px 1.5px at 40% 75%, rgba(255, 210, 210, 0.6), transparent),
+    radial-gradient(1px 1px at 85% 60%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 10% 85%, rgba(255, 255, 255, 0.4), transparent),
+    radial-gradient(1.2px 1.2px at 55% 45%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1px 1px at 30% 55%, rgba(255, 255, 255, 0.35), transparent),
+    radial-gradient(1px 1px at 65% 85%, rgba(255, 255, 255, 0.45), transparent);
+  background-size: 180px 180px;
+  transform: rotate(var(--rot, 0deg));
+  opacity: 0.35;
+}
+
+/* ---------- FAQ: a grid-row open, dots that become a ring ---------- */
+.faq-q {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  padding: 22px 0;
+  font: inherit;
+  font-size: clamp(1rem, 1.3vw, 1.15rem);
+  text-align: left;
+  color: var(--paper);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.faq-item h3 {
+  font: inherit;
+}
+
+.faq-a {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s var(--ease);
+}
+
+.faq-item[data-open] .faq-a {
+  grid-template-rows: 1fr;
+}
+
+.faq-a > div {
+  overflow: hidden;
+}
+
+.faq-dots {
+  position: relative;
+  flex: none;
+  width: 16px;
+  height: 16px;
+}
+
+.faq-dots i {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2.5px;
+  height: 2.5px;
+  margin: -1.25px 0 0 -1.25px;
+  border-radius: 50%;
+  background: var(--paper);
+  /* Closed: a plus of five dots (three wait in the middle). */
+  transform: translate(var(--px), var(--py));
+  opacity: var(--po, 1);
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1) calc(var(--i) * 30ms), opacity 0.3s;
+}
+
+.faq-item[data-open] .faq-dots {
+  animation: cta-spin 4s linear infinite;
+}
+
+.faq-item[data-open] .faq-dots i {
+  transform: rotate(calc(var(--i) * 45deg + var(--spin))) translateX(6px);
+  opacity: 1;
+}
+
+.faq-dots i:nth-child(1) {
+  --px: 0px;
+  --py: 0px;
+}
+
+.faq-dots i:nth-child(2) {
+  --px: 0px;
+  --py: -6px;
+}
+
+.faq-dots i:nth-child(3) {
+  --px: 6px;
+  --py: 0px;
+}
+
+.faq-dots i:nth-child(4) {
+  --px: 0px;
+  --py: 6px;
+}
+
+.faq-dots i:nth-child(5) {
+  --px: -6px;
+  --py: 0px;
+}
+
+.faq-dots i:nth-child(6) {
+  --px: 0px;
+  --py: 0px;
+  --po: 0;
+}
+
+.faq-dots i:nth-child(7) {
+  --px: 0px;
+  --py: 0px;
+  --po: 0;
+}
+
+.faq-dots i:nth-child(8) {
+  --px: 0px;
+  --py: 0px;
+  --po: 0;
+}
+
+/* ---------- 3-step row with mock cards ---------- */
+.step-card {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(10, 11, 16, 0.85);
+  font-size: 13px;
+  translate: calc(var(--mx, 0) * 4px) calc(var(--my, 0) * 4px);
+  box-shadow: 0 30px 60px -30px rgba(160, 180, 255, 0);
+  transition: box-shadow 0.8s var(--ease);
+}
+
+.steps[data-lit] .step-card {
+  box-shadow: 0 30px 60px -30px rgba(160, 180, 255, 0.45);
+}
+
+.step-card .label {
+  font-size: 10px;
+}
+
+.step-frame {
+  aspect-ratio: 16 / 9;
+  border-radius: 8px;
+  background: url("/models/previews/deadzolt-star.webp") 50% 50% / auto 120% no-repeat, #05060a;
+}
+
+.step-formats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.step-formats span {
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+
+.steps li {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.step-head {
+  display: flex;
+  gap: 14px;
+  align-items: baseline;
 }
 
 /* Inner pages */
@@ -1707,6 +2245,15 @@ main {
 
 /* Phones */
 @media (max-width: 760px) {
+  .step-frame {
+    aspect-ratio: 3 / 1;
+  }
+
+  /* The hero's buttons and promise get the room; the service list is in the footer. */
+  .hero-foot ul {
+    display: none;
+  }
+
   /* The plans swipe sideways, the monthly plan first. */
   .plans {
     display: flex;
@@ -1745,8 +2292,8 @@ main {
     grid-template-columns: 1fr;
   }
 
-  .booking-embed {
-    height: 760px;
+  .call-card {
+    justify-self: stretch;
   }
 
   .booking-dialog {
@@ -1847,6 +2394,11 @@ main {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .entry-star,
+  .booking-wait {
+    animation: none;
+  }
+
 
   .keepsake-card {
     opacity: 1;

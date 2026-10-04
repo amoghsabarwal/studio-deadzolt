@@ -1,9 +1,10 @@
 "use client";
 
+import BookButton from "@/components/BookButton";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { bookingLink, site } from "@/content/site";
+import { site } from "@/content/site";
 
 const nav = [
   { href: "/works", label: "Work" },
@@ -32,9 +33,7 @@ export default function SiteHeader() {
             );
           })}
           <li>
-            <a {...bookingLink("header")} className="button button-primary button-small">
-              {site.cta}
-            </a>
+            <BookButton from="header" small />
           </li>
         </ul>
       </nav>

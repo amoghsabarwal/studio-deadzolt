@@ -1,7 +1,8 @@
+import BookButton from "@/components/BookButton";
 import Image from "next/image";
 import Link from "next/link";
 import Keepsake from "@/components/Keepsake";
-import { bookingLink, site } from "@/content/site";
+import { site } from "@/content/site";
 
 const pages = [
   { href: "/", label: "Home" },
@@ -17,9 +18,7 @@ export default function SiteFooter() {
         <div className="footer-brand">
           <Image src="/brand/wordmark.svg" alt={site.name} width={583} height={61} className="footer-mark" />
           <p>{site.tagline}</p>
-          <a className="button button-primary" {...bookingLink("footer")}>
-            {site.cta}
-          </a>
+          <BookButton from="footer" />
         </div>
 
         <nav className="footer-col" aria-label="Footer">

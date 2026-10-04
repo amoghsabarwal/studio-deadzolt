@@ -1,9 +1,10 @@
 "use client";
 
+import BookButton from "@/components/BookButton";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useEffect, useRef, useState } from "react";
-import { bookingLink, showreel, site } from "@/content/site";
+import { showreel, site } from "@/content/site";
 import { getReducedMotion, setScenePaused, setStory } from "@/lib/story";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -50,19 +51,19 @@ export default function Showreel() {
         setInView(self.isActive);
       },
     });
+    // The frame zooms out to full size as it scrolls in, while the poster
+    // inside settles from a closer crop.
     const opens = getReducedMotion()
       ? null
-      : gsap.fromTo(
-          box,
-          { scale: 0.74, "--reel-round": "28px", "--reel-glow": 0 },
-          {
-            scale: 1,
-            "--reel-round": "14px",
-            "--reel-glow": 1,
-            ease: "none",
-            scrollTrigger: { trigger: el, start: "top bottom", end: "center 55%", scrub: 0.6 },
-          },
-        );
+      : gsap
+          .timeline({ scrollTrigger: { trigger: el, start: "top bottom", end: "center 55%", scrub: 1.2 } })
+          .fromTo(
+            box,
+            { scale: 0.8, y: 60, "--reel-round": "28px", "--reel-glow": 0 },
+            { scale: 1, y: 0, "--reel-round": "14px", "--reel-glow": 1, ease: "none" },
+            0,
+          )
+          .fromTo(box.querySelector(".reel-fallback"), { scale: 1.4 }, { scale: 1, ease: "none" }, 0);
     return () => {
       stage.kill();
       opens?.scrollTrigger?.kill();
@@ -114,9 +115,7 @@ export default function Showreel() {
           Motion graphics for startups and brands.
         </p>
         <div className="reel-book">
-          <a className="button button-primary" {...bookingLink("reel")}>
-            {site.cta}
-          </a>
+          <BookButton from="reel" />
           <p className="cta-note">{site.assurance}</p>
         </div>
       </div>

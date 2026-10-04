@@ -2,14 +2,14 @@
 
 import gsap from "gsap";
 import { useEffect } from "react";
-import { DURATION, revealLines, rollNumber, scramble } from "@/lib/motion/text";
-
-const DURATION_LONG = DURATION.long;
+import { holoScramble } from "@/lib/motion/holo";
+import { rollNumber } from "@/lib/motion/text";
+import { DUR, EASE, RISE, STAGGER, replay } from "@/lib/motion/tokens";
 import { getReducedMotion } from "@/lib/story";
 
 // Scroll reveals for any page:
-// [data-split] headings rise line by line from behind a mask,
-// [data-scramble] labels decode from random characters,
+// [data-split] headings rise a little and scan in through the holo scramble,
+// [data-scramble] labels scan in the same way,
 // [data-count] numbers roll up to their value,
 // [data-process] steps light up along a line drawn by the scroll,
 // [data-stagger] lists bring their children up one after another,
@@ -18,14 +18,20 @@ import { getReducedMotion } from "@/lib/story";
 export function useReveals() {
   useEffect(() => {
     if (getReducedMotion()) return;
-    const splits: { revert: () => void }[] = [];
     const ctx = gsap.context(() => {
       gsap.utils.toArray<HTMLElement>("[data-split]").forEach((el) => {
-        splits.push(revealLines(el, { trigger: { trigger: el, start: "top 90%" } }));
+        gsap.from(el, {
+          y: RISE.text,
+          opacity: 0,
+          duration: DUR.slow,
+          ease: EASE.content,
+          scrollTrigger: replay(el),
+        });
+        holoScramble(el, { scrollTrigger: replay(el) });
       });
 
       gsap.utils.toArray<HTMLElement>("[data-scramble]").forEach((el) => {
-        scramble(el, { trigger: { trigger: el, start: "top 92%" } });
+        holoScramble(el, { speed: 1.6, scrollTrigger: replay(el, "top 92%") });
       });
 
       gsap.utils.toArray<HTMLElement>("[data-count]").forEach((el) => {
@@ -56,11 +62,11 @@ export function useReveals() {
 
       gsap.utils.toArray<HTMLElement>("[data-stagger]").forEach((list) => {
         gsap.from(list.children, {
-          y: 36,
+          y: RISE.text,
           opacity: 0,
-          duration: 1.1,
-          ease: "expo.out",
-          stagger: 0.08,
+          duration: DUR.base,
+          ease: EASE.content,
+          stagger: STAGGER,
           // Hand transforms back to CSS so hover lifts and tilts work afterwards.
           clearProps: "transform",
           scrollTrigger: { trigger: list, start: "top 88%" },
@@ -73,8 +79,8 @@ export function useReveals() {
           { clipPath: "inset(0% 100% 0% 0%)" },
           {
             clipPath: "inset(0% 0% 0% 0%)",
-            duration: DURATION_LONG,
-            ease: "expo.inOut",
+            duration: DUR.slow,
+            ease: "power3.inOut",
             clearProps: "clipPath",
             scrollTrigger: { trigger: el, start: "top 98%" },
           },
@@ -83,19 +89,16 @@ export function useReveals() {
 
       gsap.utils.toArray<HTMLElement>("[data-reveal]").forEach((el) => {
         gsap.from(el, {
-          y: 32,
+          y: RISE.text,
           opacity: 0,
-          duration: 1.1,
-          ease: "expo.out",
+          duration: DUR.base,
+          ease: EASE.content,
           clearProps: "transform",
           scrollTrigger: { trigger: el, start: "top 88%" },
         });
       });
     });
-    return () => {
-      ctx.revert();
-      splits.forEach((s) => s.revert());
-    };
+    return () => ctx.revert();
   }, []);
 }
 

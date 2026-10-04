@@ -1,5 +1,5 @@
+import BookButton from "@/components/BookButton";
 import Link from "next/link";
-import BookingEmbed from "@/components/BookingEmbed";
 import Faq from "@/components/Faq";
 import ProofStrip from "@/components/ProofStrip";
 import Showreel from "@/components/Showreel";
@@ -7,11 +7,40 @@ import HoloLayers from "@/components/HoloLayers";
 import StudioClock from "@/components/StudioClock";
 import TiltHint from "@/components/TiltHint";
 import StoryDriver from "@/components/story/StoryDriver";
-import { bookingLink, plans, projects, site } from "@/content/site";
+import { plans, projects, site } from "@/content/site";
 
 // The home page is short and built to get a call booked: the hero, the
 // showreel, the work, the plans, and one last ask. Each element with
 // data-chapter is a chapter; the 3D scene moves to a new pose for each one.
+
+// Small mock screens under the three steps of the monthly plan.
+function StepCard({ step }: { step: number }) {
+  if (step === 0)
+    return (
+      <span className="step-card" aria-hidden="true">
+        <span className="label"># deadzolt · new request</span>
+        <span>Launch teaser for the new app, 20 seconds, vertical and wide.</span>
+      </span>
+    );
+  if (step === 1)
+    return (
+      <span className="step-card" aria-hidden="true">
+        <span className="step-frame" />
+        <span className="label">v1 · frames for review</span>
+      </span>
+    );
+  return (
+    <span className="step-card" aria-hidden="true">
+      <span className="label">Exports</span>
+      <span className="step-formats">
+        <span>16:9</span>
+        <span>9:16</span>
+        <span>1:1</span>
+        <span>4:5</span>
+      </span>
+    </span>
+  );
+}
 
 export default function Home() {
   return (
@@ -32,9 +61,7 @@ export default function Home() {
             seen.
           </p>
           <div className="actions">
-            <a className="button button-primary" {...bookingLink("hero")}>
-              {site.cta}
-            </a>
+            <BookButton from="hero" />
             <a className="button" href="#showreel">
               Watch the reel
             </a>
@@ -92,7 +119,10 @@ export default function Home() {
             Every project starts with a free 30-minute call. You leave with a clear scope and a fixed quote,
             whether or not we work together.
           </p>
-          <span className="speed-chip label">{site.speed}</span>
+          <div className="pricing-chips">
+            <span className="speed-chip label">{site.speed}</span>
+            <span className="availability label">{site.availability}</span>
+          </div>
         </div>
 
         <TiltHint />
@@ -104,8 +134,11 @@ export default function Home() {
               data-featured={plan.featured || undefined}
               data-holo
               data-tier={plan.foil}
+              data-hairline="box"
+              data-drumroll
             >
               <HoloLayers />
+              {plan.featured && <span className="flywheel" aria-hidden="true" />}
               <header>
                 <p className="label">{plan.note}</p>
                 <h3 className="plan-name">{plan.name}</h3>
@@ -117,22 +150,23 @@ export default function Home() {
                   <li key={item}>{item}</li>
                 ))}
               </ul>
-              <a
-                className={plan.featured ? "button button-primary" : "button"}
-                {...bookingLink(`plan-${plan.name.toLowerCase().replace(/\s+/g, "-")}`)}
-              >
-                {site.cta}
-              </a>
+              <BookButton
+                from={`plan-${plan.name.toLowerCase().replace(/\s+/g, "-")}`}
+                primary={Boolean(plan.featured)}
+              />
               {plan.fine && <p className="plan-fine label">{plan.fine}</p>}
             </article>
           ))}
         </div>
 
-        <ol className="steps" aria-label="How the monthly plan runs">
+        <ol className="steps" aria-label="How the monthly plan runs" data-hairline="top" data-parallax>
           {site.steps.map((step, i) => (
             <li key={step}>
-              <span className="label">{String(i + 1).padStart(2, "0")}</span>
-              {step}
+              <span className="step-head">
+                <span className="label">{String(i + 1).padStart(2, "0")}</span>
+                {step}
+              </span>
+              <StepCard step={i} />
             </li>
           ))}
         </ol>
@@ -147,15 +181,30 @@ export default function Home() {
           <h2 className="section-title" data-split>
             Have something to launch?
           </h2>
-          <p className="section-sub">
-            Pick a time that suits you. {site.ctaNote}
-          </p>
-          <p className="cta-note">{site.assurance}</p>
+          <p className="section-sub">Pick a time that suits you. The calendar shows times in your own time zone.</p>
           <p className="contact-alt">
             Prefer email? <a href={`mailto:${site.email}`}>{site.email}</a>
           </p>
         </div>
-        <BookingEmbed from="closing" />
+
+        <article className="plan call-card" data-holo data-tier="red" data-hairline="box">
+          <HoloLayers />
+          <header>
+            <p className="availability label">{site.availability}</p>
+            <p className="label">Free · 30 min · Video call</p>
+            <h3 className="plan-name">A call with {site.founder.split(" ")[0]}</h3>
+          </header>
+          <ol className="call-steps">
+            {site.callSteps.map((step, i) => (
+              <li key={step}>
+                <span className="label">{String(i + 1).padStart(2, "0")}</span>
+                {step}
+              </li>
+            ))}
+          </ol>
+          <BookButton from="closing" />
+          <p className="plan-fine label">{site.assurance}</p>
+        </article>
       </section>
     </>
   );

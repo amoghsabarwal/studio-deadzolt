@@ -1,6 +1,7 @@
+import BookButton from "@/components/BookButton";
 import type { Metadata } from "next";
 import Image from "next/image";
-import { bookingLink, site } from "@/content/site";
+import { site } from "@/content/site";
 
 export const metadata: Metadata = {
   title: "About",
@@ -49,9 +50,7 @@ export default function AboutPage() {
         />
       </div>
 
-      <a className="button" {...bookingLink("about")}>
-        {site.cta} <span aria-hidden="true">→</span>
-      </a>
+      <BookButton from="about" primary={false} />
     </section>
   );
 }
