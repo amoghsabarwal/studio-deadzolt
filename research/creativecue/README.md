@@ -133,7 +133,15 @@ Every 1px divider (`rgba(255,255,255,.1)`) has a **280px radial glow** (`rgba(25
   - Text quotes: Luca Matarazzo (GrowPronto), Luca Hontau (KobaltClub), Yenney Curbelo, Kira Poole, Caitlin Sise, Brandon Bal (DADFUEL).
   - **"As Seen On"** row: awwwards., World Brand Design Society, Clutch 5.0 ★★★★★.
   - CTA **View All Testimonials (13)**.
-- **Motion:** the same header and scramble system. The cards use the shared `cardAppear` keyframe (`opacity 0, y40 → 0`). I didn't decode this chunk's per-card timing, so treat that part as inferred from the CSS.
+- **Motion: "colour on hover".** Cards (560px tall, `#070707`) sit **desaturated** under a black `mix-blend-mode: saturation` overlay. Their video thumbnails are at 50% opacity with `mix-blend-mode: lighten`.
+  - On hover (desktop), or when a card is 60% in view (mobile, one card active at a time):
+    - The **video starts playing**. On mouse-leave it pauses and rewinds to 0.
+    - The **saturation overlay fades out** (0.8s ease-in-out), so colour bleeds in. The avatar gets the same treatment.
+    - The image opacity goes 0.5→1 (0.4s).
+    - **Glow hairlines** on the card's top and edges fade in (0.4s).
+    - A **soft grey bloom** behind the card (`#a2a2a2`, `blur(111px)`, offset 60px/60px) goes 0→0.1 opacity (0.8s).
+    - The client logo gets a **"tubelight"**: a blurred white gradient grows from height 0→60% at 0.1 opacity (0.4s), and a 2px white underline fades in.
+  - The "As Seen On" title scrambles at speed 2 when its top reaches 80% of the viewport, and re-arms on scroll-back.
 
 ### 7. (05) Pricing ("The pricing is transparent, just like our process.")
 - **Content:** sub "No hidden fees, no per-revision charges, no scope creep surprises…"
