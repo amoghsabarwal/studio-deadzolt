@@ -1,5 +1,5 @@
 // Counts visitors for the keepsake at the bottom of every page. The count
-// lives in an Upstash Redis store (added to the Vercel project from the
+// lives in a free Upstash Redis store (added to the Vercel project from the
 // Marketplace, which sets the env vars below). Without a store the route
 // answers { number: null } and the keepsake leaves the number off rather
 // than making one up.

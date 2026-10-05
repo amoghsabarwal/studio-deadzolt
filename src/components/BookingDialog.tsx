@@ -4,6 +4,7 @@ import { track } from "@vercel/analytics";
 import { useEffect, useRef, useState } from "react";
 import { preconnect } from "react-dom";
 import { bookingEmbed, site } from "@/content/site";
+import { count } from "@/lib/count";
 import { setScenePaused } from "@/lib/story";
 
 // Every booking button opens Calendly over the site instead of sending the
@@ -13,6 +14,8 @@ import { setScenePaused } from "@/lib/story";
 export default function BookingDialog() {
   const dialog = useRef<HTMLDialogElement>(null);
   const [from, setFrom] = useState<string | null>(null);
+  // The button behind the open popup, so a booking is counted against it.
+  const opener = useRef<string | undefined>(undefined);
   const [loaded, setLoaded] = useState(false);
   // Warm the connection to Calendly up front, so the calendar starts loading
   // the moment the popup opens.
@@ -24,20 +27,26 @@ export default function BookingDialog() {
       const link = (e.target as HTMLElement | null)?.closest<HTMLAnchorElement>("a[data-book]");
       if (!link) return;
       const source = link.dataset.book ?? "unknown";
-      track("Book click", { from: source });
+      opener.current = source;
       // Let a new-tab click (cmd, ctrl, middle button) do what it asks.
-      if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
-      e.preventDefault();
-      // The popup opens first; the 3D behind it holds still while it is open.
-      dialog.current?.showModal();
-      setFrom(source);
-      setScenePaused(true, "booking");
+      if (!(e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0)) {
+        e.preventDefault();
+        // The popup opens first; the 3D behind it holds still while it is open.
+        dialog.current?.showModal();
+        setFrom(source);
+        setScenePaused(true, "booking");
+      }
+      // Counted after the popup is up, so counting never delays it.
+      track("Book click", { from: source });
+      count("book", source);
     };
     // Calendly reports a finished booking from inside its frame.
     const message = (e: MessageEvent) => {
       if (e.origin !== "https://calendly.com") return;
       const data = e.data as { event?: string } | null;
-      if (data?.event === "calendly.event_scheduled") track("Call booked");
+      if (data?.event !== "calendly.event_scheduled") return;
+      track("Call booked");
+      count("booked", opener.current);
     };
     document.addEventListener("click", click);
     window.addEventListener("message", message);
