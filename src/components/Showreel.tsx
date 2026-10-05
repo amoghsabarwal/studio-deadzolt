@@ -51,16 +51,16 @@ export default function Showreel() {
         setInView(self.isActive);
       },
     });
-    // The frame zooms out to full size as it scrolls in, while the poster
-    // inside settles from a closer crop.
+    // The frame zooms out to full size as it scrolls in, through a soft oval
+    // mask that opens up, while the poster inside settles from a closer crop.
     const opens = getReducedMotion()
       ? null
       : gsap
           .timeline({ scrollTrigger: { trigger: el, start: "top bottom", end: "center 55%", scrub: 1.2 } })
           .fromTo(
             box,
-            { scale: 0.8, y: 60, "--reel-round": "28px", "--reel-glow": 0 },
-            { scale: 1, y: 0, "--reel-round": "14px", "--reel-glow": 1, ease: "none" },
+            { scale: 0.8, y: 60, "--reel-round": "28px", "--reel-glow": 0, "--reel-mask": "18%" },
+            { scale: 1, y: 0, "--reel-round": "14px", "--reel-glow": 1, "--reel-mask": "140%", ease: "none" },
             0,
           )
           .fromTo(box.querySelector(".reel-fallback"), { scale: 1.4 }, { scale: 1, ease: "none" }, 0);

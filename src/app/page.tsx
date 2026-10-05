@@ -150,8 +150,26 @@ export default function Home() {
 
         <article className="plan call-card" data-holo data-tier="red" data-hairline="box">
           <HoloLayers />
+          {/* A slow spinning stamp on the corner, after recent.design. Decoration only. */}
+          <svg className="call-badge" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+            <defs>
+              <path id="call-badge-ring" d="M50 50m-36 0a36 36 0 1 1 72 0a36 36 0 1 1 -72 0" />
+            </defs>
+            <circle cx="50" cy="50" r="49" />
+            <text>
+              <textPath href="#call-badge-ring" textLength="224" lengthAdjust="spacing">
+                Book a free call · 30 min · Book a free call · 30 min ·
+              </textPath>
+            </text>
+            <circle className="call-badge-dot" cx="50" cy="50" r="4" />
+          </svg>
           <header>
-            <p className="availability label">{site.availability}</p>
+            <p className="call-live label">
+              <span className="availability">{site.availability}</span>
+              <span className="call-clock">
+                Indore <StudioClock />
+              </span>
+            </p>
             <p className="label">Free · 30 min · Video call</p>
             <h3 className="plan-name">A call with {site.founder.split(" ")[0]}</h3>
           </header>
