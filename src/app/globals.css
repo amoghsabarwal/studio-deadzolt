@@ -366,6 +366,11 @@ main {
 
 .section-title {
   font-size: clamp(1.9rem, 3.4vw, 3rem);
+  /* A faint Y2K echo: a hair of red split on one side, a soft ghost behind. */
+  text-shadow:
+    -1px 0 rgba(255, 31, 31, 0.32),
+    1px 0 rgba(237, 237, 237, 0.14),
+    0 0 22px rgba(237, 237, 237, 0.08);
 }
 
 .section-sub {
@@ -2554,6 +2559,11 @@ html[data-entry="open"] {
   font-size: 8.6px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+[data-offscreen],
+[data-offscreen]::before {
+  animation-play-state: paused;
 }
 
 @keyframes badge-spin {

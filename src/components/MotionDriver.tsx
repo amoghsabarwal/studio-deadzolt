@@ -17,6 +17,16 @@ const REACH = 150;
 export default function MotionDriver() {
   const pathname = usePathname();
 
+  // Looping CSS animations (the call card stamp, the availability ping) hold
+  // still while they're off screen, on every device.
+  useEffect(() => {
+    const io = new IntersectionObserver((entries) =>
+      entries.forEach((e) => e.target.toggleAttribute("data-offscreen", !e.isIntersecting)),
+    );
+    document.querySelectorAll(".call-badge, .availability").forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, [pathname]);
+
   useEffect(() => {
     if (getReducedMotion() || !window.matchMedia("(hover: hover)").matches) return;
     let frame = 0;

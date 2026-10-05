@@ -62,6 +62,12 @@ export default function Showreel() {
       onToggle: (self) => {
         setStory({ stage: self.isActive });
         setInView(self.isActive);
+        // The loop only plays while the reel is on screen.
+        const v = video.current;
+        if (v?.currentSrc) {
+          if (self.isActive) v.play().catch(() => {});
+          else v.pause();
+        }
       },
     });
     let stopWaiting: (() => void) | undefined;
