@@ -1,0 +1,215 @@
+/*
+  About: a short intro on the left (the star holds the top right), then the
+  studio's file as a spec sheet beside the pendant, the numbered list of what
+  the studio makes, and one booking line.
+*/
+
+.ab-head {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 58%;
+  margin-bottom: clamp(88px, 11vw, 160px);
+}
+
+.ab-title {
+  font-size: clamp(2rem, 3.8vw, 3.4rem);
+  max-width: 17ch;
+}
+
+.ab-lede {
+  max-width: 46ch;
+  color: var(--dim);
+  font-size: 17px;
+}
+
+/* The file: sheet and plate side by side, the same height. */
+.ab-file {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+.ab-sheet {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 8px 24px 12px;
+}
+
+.ab-sheet-head {
+  display: flex;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.ab-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  gap: 16px;
+  align-items: baseline;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.ab-row:last-child {
+  border-bottom: 0;
+}
+
+/* A red tick slides in beside the key on hover. */
+.ab-row::before {
+  content: "";
+  position: absolute;
+  left: -24px;
+  top: 50%;
+  width: 12px;
+  height: 1px;
+  background: var(--red);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.18s var(--ease);
+}
+
+.ab-row:hover::before {
+  transform: scaleX(1);
+}
+
+.ab-row dt {
+  transition: color 0.18s var(--ease);
+}
+
+.ab-row:hover dt {
+  color: var(--paper);
+}
+
+.ab-row dd {
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.ab-row .studio-clock {
+  color: var(--dim);
+}
+
+.ab-plate {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--ink);
+}
+
+.ab-plate img {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  object-fit: cover;
+  transition: transform 0.8s var(--ease);
+}
+
+.ab-plate:hover img {
+  transform: scale(1.03);
+}
+
+.ab-plate figcaption {
+  padding: 14px 20px;
+  border-top: 1px solid var(--line);
+}
+
+/* What the studio makes: a numbered index in two columns. */
+.ab-make {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: 16px;
+  margin-top: clamp(72px, 10vw, 128px);
+}
+
+.ab-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 32px;
+  border-top: 1px solid var(--line);
+}
+
+.ab-list li {
+  display: flex;
+  align-items: baseline;
+  gap: 20px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: clamp(1.05rem, 1.5vw, 1.3rem);
+  letter-spacing: -0.01em;
+  transition: transform 0.18s var(--ease);
+}
+
+.ab-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--dim);
+  transition: color 0.18s var(--ease);
+}
+
+.ab-list li:hover {
+  transform: translateX(6px);
+}
+
+.ab-list li:hover .ab-num {
+  color: var(--red);
+}
+
+.ab-close {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-top: clamp(72px, 10vw, 128px);
+  padding-top: 32px;
+  border-top: 1px solid var(--line);
+}
+
+.ab-close-line {
+  font-size: clamp(1.1rem, 1.6vw, 1.35rem);
+  letter-spacing: -0.01em;
+  max-width: 32ch;
+}
+
+@media (max-width: 760px) {
+  /* The star takes the top of the screen on phones, so the copy starts below it. */
+  .about {
+    padding-top: 40vh;
+  }
+
+  .ab-head {
+    max-width: none;
+  }
+
+  .ab-file,
+  .ab-make,
+  .ab-list {
+    grid-template-columns: 1fr;
+  }
+
+  .ab-sheet {
+    padding: 4px 18px 8px;
+  }
+
+  .ab-row {
+    grid-template-columns: 92px minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .ab-row::before {
+    display: none;
+  }
+
+  .ab-plate img {
+    aspect-ratio: 996 / 558;
+  }
+}
