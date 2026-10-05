@@ -597,6 +597,15 @@ main {
   opacity: 0.85;
 }
 
+.reel-loop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
 .reel-fallback span {
   font-size: clamp(3rem, 11vw, 10rem);
   font-weight: 500;
