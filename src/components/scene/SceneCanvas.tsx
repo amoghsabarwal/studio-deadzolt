@@ -264,15 +264,22 @@ export default function SceneCanvas() {
     () => window.innerWidth > 760 && window.devicePixelRatio <= 2,
     () => true,
   );
-  // Drops resolution and effects if the frame rate can't keep up.
+  // Quality steps down gradually, and only when the frame rate really sags:
+  // first the resolution, a quarter step at a time, then the heavier effects,
+  // and only after that the still. It steps back up when frames recover.
+  // Drops while things are still loading don't count.
+  const top = rich ? 1.75 : 1.5;
+  const [dpr, setDpr] = useState(top);
   const [struggling, setStruggling] = useState(false);
-  // A second drop after resolution and effects have already stepped down
-  // means the device can't carry the scene, so it swaps to the still. Drops
-  // while things are still loading don't count.
   const decline = () => {
     if (!watchArmed()) return;
-    if (struggling) switchToLite();
-    else setStruggling(true);
+    if (dpr > 1) setDpr((d) => Math.max(1, d - 0.25));
+    else if (!struggling) setStruggling(true);
+    else switchToLite();
+  };
+  const incline = () => {
+    if (struggling) setStruggling(false);
+    else setDpr((d) => Math.min(top, d + 0.25));
   };
   const full = rich && !struggling;
 
@@ -290,9 +297,8 @@ export default function SceneCanvas() {
           eventPrefix="client"
           camera={{ position: [0, 0, 7], fov: 40 }}
           // Capped at 1.5x on phones (SMAA keeps edges clean) and 1.75x on
-          // larger screens; if the frame rate drops, resolution steps down
-          // before anything else does.
-          dpr={struggling ? 1 : [1, rich ? 1.75 : 1.5]}
+          // larger screens, never above the screen's own density.
+          dpr={[1, dpr]}
           // Browsers already stop drawing in a hidden tab; the scene also
           // holds still while the showreel plays.
           frameloop={reducedMotion || paused ? "demand" : "always"}
@@ -305,7 +311,9 @@ export default function SceneCanvas() {
             toneMappingExposure: 1,
           }}
         >
-          <PerformanceMonitor onDecline={decline} />
+          {/* Judged against fixed rates, not the display's refresh rate, so a
+              120 Hz laptop drawing a smooth 80 fps is never read as slow. */}
+          <PerformanceMonitor bounds={() => [32, 50]} flipflops={6} onDecline={decline} onIncline={incline} />
           {!reducedMotion && <SlowStartWatch />}
           <Space rich={full} animate={!reducedMotion} />
           {/* The lighting is drawn in place, so it needs no download; the hero

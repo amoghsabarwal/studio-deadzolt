@@ -3,8 +3,9 @@
 import BookButton from "@/components/BookButton";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { showreel, site } from "@/content/site";
+import { getLite, subscribeLite } from "@/lib/lite";
 import { getReducedMotion, setScenePaused, setStory } from "@/lib/story";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -30,6 +31,11 @@ export default function Showreel() {
   const frame = useRef<HTMLDivElement>(null);
   const [playing, setPlaying] = useState(false);
   const [inView, setInView] = useState(false);
+  // A muted loop cut from the reel plays in the frame. It starts loading only
+  // as the reel comes near; lite devices and reduced motion keep the poster.
+  const [near, setNear] = useState(false);
+  const lite = useSyncExternalStore(subscribeLite, getLite, () => true);
+  const loop = near && !lite && !getReducedMotion();
 
   // The 3D pauses while the reel plays on screen.
   useEffect(() => {
@@ -51,6 +57,13 @@ export default function Showreel() {
         setInView(self.isActive);
       },
     });
+    const approach = ScrollTrigger.create({
+      trigger: el,
+      start: "top bottom+=400",
+      once: true,
+      // Waits for an idle moment so it never competes with the first paint or Book.
+      onEnter: () => (window.requestIdleCallback ?? setTimeout)(() => setNear(true), { timeout: 2500 }),
+    });
     // The frame zooms out to full size as it scrolls in, through a soft oval
     // mask that opens up, while the poster inside settles from a closer crop.
     const opens = getReducedMotion()
@@ -66,6 +79,7 @@ export default function Showreel() {
           .fromTo(box.querySelector(".reel-fallback"), { scale: 1.4 }, { scale: 1, ease: "none" }, 0);
     return () => {
       stage.kill();
+      approach.kill();
       opens?.scrollTrigger?.kill();
       opens?.kill();
       setStory({ stage: false });
@@ -92,10 +106,13 @@ export default function Showreel() {
             onClick={() => setPlaying(true)}
             aria-label={`Play the ${title}`}
           >
-            {/* A branded poster, served from the site. Swap in a reel frame later. */}
             <span className="reel-fallback" aria-hidden="true">
               <span>Showreel</span>
             </span>
+            <video key={loop ? "loop" : "poster"} className="reel-loop" poster="/reel/poster.jpg" muted loop playsInline autoPlay preload="none" aria-hidden="true">
+              {loop && <source src="/reel/loop.webm" type="video/webm" />}
+              {loop && <source src="/reel/loop.mp4" type="video/mp4" />}
+            </video>
             <span className="reel-hud label" aria-hidden="true">
               <span>Showreel</span>
               <span>Deadzolt · {new Date().getFullYear()}</span>
