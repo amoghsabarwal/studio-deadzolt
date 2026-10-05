@@ -29,11 +29,8 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  // Share cards resolve against the live Vercel domain until deadzolt.studio
-  // points at this site (it still serves the old Framer site).
-  metadataBase: new URL(
-    process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : site.url,
-  ),
+  // Share cards and absolute links resolve against deadzolt.studio.
+  metadataBase: new URL(site.url),
   title: {
     default: `${site.name}: ${site.tagline}`,
     template: `%s · ${site.name}`,
