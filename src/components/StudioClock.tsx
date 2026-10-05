@@ -33,7 +33,7 @@ export default function StudioClock() {
   return (
     <span className="studio-clock">
       <time dateTime={now.toISOString()}>{time} IST</time>
-      {away}
+      {away && <span className="clock-away">{away}</span>}
     </span>
   );
 }

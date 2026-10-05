@@ -20,11 +20,14 @@ export function useReveals() {
     if (getReducedMotion()) return;
     const ctx = gsap.context(() => {
       gsap.utils.toArray<HTMLElement>("[data-split]").forEach((el) => {
+        // Out of focus to sharp, after recent.design's headings.
         gsap.from(el, {
-          y: RISE.text,
+          y: RISE.text / 2,
           opacity: 0,
+          filter: "blur(12px)",
           duration: DUR.slow,
-          ease: EASE.content,
+          ease: EASE.momentum,
+          clearProps: "filter",
           scrollTrigger: replay(el),
         });
         holoScramble(el, { scrollTrigger: replay(el) });

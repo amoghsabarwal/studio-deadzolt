@@ -29,7 +29,14 @@ export default function StoryDriver() {
       const heroIn = () => {
         if (!title) return;
         if (!skipped) {
-          gsap.from("[data-hero] .eyebrow, [data-hero-title]", { y: 20, opacity: 0, duration: DUR.slow, ease: EASE.content });
+          gsap.from("[data-hero] .eyebrow, [data-hero-title]", {
+            y: 12,
+            opacity: 0,
+            filter: "blur(12px)",
+            duration: DUR.slow,
+            ease: EASE.momentum,
+            clearProps: "filter",
+          });
           gsap.from("[data-hero] .hero-sub", { y: 20, opacity: 0, duration: DUR.base, ease: EASE.content, delay: 0.3 });
           gsap.from("[data-hero] .actions, [data-hero] .cta-note", {
             y: 16,

@@ -136,7 +136,9 @@ export default function Star({ animate }: { animate: boolean }) {
     const r = root.current;
     r.position.x = MathUtils.damp(r.position.x, tx, k, dt);
     r.position.y = MathUtils.damp(r.position.y, ty, k, dt);
-    r.scale.setScalar(MathUtils.damp(r.scale.x, ts, k, dt));
+    // When a section hands the star its exit, it goes quickly, so a fast scroll
+    // never leaves it shrinking over the headings below.
+    r.scale.setScalar(MathUtils.damp(r.scale.x, ts, animate && base === 0 ? 7 : k, dt));
     r.rotation.z = MathUtils.damp(r.rotation.z, pose.turn * 0.2, k, dt);
     r.visible = r.scale.x > 0.005;
     // A hidden star gets no pointer-out event, so let go of its hover here.
