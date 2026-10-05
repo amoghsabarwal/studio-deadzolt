@@ -1,9 +1,10 @@
 /* ---------- How it works: the process bento ---------- */
-/* Quiet UI vignettes over drifting hairlines, words underneath. Five colours
-   only; the star render is the one holographic thing in it. Hovers run at
-   0.2s, entrances on expo-out. */
+/* One hairline style on graph-paper dots, one rendered object (the star),
+   and one red "live" thing per tile. Hovers at 0.18s. */
 
 .pb {
+  --hair: rgba(237, 237, 237, 0.55);
+  --faint: rgba(237, 237, 237, 0.18);
   margin-top: 56px;
 }
 
@@ -29,17 +30,31 @@
   isolation: isolate;
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 16px;
   min-width: 0;
-  padding: 22px;
+  padding: 22px 24px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  background: radial-gradient(120% 90% at 50% 0%, rgba(237, 237, 237, 0.045), transparent 60%), rgba(6, 7, 10, 0.9);
+  background: radial-gradient(120% 90% at 50% 0%, rgba(237, 237, 237, 0.05), rgba(237, 237, 237, 0.015) 60%), #040508;
   overflow: hidden;
-  transition: border-color 0.2s var(--ease);
+  transition: border-color 0.18s var(--ease);
+}
+
+/* Graph paper the drawings sit on. */
+.pb-tile::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: radial-gradient(rgba(237, 237, 237, 0.09) 1px, transparent 1.2px);
+  background-size: 18px 18px;
+  -webkit-mask: radial-gradient(80% 70% at 60% 58%, #000, transparent);
+  mask: radial-gradient(80% 70% at 60% 58%, #000, transparent);
+  pointer-events: none;
 }
 
 .pb-tile:hover {
+  --hair: rgba(237, 237, 237, 0.85);
   border-color: rgba(237, 237, 237, 0.2);
 }
 
@@ -58,543 +73,210 @@
 
 .pb-craft {
   grid-column: 5 / 8;
-  flex-direction: row;
-  align-items: center;
 }
 
-/* Paused unless the tile is on screen. */
-.pb-tile:not(.is-live) * {
-  animation-play-state: paused !important;
-}
-
-/* The words: number, title, then the note in grey on the same line. */
-.pb-copy {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 14px;
+.pb-head {
+  display: flex;
+  gap: 12px;
   align-items: baseline;
-  margin-top: auto;
-  color: var(--dim);
-  font-size: 14px;
-  line-height: 1.45;
-  text-wrap: pretty;
 }
 
 .pb-title {
-  color: var(--paper);
+  font-family: var(--text);
+  font-size: 18px;
   font-weight: 500;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
 }
 
-/* ---------- Hairline field ---------- */
-.pb-lines {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  width: 100%;
-  height: 100%;
-  fill: none;
-  stroke: var(--paper);
-  stroke-width: 1;
-  opacity: 0.16;
-  -webkit-mask: radial-gradient(90% 80% at 50% 45%, #000 30%, transparent 85%);
-  mask: radial-gradient(90% 80% at 50% 45%, #000 30%, transparent 85%);
-  transition: opacity 0.2s var(--ease);
-}
-
-.pb-lines path {
-  vector-effect: non-scaling-stroke;
-}
-
-.pb-lines path.is-red {
-  stroke: var(--red);
-  opacity: 0.9;
-}
-
-.pb-lines g {
-  transform-box: fill-box;
-  animation: pb-drift 14s linear infinite;
-}
-
-.pb-frames .pb-lines g {
-  animation-duration: 18s;
-}
-
-.pb-tile:hover .pb-lines {
-  opacity: 0.3;
-}
-
-@keyframes pb-drift {
-  to {
-    transform: translateX(-33.333%);
-  }
-}
-
-.pb-art {
-  position: relative;
-  font-family: var(--mono);
-  font-size: 11px;
+.pb-note {
+  margin-top: 4px;
   color: var(--dim);
+  font-size: 13px;
 }
 
-/* Glass panels the vignettes sit in. */
-.pb-chat,
-.pb-view {
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: rgba(0, 0, 0, 0.62);
-  box-shadow: 0 24px 48px -28px rgba(0, 0, 0, 0.9);
-}
-
-/* ---------- 01 · the brief ---------- */
-.pb-chat {
-  display: grid;
-  gap: 14px;
-  align-content: start;
-  width: min(100%, 520px);
-  margin: 6px auto 0;
-  padding: 14px 16px 16px;
-  min-height: 228px;
-}
-
-.pb-chat-bar {
-  display: flex;
-  justify-content: space-between;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--line);
-  letter-spacing: 0.04em;
-}
-
-.pb-chat-live {
+.pb-live {
+  position: absolute;
+  top: 26px;
+  right: 24px;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
-.pb-chat-live i,
-.pb-queued i {
-  width: 6px;
-  height: 6px;
+.pb-dot {
+  fill: var(--red);
+}
+
+.pb-live i {
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: var(--red);
   box-shadow: 0 0 8px var(--red);
 }
 
-.pb-msg {
-  display: grid;
-  grid-template-columns: 28px 1fr;
-  gap: 12px;
-  font-family: var(--text);
-  font-size: 13.5px;
-  color: var(--paper);
-  line-height: 1.45;
+/* ---------- The drawings ---------- */
+.pb-art {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: auto;
+  overflow: visible;
 }
 
-.pb-msg p + p {
-  margin-top: 4px;
+.pb-art .h,
+.pb-art .f,
+.pb-art .d,
+.pb-art .r,
+.pb-phase path,
+.pb-crop rect,
+.pb-crop .pb-marks {
+  fill: none;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  transition: stroke 0.18s var(--ease);
 }
 
-.pb-ava {
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 7px;
-  border: 1px solid var(--line);
-  background: rgba(237, 237, 237, 0.08);
-  font-family: var(--mono);
-  font-size: 12px;
-  color: var(--paper);
+.pb-art .h {
+  stroke: var(--hair);
 }
 
-.pb-ava-dz {
-  background: #000;
+.pb-art .f {
+  stroke: var(--faint);
 }
 
-.pb-ava-dz i {
-  width: 22px;
-  height: 22px;
-  background: center / contain no-repeat;
+.pb-art .d {
+  stroke: var(--faint);
+  stroke-dasharray: 2 5;
 }
 
-.pb-who {
-  font-weight: 500;
+.pb-art .r {
+  stroke: var(--red);
+  stroke-width: 1.4;
 }
 
-.pb-who em {
-  margin-left: 6px;
-  font-style: normal;
+/* Paths that draw themselves in: pathLength is 1, the offset is set in JS. */
+.pb-art .draw {
+  vector-effect: none;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+
+.pb-art text {
   font-family: var(--mono);
   font-size: 10px;
-  color: var(--dim);
+  letter-spacing: 0.08em;
+  fill: var(--dim);
 }
 
-.pb-files {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 8px !important;
+.pb-art text.w {
+  fill: var(--paper);
 }
 
-.pb-files span {
-  padding: 3px 8px;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  font-family: var(--mono);
-  font-size: 10.5px;
-  color: var(--dim);
+/* 02 · the dial */
+.pb-dial {
+  width: min(100%, 370px);
+  margin: auto;
 }
 
-.pb-queued {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--mono);
-  font-size: 10.5px;
-  color: var(--dim);
+.pb-phase path {
+  stroke: var(--faint);
 }
 
-.pb-typing {
-  display: flex;
-  gap: 4px;
-  margin-left: 40px;
+.pb-phase.is-done path {
+  stroke: var(--hair);
 }
 
-.pb-typing i {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--dim);
-  animation: pb-blink 1s infinite ease-in-out;
+.pb-phase.is-on path {
+  stroke: var(--red);
+  stroke-width: 1.4;
 }
 
-.pb-typing i:nth-child(2) {
-  animation-delay: 0.15s;
+.pb-phase.is-on text {
+  fill: var(--paper);
 }
 
-.pb-typing i:nth-child(3) {
-  animation-delay: 0.3s;
+[data-a="wire"],
+.pb-stage-img {
+  transition: opacity 0.4s var(--ease);
 }
 
-@keyframes pb-blink {
-  0%,
-  100% {
-    opacity: 0.25;
-    transform: translateY(0);
-  }
-  50% {
-    opacity: 1;
-    transform: translateY(-2px);
-  }
+.pb-stage-img {
+  opacity: 0;
 }
 
-/* ---------- 02 · the 48-hour dial ---------- */
-.pb-view {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 360px;
-  overflow: hidden;
+.pb-clay {
+  filter: grayscale(1) contrast(1.05) brightness(0.9);
 }
 
-.pb-view-bar {
+.pb-status {
   display: flex;
   justify-content: space-between;
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--line);
-  letter-spacing: 0.04em;
+  gap: 12px;
+  font-size: 10px;
 }
 
-.pb-clock b {
-  font-weight: 400;
+.pb-status .is-ready,
+.pb-clock {
   color: var(--paper);
+}
+
+.pb-clock {
   font-variant-numeric: tabular-nums;
 }
 
-.pb-stage {
-  position: relative;
-  flex: 1;
-  display: grid;
-  place-items: center;
-  padding: 18px 0 44px;
+/* 03 · crops */
+.pb-crop rect {
+  stroke: var(--faint);
 }
 
-.pb-dial {
-  position: relative;
-  width: min(84%, 290px);
-  aspect-ratio: 1;
-}
-
-.pb-dial svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-  fill: none;
-}
-
-.pb-ring {
-  stroke: var(--line);
-  stroke-width: 1;
-  stroke-dasharray: 2 4;
-}
-
-.pb-tick {
-  stroke: rgba(237, 237, 237, 0.18);
-  stroke-width: 1.2;
-  transition: stroke 0.2s;
-}
-
-.pb-tick.is-major {
-  stroke-width: 1.6;
-}
-
-.pb-tick.is-lit {
-  stroke: var(--paper);
-}
-
-.pb-hand {
-  stroke: var(--red);
-  stroke-width: 1.6;
-  stroke-linecap: round;
-  filter: drop-shadow(0 0 3px rgba(255, 31, 31, 0.8));
-}
-
-.pb-hub {
-  fill: var(--red);
-}
-
-.pb-render {
-  position: absolute;
-  inset: 22%;
-  /* The render has a black ground; screen lets what's behind show through. */
-  mix-blend-mode: screen;
-}
-
-.pb-clay,
-.pb-buckets {
-  position: absolute;
-  inset: 0;
-}
-
-/* The preview pass: the star in flat grey, before light and colour. */
-.pb-clay {
-  background: center / contain no-repeat;
-  filter: grayscale(1) brightness(0.55) contrast(1.4);
-  opacity: 0.55;
-}
-
-.pb-buckets {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  grid-template-rows: repeat(4, 1fr);
-}
-
-.pb-bucket {
-  position: relative;
-  overflow: hidden;
-}
-
-.pb-bucket i {
-  position: absolute;
-  width: 600%;
-  height: 400%;
-  left: calc(var(--c) * -100%);
-  top: calc(var(--r) * -100%);
-  background: center / contain no-repeat;
+.pb-crop .pb-marks,
+.pb-crop .pb-crop-ratio,
+.pb-crop .pb-crop-where {
   opacity: 0;
-  transition: opacity 0.3s;
 }
 
-.pb-bucket.is-done i {
+.pb-crop.is-on rect {
+  stroke: var(--red);
+  stroke-width: 1.4;
+}
+
+.pb-crop.is-on .pb-marks {
+  stroke: var(--hair);
   opacity: 1;
 }
 
-/* The bucket being rendered: corner brackets, like Octane's. */
-.pb-bucket.is-on::after {
-  content: "";
-  position: absolute;
-  inset: 1px;
-  background:
-    linear-gradient(var(--paper), var(--paper)) 0 0 / 5px 1px,
-    linear-gradient(var(--paper), var(--paper)) 0 0 / 1px 5px,
-    linear-gradient(var(--paper), var(--paper)) 100% 0 / 5px 1px,
-    linear-gradient(var(--paper), var(--paper)) 100% 0 / 1px 5px,
-    linear-gradient(var(--paper), var(--paper)) 0 100% / 5px 1px,
-    linear-gradient(var(--paper), var(--paper)) 0 100% / 1px 5px,
-    linear-gradient(var(--paper), var(--paper)) 100% 100% / 5px 1px,
-    linear-gradient(var(--paper), var(--paper)) 100% 100% / 1px 5px;
-  background-repeat: no-repeat;
+.pb-crop.is-on .pb-crop-ratio,
+.pb-crop.is-on .pb-crop-where {
+  opacity: 1;
 }
 
-.pb-v1 {
-  position: absolute;
-  left: 50%;
-  bottom: 12px;
-  translate: -50% 0;
-  padding: 4px 10px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.7);
-  color: var(--paper);
-  letter-spacing: 0.04em;
-  white-space: nowrap;
+.pb-crop.is-on .pb-crop-ratio {
+  fill: var(--paper);
 }
 
-/* ---------- 03 · every platform ---------- */
-.pb-exports {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
-  gap: 18px;
-  align-items: center;
-}
-
-.pb-frame-box {
-  position: relative;
-  display: grid;
-  place-items: center;
-  height: 132px;
-}
-
-/* A sheet behind the frame, a little askew, like paper on a desk. */
-.pb-sheet {
-  position: absolute;
-  width: 74%;
-  height: 78%;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: rgba(237, 237, 237, 0.03);
-  rotate: -5deg;
-}
-
-.pb-frame {
-  position: relative;
-  display: block;
-  width: 168px;
-  max-width: 100%;
-  height: 94px;
-  border: 1px solid var(--paper);
-  border-radius: 4px;
-  background: #000;
-  box-shadow: 0 18px 36px -16px rgba(0, 0, 0, 0.9), 0 0 18px rgba(205, 220, 255, 0.14);
-  overflow: hidden;
-}
-
-.pb-frame-star {
-  position: absolute;
-  inset: 8%;
-  background: center / contain no-repeat;
-}
-
-.pb-ratio {
-  position: absolute;
-  left: 5px;
-  top: 3px;
-  font-size: 9.5px;
-  color: var(--paper);
-}
-
-.pb-formats {
-  display: grid;
-  gap: 9px;
-  list-style: none;
-}
-
-.pb-formats li {
-  display: grid;
-  grid-template-columns: 50px 1fr;
-  gap: 2px 8px;
-  align-items: baseline;
-}
-
-.pb-fr {
-  color: var(--dim);
-  transition: color 0.2s;
-}
-
-.pb-where {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-family: var(--text);
-  font-size: 12px;
-}
-
-.pb-formats li.is-on .pb-fr,
-.pb-formats li.is-done .pb-fr {
-  color: var(--paper);
-}
-
-.pb-bar {
-  grid-column: 1 / -1;
-  display: block;
-  height: 1px;
-  background: var(--line);
-}
-
-.pb-bar i {
-  display: block;
-  height: 100%;
-  background: var(--paper);
-  transform-origin: 0 50%;
-  transform: scaleX(0);
-}
-
-.pb-formats li.is-done .pb-bar i {
-  transform: scaleX(1);
-}
-
-.pb-formats li.is-done .pb-fr::after {
-  content: " ✓";
-  color: var(--red);
-}
-
-/* ---------- Craft · a turning wireframe ---------- */
-.pb-sphere {
-  flex: none;
-  width: 92px;
-  height: 92px;
-  fill: none;
-  stroke: rgba(237, 237, 237, 0.22);
-  stroke-width: 0.8;
-}
-
-.pb-meridian {
-  stroke: rgba(237, 237, 237, 0.4);
-  animation: pb-turn 3s infinite alternate ease-in-out;
-  transform-box: fill-box;
-  transform-origin: center;
-}
-
-.pb-node {
-  fill: var(--red);
-  stroke: none;
-  filter: drop-shadow(0 0 3px var(--red));
-}
-
-@keyframes pb-turn {
-  from {
-    transform: scaleX(1);
-  }
-  to {
-    transform: scaleX(-1);
-  }
-}
-
+/* Craft */
 .pb-craft-line {
-  display: grid;
-  gap: 8px;
+  margin-top: 8px;
   color: var(--paper);
-  font-size: 13.5px;
-  line-height: 1.45;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.pb-mesh {
+  width: min(100%, 150px);
+  margin: auto;
+}
+
+.pb-caption {
+  font-size: 10px;
 }
 
 .pb-book {
   display: inline-block;
   margin-top: 18px;
   color: var(--paper);
-  transition: color 0.2s;
+  transition: color 0.18s;
 }
 
 .pb-book:hover {
@@ -617,13 +299,23 @@
     grid-column: 7 / 13;
   }
 
-  .pb-exports {
-    grid-template-columns: 1fr;
+  .pb-craft {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+  }
+
+  .pb-mesh {
+    width: 120px;
+  }
+
+  .pb-caption {
+    display: none;
   }
 }
 
-/* Phones: the three steps swipe sideways like the plans, and the craft
-   line sits underneath as plain text, so the page stays short. */
+/* Phones: the dial first, the steps swipe sideways like the plans, and the
+   craft line sits underneath as plain text, so the page stays short. */
 @media (max-width: 760px) {
   .pb {
     margin-top: 40px;
@@ -655,48 +347,33 @@
   .pb-swipe .pb-tile {
     flex: 0 0 86%;
     scroll-snap-align: start;
-    padding: 14px;
-    gap: 14px;
+    padding: 16px;
+    gap: 12px;
   }
 
-  .pb-copy {
-    gap: 10px;
-    font-size: 13px;
+  .pb-frames {
+    order: -1;
   }
 
-  .pb-chat {
-    min-height: 0;
-    gap: 10px;
-    padding: 12px;
+  .pb-title {
+    font-size: 16px;
   }
 
-  .pb-msg {
+  .pb-note {
     font-size: 12.5px;
   }
 
-  .pb-view {
-    min-height: 0;
-  }
-
-  .pb-stage {
-    padding: 12px 0 40px;
+  .pb-live {
+    display: none;
   }
 
   .pb-dial {
-    width: min(64%, 190px);
+    width: min(100%, 250px);
   }
 
-  .pb-exports {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-
-  .pb-frame-box {
-    height: 116px;
-  }
-
-  .pb-formats {
-    gap: 6px;
+  .pb-brief text,
+  .pb-crops .pb-crop-where {
+    display: none;
   }
 
   .pb-craft {
@@ -708,24 +385,18 @@
     background: none;
   }
 
-  .pb-craft .pb-sphere,
+  .pb-craft::before,
+  .pb-craft .pb-mesh,
   .pb-craft .label {
     display: none;
   }
 
   .pb-craft-line {
+    margin-top: 0;
     color: var(--dim);
   }
 
   .pb-book {
     margin-top: 12px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .pb-typing i,
-  .pb-meridian,
-  .pb-lines g {
-    animation: none;
   }
 }

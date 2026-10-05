@@ -11,214 +11,370 @@ import "./ProcessBento.css";
 
 gsap.registerPlugin(ScrollTrigger);
 
-// How the monthly plan runs, as a bento of small animated drawings. Each tile
-// is a quiet UI vignette over a field of hairlines drifting like wind; the
-// words sit underneath, title then grey note. Tiles come in from a blur, and
-// each drawing resolves a beat later.
-//   01  the brief lands in Slack or email and the studio answers
-//   02  a dial runs down 48 hours while the star renders bucket by bucket
-//   03  one frame reframed for every platform, each row ticking off
-//   +   a turning wireframe beside the craft line
-// Everything is DOM, SVG and one small image, so it plays the same without
+// How the monthly plan runs, as a bento that shows the work becoming a
+// render. Every tile is one stage of the same object, the Deadzolt star, in
+// one hairline style on graph-paper dots, with exactly one red "live" thing:
+//   01  a brief card writes itself, files travel to a storyboard, shots sketch
+//   02  a 48-hour dial: wireframe, clay, render, with a red hand on the clock
+//   03  one master frame, its four crops for every feed
+//   +   the star as a turning topology mesh beside the craft line
+// Inline SVG and the existing star image only, so it plays the same without
 // WebGL. Each drawing loops only while it's on screen.
 
 const STAR = "/models/previews/deadzolt-star.webp";
-const COLS = 6;
-const ROWS = 4;
 const EXPO = "expo.out";
-
-const FORMATS = [
-  { ratio: "16:9", where: "YouTube · site", w: 168, h: 94 },
-  { ratio: "9:16", where: "Reels · TikTok · Shorts", w: 58, h: 104 },
-  { ratio: "1:1", where: "Feed", w: 100, h: 100 },
-  { ratio: "4:5", where: "Feed · LinkedIn", w: 84, h: 104 },
-];
 
 const NOTES = [
   "Send a brief in your shared Slack channel or by email.",
-  "First frames land within 48 hours.",
-  "Cut and exported for every platform you post on.",
+  "Wireframe, clay, then the final render, on the clock.",
+  "One master frame, cut for each feed.",
 ];
 
-// A bundle of hairlines that pinches and fans out like a ribbon in the wind.
-// Every line repeats every P units, so sliding the group by P loops cleanly.
-const P = 400;
-function linePath(i: number, n: number, mid: number, amp: number, spread: number, phase: number) {
-  const k = i - (n - 1) / 2;
-  let d = "";
-  for (let x = 0; x <= P * 3; x += 10) {
-    const t = (2 * Math.PI * x) / P;
-    const y = mid + amp * Math.sin(t + phase) + k * spread * (0.25 + 0.75 * (0.5 + 0.5 * Math.cos(t + phase * 0.5)));
-    d += `${x === 0 ? "M" : "L"}${x} ${y.toFixed(1)}`;
-  }
-  return d;
+// ---------- geometry ----------
+type Pt = [number, number];
+const clamp = (x: number, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const seg = (t: number, a: number, b: number) => clamp((t - a) / (b - a));
+const ease = (x: number) => 1 - Math.pow(1 - x, 4);
+const f1 = (n: number) => n.toFixed(1);
+
+// The star as a line drawing: five long concave points, slightly uneven like
+// the render. `squash` narrows it, to turn it on its vertical axis.
+function star(cx: number, cy: number, R: number, r: number, rot = 0, squash = 1) {
+  const lens = [1, 0.82, 0.95, 0.78, 0.9];
+  const pts: Pt[] = lens.map((l, i) => {
+    const a = rot + (i * 2 * Math.PI) / 5 - Math.PI / 2;
+    return [cx + Math.cos(a) * R * l * squash, cy + Math.sin(a) * R * l];
+  });
+  let d = `M${f1(pts[0][0])} ${f1(pts[0][1])}`;
+  pts.forEach((_, i) => {
+    const q = pts[(i + 1) % 5];
+    const am = rot + ((i + 0.5) * 2 * Math.PI) / 5 - Math.PI / 2;
+    d += ` Q${f1(cx + Math.cos(am) * r * squash)} ${f1(cy + Math.sin(am) * r)} ${f1(q[0])} ${f1(q[1])}`;
+  });
+  return { d, pts };
 }
 
-function Lines({ mid, amp, spread, phase, red }: { mid: number; amp: number; spread: number; phase: number; red: number }) {
-  const n = 12;
+const iso = (x: number, y: number, z: number, ox: number, oy: number): Pt => [
+  ox + (x - y) * 0.866,
+  oy + (x + y) * 0.5 - z,
+];
+
+function isoBox(ox: number, oy: number, w: number, d: number, h: number) {
+  const P = (x: number, y: number, z: number) => iso(x, y, z, ox, oy).map(f1).join(" ");
+  return `M${P(0, 0, h)} L${P(w, 0, h)} L${P(w, d, h)} L${P(0, d, h)} Z M${P(0, d, h)} L${P(0, d, 0)} L${P(w, d, 0)} L${P(w, 0, 0)} L${P(w, 0, h)} M${P(w, d, h)} L${P(w, d, 0)}`;
+}
+
+// Reveals a path drawn with pathLength={1} up to fraction f.
+const draw = (el: SVGElement | null, f: number) => el?.style.setProperty("stroke-dashoffset", String(1 - f));
+
+// ---------- 01 · brief to storyboard ----------
+const B = { ox: 84, oy: 64 };
+const BRIEF_LINES: [number, number][] = [
+  [14, 80],
+  [14, 62],
+  [14, 86],
+  [14, 48],
+];
+const ROUTE = `M${B.ox + 92} ${B.oy + 34} C ${B.ox + 150} ${B.oy - 26} ${B.ox + 190} ${B.oy + 112} ${B.ox + 252} ${B.oy + 14}`;
+const SHOTS = [0, 1, 2].map((i) => {
+  const w = 74;
+  const h = 54;
+  const x = 352 + i * (w + 12);
+  const y = 40 + (i % 2) * 10;
+  return { x, y, w, h, s: star(x + w / 2, y + h / 2, [19, 15, 23][i], [7, 5.5, 8.5][i], i * 0.5, [1, 0.7, 1][i]) };
+});
+
+function BriefArt() {
   return (
-    <svg className="pb-lines" viewBox="0 0 800 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-      <g>
-        {Array.from({ length: n }, (_, i) => (
-          <path key={i} d={linePath(i, n, mid, amp, spread, phase)} className={i === red ? "is-red" : undefined} />
+    <svg className="pb-art pb-brief" viewBox="0 28 620 184" aria-hidden="true">
+      <path className="h" d={isoBox(B.ox, B.oy, 120, 90, 6)} />
+      {BRIEF_LINES.map(([x, len], i) => {
+        const a = iso(x, 20 + i * 18, 6, B.ox, B.oy);
+        const b = iso(x + len, 20 + i * 18, 6, B.ox, B.oy);
+        return <path key={i} className="h draw" pathLength={1} data-a="line" d={`M${f1(a[0])} ${f1(a[1])} L${f1(b[0])} ${f1(b[1])}`} />;
+      })}
+      <text x={12} y={204}>
+        # DEADZOLT-X-YOURTEAM
+      </text>
+      <path className="d" d={ROUTE} data-a="route" />
+      {["PDF", "SVG", "FIG"].map((t) => (
+        <g key={t} data-a="slab" opacity={0}>
+          <path className="h" d={isoBox(18, 8, 22, 16, 4)} />
+          <text x={4} y={36}>
+            {t}
+          </text>
+        </g>
+      ))}
+      {SHOTS.map((s, i) => (
+        <g key={i}>
+          <rect className="f" data-a="shot" x={s.x} y={s.y} width={s.w} height={s.h} rx={5} />
+          <path className="h draw" pathLength={1} data-a="sketch" d={s.s.d} />
+          <text x={s.x} y={s.y + s.h + 16}>
+            SH {String(i + 1).padStart(2, "0")} · {["0:00", "0:06", "0:14"][i]}
+          </text>
+        </g>
+      ))}
+    </svg>
+  );
+}
+
+function briefRender(svg: SVGSVGElement) {
+  const lines = svg.querySelectorAll<SVGPathElement>("[data-a='line']");
+  const route = svg.querySelector<SVGPathElement>("[data-a='route']")!;
+  const L = route.getTotalLength();
+  const slabs = svg.querySelectorAll<SVGGElement>("[data-a='slab']");
+  const shots = svg.querySelectorAll<SVGRectElement>("[data-a='shot']");
+  const sketches = svg.querySelectorAll<SVGPathElement>("[data-a='sketch']");
+  return (t: number) => {
+    lines.forEach((p, i) => draw(p, ease(seg(t, 0.02 + i * 0.05, 0.2 + i * 0.05))));
+    slabs.forEach((g, i) => {
+      const f = ease(seg(t, 0.25 + i * 0.07, 0.6 + i * 0.07));
+      const pt = route.getPointAtLength(L * f);
+      g.setAttribute("transform", `translate(${f1(pt.x - 18)} ${f1(pt.y - 14)})`);
+      g.setAttribute("opacity", f > 0 && f < 1 ? "1" : "0");
+    });
+    shots.forEach((r, i) => {
+      const on = seg(t, 0.3 + i * 0.18, 0.55 + i * 0.18);
+      r.setAttribute("class", on > 0 ? "h" : "f");
+      draw(sketches[i], ease(on));
+    });
+  };
+}
+
+// ---------- 02 · the 48-hour dial ----------
+const D = { cx: 200, cy: 200, R: 138 };
+const ang = (h: number) => (h / 48) * 2 * Math.PI - Math.PI / 2;
+const at = (h: number, r: number): Pt => [D.cx + Math.cos(ang(h)) * r, D.cy + Math.sin(ang(h)) * r];
+const PHASES: [string, number, number][] = [
+  ["WIREFRAME", 0, 16],
+  ["CLAY", 16, 32],
+  ["RENDER", 32, 48],
+];
+const SR = D.R * 0.52;
+const WIRE = star(D.cx, D.cy, SR, SR * 0.34, 0.2);
+
+function DialArt() {
+  const rr = D.R + 22;
+  return (
+    <svg className="pb-art pb-dial" viewBox="0 0 400 400" aria-hidden="true">
+      <defs>
+        <radialGradient id="pb-soft-g">
+          <stop offset="55%" stopColor="#fff" />
+          <stop offset="100%" stopColor="#000" />
+        </radialGradient>
+        <mask id="pb-soft" maskContentUnits="objectBoundingBox">
+          <rect width={1} height={1} fill="url(#pb-soft-g)" />
+        </mask>
+      </defs>
+      <circle className="h" cx={D.cx} cy={D.cy} r={D.R} />
+      {Array.from({ length: 48 }, (_, i) => {
+        const long = i % 8 === 0;
+        const [x1, y1] = at(i, D.R - (long ? 14 : 6));
+        const [x2, y2] = at(i, D.R);
+        return <line key={i} className={long ? "h" : "f"} x1={f1(x1)} y1={f1(y1)} x2={f1(x2)} y2={f1(y2)} />;
+      })}
+      {PHASES.map(([name, a0, a1]) => {
+        const p0 = [D.cx + Math.cos(ang(a0) + 0.04) * rr, D.cy + Math.sin(ang(a0) + 0.04) * rr];
+        const p1 = [D.cx + Math.cos(ang(a1) - 0.04) * rr, D.cy + Math.sin(ang(a1) - 0.04) * rr];
+        const [lx, ly] = at((a0 + a1) / 2, rr + 16);
+        return (
+          <g key={name} data-a="phase" className="pb-phase">
+            <path d={`M${f1(p0[0])} ${f1(p0[1])} A${rr} ${rr} 0 0 1 ${f1(p1[0])} ${f1(p1[1])}`} />
+            <text x={f1(lx)} y={f1(ly + 3)} textAnchor="middle">
+              {name}
+            </text>
+          </g>
+        );
+      })}
+      {[0, 16, 32].map((h) => {
+        const [x, y] = at(h, D.R - 30);
+        return (
+          <text key={h} x={f1(x)} y={f1(y + 3)} textAnchor="middle">
+            {h}H
+          </text>
+        );
+      })}
+      <g data-a="wire">
+        <path className="h draw" pathLength={1} data-a="wire-star" d={WIRE.d} />
+        {WIRE.pts.map((q, i) => (
+          <line key={i} className="f" x1={D.cx} y1={D.cy} x2={f1(q[0])} y2={f1(q[1])} />
+        ))}
+        {[0.66, 0.36].map((k) => (
+          <path key={k} className="f" d={star(D.cx, D.cy, SR * k, SR * 0.34 * k, 0.2).d} />
         ))}
       </g>
+      <image
+        data-a="clay"
+        className="pb-stage-img pb-clay"
+        href={STAR}
+        x={D.cx - SR * 1.25}
+        y={D.cy - SR * 1.25}
+        width={SR * 2.5}
+        height={SR * 2.5}
+        mask="url(#pb-soft)"
+      />
+      <image
+        data-a="render"
+        className="pb-stage-img"
+        href={STAR}
+        x={D.cx - SR * 1.25}
+        y={D.cy - SR * 1.25}
+        width={SR * 2.5}
+        height={SR * 2.5}
+        mask="url(#pb-soft)"
+      />
+      <line data-a="hand" className="r" x1={D.cx} y1={D.cy} x2={D.cx} y2={D.cy - D.R + 4} />
+      <circle cx={D.cx} cy={D.cy} r={4} className="pb-dot" />
     </svg>
   );
 }
 
-function Copy({ n, title }: { n: number; title: string }) {
+function dialRender(svg: SVGSVGElement, status: HTMLElement, clock: HTMLElement) {
+  const phases = svg.querySelectorAll<SVGGElement>("[data-a='phase']");
+  const wire = svg.querySelector<SVGGElement>("[data-a='wire']")!;
+  const wireStar = svg.querySelector<SVGPathElement>("[data-a='wire-star']");
+  const clay = svg.querySelector<SVGImageElement>("[data-a='clay']")!;
+  const render = svg.querySelector<SVGImageElement>("[data-a='render']")!;
+  const hand = svg.querySelector<SVGLineElement>("[data-a='hand']")!;
+  let last = "";
+  return (t: number) => {
+    const h = t * 48;
+    phases.forEach((g, i) => {
+      const [, a0, a1] = PHASES[i];
+      g.setAttribute("class", `pb-phase${h >= a1 ? " is-done" : h > a0 ? " is-on" : ""}`);
+    });
+    hand.setAttribute("transform", `rotate(${f1(t * 360)} ${D.cx} ${D.cy})`);
+    draw(wireStar, ease(seg(t, 0, 0.3)));
+    wire.style.opacity = h < 20 ? "1" : "0";
+    clay.style.opacity = h >= 16 && h < 32 ? "1" : "0";
+    render.style.opacity = h >= 32 ? "1" : "0";
+    const left = Math.max(0, 48 - h);
+    const hh = String(Math.floor(left)).padStart(2, "0");
+    const mm = String(Math.floor((left % 1) * 60)).padStart(2, "0");
+    clock.textContent = `T-${hh}:${mm}:00`;
+    const s = t >= 1 ? "● V1 · READY FOR REVIEW" : "RENDERING · OCTANE";
+    if (s !== last) {
+      last = s;
+      status.textContent = s;
+      status.classList.toggle("is-ready", t >= 1);
+    }
+  };
+}
+
+// ---------- 03 · one master frame, nested crops ----------
+const C = { cx: 214, cy: 112 };
+const CROPS: [string, number, number, string][] = [
+  ["16:9", 184, 103, "YOUTUBE · SITE"],
+  ["9:16", 86, 152, "REELS · TIKTOK"],
+  ["1:1", 122, 122, "FEED"],
+  ["4:5", 106, 132, "LINKEDIN"],
+];
+
+function CropsArt() {
   return (
-    <p className="pb-copy">
+    <svg className="pb-art pb-crops" viewBox="0 0 380 230" aria-hidden="true">
+      <image href={STAR} x={C.cx - 60} y={C.cy - 60} width={120} height={120} mask="url(#pb-soft)" />
+      {CROPS.map(([r, w, h, where]) => {
+        const x = C.cx - w / 2;
+        const y = C.cy - h / 2;
+        const k = 10;
+        const corners = [
+          [x, y, 1, 1],
+          [x + w, y, -1, 1],
+          [x, y + h, 1, -1],
+          [x + w, y + h, -1, -1],
+        ];
+        return (
+          <g key={r} data-a="crop" className="pb-crop">
+            <rect x={x} y={y} width={w} height={h} rx={3} />
+            <path
+              className="pb-marks"
+              d={corners.map(([a, b, sx, sy]) => `M${a - sx * 6} ${b} L${a + sx * k} ${b} M${a} ${b - sy * 6} L${a} ${b + sy * k}`).join(" ")}
+            />
+            <text className="pb-crop-ratio" x={x + 6} y={y + 14}>
+              {r}
+            </text>
+            <text className="pb-crop-where" x={C.cx} y={y + h + 18} textAnchor="middle">
+              {where}
+            </text>
+          </g>
+        );
+      })}
+      {CROPS.map(([r], i) => (
+        <text key={r} data-a="tick" x={14} y={150 + i * 17}>
+          · {r}
+        </text>
+      ))}
+    </svg>
+  );
+}
+
+function cropsRender(svg: SVGSVGElement) {
+  const crops = svg.querySelectorAll<SVGGElement>("[data-a='crop']");
+  const ticks = svg.querySelectorAll<SVGTextElement>("[data-a='tick']");
+  return (t: number) => {
+    const act = Math.min(3, Math.floor(t * 4));
+    crops.forEach((g, i) => g.setAttribute("class", `pb-crop${i === act && t < 1 ? " is-on" : ""}`));
+    ticks.forEach((el, i) => {
+      const done = i < act || t >= 1;
+      el.textContent = `${done ? "✓" : "·"} ${CROPS[i][0]}`;
+      el.setAttribute("class", done ? "w" : "");
+    });
+  };
+}
+
+// ---------- craft · the star as a turning mesh ----------
+const M = { cx: 100, cy: 92, R: 74 };
+function meshPaths(turn: number) {
+  const outer = star(M.cx, M.cy, M.R, M.R * 0.34, 0.2, turn);
+  return {
+    rings: [1, 2, 3, 4, 5, 6].map((k) => star(M.cx, M.cy, (M.R * k) / 6, (M.R * 0.34 * k) / 6, 0.2, turn).d),
+    pts: outer.pts,
+  };
+}
+
+function MeshArt() {
+  const m = meshPaths(1);
+  return (
+    <svg className="pb-art pb-mesh" viewBox="0 10 200 165" aria-hidden="true">
+      {m.rings.map((d, i) => (
+        <path key={i} data-a="ring" className={i === 5 ? "h" : "f"} d={d} />
+      ))}
+      {m.pts.map((q, i) => (
+        <line key={i} data-a="spoke" className="f" x1={M.cx} y1={M.cy} x2={f1(q[0])} y2={f1(q[1])} />
+      ))}
+      <circle data-a="tip" className="pb-dot" r={3} cx={f1(m.pts[0][0])} cy={f1(m.pts[0][1])} />
+    </svg>
+  );
+}
+
+function meshRender(svg: SVGSVGElement) {
+  const rings = svg.querySelectorAll<SVGPathElement>("[data-a='ring']");
+  const spokes = svg.querySelectorAll<SVGLineElement>("[data-a='spoke']");
+  const tip = svg.querySelector<SVGCircleElement>("[data-a='tip']")!;
+  return (t: number) => {
+    const m = meshPaths(Math.cos(t * Math.PI * 2));
+    rings.forEach((p, i) => p.setAttribute("d", m.rings[i]));
+    spokes.forEach((l, i) => {
+      l.setAttribute("x2", f1(m.pts[i][0]));
+      l.setAttribute("y2", f1(m.pts[i][1]));
+    });
+    tip.setAttribute("cx", f1(m.pts[0][0]));
+    tip.setAttribute("cy", f1(m.pts[0][1]));
+  };
+}
+
+function Head({ n, title }: { n: number; title: string }) {
+  return (
+    <header className="pb-head">
       <span className="label">{String(n).padStart(2, "0")}</span>
-      <span>
-        <b className="pb-title" data-pb-title>
+      <div>
+        <h3 className="pb-title" data-pb-title>
           {title}
-        </b>{" "}
-        {NOTES[n - 1]}
-      </span>
-    </p>
-  );
-}
-
-function RequestArt() {
-  return (
-    <div className="pb-art pb-chat" aria-hidden="true">
-      <div className="pb-chat-bar">
-        <span># deadzolt-x-yourteam</span>
-        <span className="pb-chat-live">
-          <i /> live
-        </span>
+        </h3>
+        <p className="pb-note">{NOTES[n - 1]}</p>
       </div>
-      <div className="pb-msg" data-a="m1">
-        <span className="pb-ava">Y</span>
-        <div>
-          <p className="pb-who">
-            You <em>10:02</em>
-          </p>
-          <p>Launch teaser for the new app. 20 seconds, vertical and wide.</p>
-          <p className="pb-files">
-            <span data-a="f1">brief.pdf</span>
-            <span data-a="f2">logo.svg</span>
-            <span data-a="f3">app-screens.fig</span>
-          </p>
-        </div>
-      </div>
-      <div className="pb-msg" data-a="m2">
-        <span className="pb-ava pb-ava-dz">
-          <i style={{ backgroundImage: "url(/brand/star.webp)" }} />
-        </span>
-        <div>
-          <p className="pb-who">
-            Deadzolt <em>10:04</em>
-          </p>
-          <p>On it. First frames Wednesday.</p>
-          <p className="pb-queued" data-a="q">
-            <i /> Added to the queue · request 01
-          </p>
-        </div>
-      </div>
-      <div className="pb-typing" data-a="typing">
-        <i />
-        <i />
-        <i />
-      </div>
-    </div>
-  );
-}
-
-// 48 ticks, one per hour, lighting up behind the red hand as it sweeps.
-function FramesArt() {
-  return (
-    <div className="pb-art pb-view" aria-hidden="true">
-      <div className="pb-view-bar">
-        <span>Octane · v1</span>
-        <span className="pb-clock">
-          T-<b data-a="clock">48:00:00</b>
-        </span>
-      </div>
-      <div className="pb-stage">
-        <div className="pb-dial">
-          <svg viewBox="-100 -100 200 200">
-            <circle className="pb-ring" r="97" />
-            {Array.from({ length: 48 }, (_, i) => (
-              <line
-                key={i}
-                className={i % 12 === 0 ? "pb-tick is-major" : "pb-tick"}
-                x1="0"
-                y1={i % 12 === 0 ? -95 : -93}
-                x2="0"
-                y2={-87}
-                transform={`rotate(${i * 7.5})`}
-              />
-            ))}
-            <g data-a="hand">
-              <line className="pb-hand" x1="0" y1="10" x2="0" y2="-86" />
-            </g>
-            <circle className="pb-hub" r="3.2" />
-          </svg>
-          <div className="pb-render">
-            <span className="pb-clay" style={{ backgroundImage: `url(${STAR})` }} />
-            <div className="pb-buckets">
-              {Array.from({ length: COLS * ROWS }, (_, i) => (
-                <span
-                  key={i}
-                  className="pb-bucket"
-                  style={{ "--c": i % COLS, "--r": Math.floor(i / COLS) } as React.CSSProperties}
-                >
-                  <i style={{ backgroundImage: `url(${STAR})` }} />
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-        <span className="pb-v1" data-a="v1">
-          v1 · ready for review
-        </span>
-      </div>
-    </div>
-  );
-}
-
-function ExportsArt() {
-  return (
-    <div className="pb-art pb-exports" aria-hidden="true">
-      <div className="pb-frame-box">
-        <span className="pb-sheet" />
-        <span className="pb-frame" data-a="frame">
-          <span className="pb-frame-star" style={{ backgroundImage: `url(${STAR})` }} />
-          <span className="pb-ratio" data-a="ratio">
-            16:9
-          </span>
-        </span>
-      </div>
-      <ul className="pb-formats">
-        {FORMATS.map((f) => (
-          <li key={f.ratio} data-a="row">
-            <span className="pb-fr">{f.ratio}</span>
-            <span className="pb-where">{f.where}</span>
-            <span className="pb-bar">
-              <i />
-            </span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-function CraftArt() {
-  return (
-    <svg className="pb-sphere" viewBox="-60 -60 120 120" aria-hidden="true">
-      <circle r="50" />
-      {[-30, -15, 0, 15, 30].map((y) => (
-        <ellipse key={y} cy={y} rx={Math.sqrt(50 * 50 - y * y)} ry={Math.sqrt(50 * 50 - y * y) * 0.18} />
-      ))}
-      {Array.from({ length: 6 }, (_, i) => (
-        <ellipse key={i} className="pb-meridian" rx="50" ry="50" style={{ animationDelay: `${-i}s` }} />
-      ))}
-      <circle className="pb-node" r="2.6" cx="0" cy="-50" />
-    </svg>
+    </header>
   );
 }
 
@@ -229,150 +385,71 @@ export default function ProcessBento() {
     const el = root.current;
     if (!el) return;
     const reduced = getReducedMotion();
-    const q = <T extends Element = HTMLElement>(s: string, scope: Element = el) =>
-      Array.from(scope.querySelectorAll(s)) as unknown as T[];
-    const a = (s: string, scope: Element) => scope.querySelector<HTMLElement>(`[data-a="${s}"]`)!;
+    const one = <T extends Element>(s: string) => el.querySelector(s) as T;
 
     const ctx = gsap.context(() => {
-      const tiles = q<HTMLElement>(".pb-tile");
+      const tiles = gsap.utils.toArray<HTMLElement>(".pb-tile", el);
 
-      // Entrance: each tile comes in from a blur, then its drawing resolves
-      // out of the haze a beat later.
+      // Entrance: tiles come in from a blur, one after another.
       if (!reduced) {
-        const tl = gsap.timeline({ scrollTrigger: { trigger: el, start: "top 82%" } });
-        tl.from(tiles, {
-          y: 16,
+        gsap.from(tiles, {
+          y: 24,
           opacity: 0,
-          filter: "blur(14px)",
-          duration: 0.6,
+          filter: "blur(10px)",
+          duration: 0.7,
           ease: EXPO,
           stagger: STAGGER,
           clearProps: "transform,filter",
-        }).from(
-          q(".pb-tile > .pb-art, .pb-tile > .pb-sphere"),
-          { opacity: 0, filter: "blur(10px)", scale: 0.985, duration: 0.8, ease: EXPO, stagger: STAGGER, clearProps: "transform,filter" },
-          0.3,
-        );
-        q<HTMLElement>("[data-pb-title]").forEach((t) =>
-          holoScramble(t, { speed: 1.6, scrollTrigger: replay(t, "top 92%") }),
-        );
+          scrollTrigger: { trigger: el, start: "top 82%" },
+        });
+        gsap.utils
+          .toArray<HTMLElement>("[data-pb-title]", el)
+          .forEach((t) => holoScramble(t, { speed: 1.6, scrollTrigger: replay(t, "top 92%") }));
       }
 
-      // 01: the brief comes in, files attach, the studio answers.
-      const chat = el.querySelector<HTMLElement>(".pb-request")!;
-      const chatTl = gsap.timeline({ paused: true, repeat: -1, repeatDelay: 2.4 });
-      chatTl
-        .set([a("m1", chat), a("m2", chat), a("q", chat)], { opacity: 0, y: 10, filter: "blur(6px)" })
-        .set(q("[data-a^='f']", chat), { opacity: 0, scale: 0.85 })
-        .set(a("typing", chat), { opacity: 0 })
-        .to(a("m1", chat), { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.6, ease: EXPO }, 0.3)
-        .to(q("[data-a^='f']", chat), { opacity: 1, scale: 1, duration: 0.4, ease: EXPO, stagger: 0.12 }, 0.8)
-        .to(a("typing", chat), { opacity: 1, duration: 0.2 }, 1.6)
-        .to(a("typing", chat), { opacity: 0, duration: 0.2 }, 2.8)
-        .to(a("m2", chat), { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.6, ease: EXPO }, 2.9)
-        .to(a("q", chat), { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.4, ease: EXPO }, 3.5)
-        .to({}, { duration: 2.4 });
-
-      // 02: the hand sweeps the 48 hours while the render fills in.
-      const view = el.querySelector<HTMLElement>(".pb-frames")!;
-      const buckets = q<HTMLElement>(".pb-bucket", view);
-      const clock = a("clock", view);
-      const ticks = q<SVGLineElement>(".pb-tick", view);
-      let lit = -1;
-      const t = { p: 0 };
-      const fmt = (h: number) => {
-        const s = Math.max(0, Math.round(h * 3600));
-        const pad = (n: number) => String(n).padStart(2, "0");
-        return `${pad(Math.floor(s / 3600))}:${pad(Math.floor((s % 3600) / 60))}:${pad(s % 60)}`;
+      // Each drawing is a function of t (0 to 1), driven by its own loop.
+      const loop = (tile: HTMLElement, render: (t: number) => void, run: number, hold: number, ease = "none") => {
+        const p = { t: 0 };
+        const tl = gsap.timeline({ paused: true, repeat: -1, repeatDelay: hold, onRepeat: () => render(0) });
+        tl.to(p, { t: 1, duration: run, ease, onUpdate: () => render(p.t) });
+        render(reduced ? 1 : 0);
+        return { tile, tl };
       };
-      const RUN = 4.4;
-      const renderTl = gsap.timeline({ paused: true, repeat: -1, repeatDelay: 1.6 });
-      renderTl
-        .set(buckets, { className: "pb-bucket" })
-        .set(a("v1", view), { opacity: 0, y: 8, filter: "blur(6px)" })
-        .set(t, { p: 0 })
-        .set(a("hand", view), { rotation: 0, svgOrigin: "0 0" })
-        .to(
-          t,
-          {
-            p: 1,
-            duration: RUN,
-            ease: "power1.inOut",
-            onUpdate: () => {
-              clock.textContent = fmt(48 * (1 - t.p));
-              const n = Math.floor(t.p * ticks.length + 0.001);
-              if (n !== lit) {
-                lit = n;
-                ticks.forEach((tk, i) => tk.classList.toggle("is-lit", i < n));
-              }
-            },
-          },
-          0.4,
-        )
-        .to(a("hand", view), { rotation: 360, svgOrigin: "0 0", duration: RUN, ease: "power1.inOut" }, 0.4);
-      buckets.forEach((b, i) => {
-        const at = 0.6 + (i * (RUN - 0.6)) / buckets.length;
-        renderTl.set(b, { className: "pb-bucket is-on" }, at);
-        renderTl.set(b, { className: "pb-bucket is-done" }, at + 0.3);
-      });
-      renderTl
-        .to(a("v1", view), { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.6, ease: EXPO }, RUN + 0.5)
-        .to({}, { duration: 2.2 });
 
-      // 03: one frame reframed for each platform, each row ticking off.
-      const ex = el.querySelector<HTMLElement>(".pb-exports-tile")!;
-      const frame = a("frame", ex);
-      const ratio = a("ratio", ex);
-      const rows = q<HTMLElement>("[data-a='row']", ex);
-      const exTl = gsap.timeline({ paused: true, repeat: -1, repeatDelay: 1.2 });
-      exTl.call(() => rows.forEach((r) => r.classList.remove("is-on", "is-done")));
-      FORMATS.forEach((f, i) => {
-        const at = i * 1.5;
-        exTl
-          .to(frame, { width: f.w, height: f.h, duration: 0.8, ease: EXPO }, at)
-          .call(
-            () => {
-              ratio.textContent = f.ratio;
-              rows.forEach((r, j) => r.classList.toggle("is-on", j === i));
-            },
-            undefined,
-            at,
-          )
-          .fromTo(rows[i].querySelector("i"), { scaleX: 0 }, { scaleX: 1, duration: 1.1, ease: "power1.inOut" }, at + 0.2)
-          .call(() => rows[i].classList.add("is-done"), undefined, at + 1.3);
-      });
-      exTl.to({}, { duration: 1.4 });
-
-      const loops: [HTMLElement, gsap.core.Timeline][] = [
-        [chat, chatTl],
-        [view, renderTl],
-        [ex, exTl],
+      const brief = one<HTMLElement>(".pb-request");
+      const frames = one<HTMLElement>(".pb-frames");
+      const exportsTile = one<HTMLElement>(".pb-exports-tile");
+      const craft = one<HTMLElement>(".pb-craft");
+      const loops = [
+        loop(brief, briefRender(brief.querySelector("svg")!), 4.8, 1.2),
+        loop(
+          frames,
+          dialRender(frames.querySelector("svg")!, frames.querySelector("[data-a='status']")!, frames.querySelector("[data-a='clock']")!),
+          5,
+          1.5,
+          "power1.inOut",
+        ),
+        loop(exportsTile, cropsRender(exportsTile.querySelector("svg")!), 6, 1.5),
+        loop(craft, meshRender(craft.querySelector("svg")!), 8, 0),
       ];
 
       if (reduced) {
-        // Show each drawing finished and still.
-        loops.forEach(([, tl]) => tl.progress(0.98).pause());
-        rows.forEach((r) => r.classList.add("is-done"));
+        // The mesh rests facing front; everything else rests finished.
+        meshRender(craft.querySelector("svg")!)(0);
         return;
       }
 
-      // Loop each drawing, and let the lines drift, only while on screen.
-      loops.forEach(([tile, tl]) =>
+      loops.forEach(({ tile, tl }) => {
         ScrollTrigger.create({
           trigger: tile,
-          start: "top 85%",
-          end: "bottom 10%",
+          start: "top 88%",
+          end: "bottom 8%",
           onToggle: (self) => (self.isActive ? tl.play() : tl.pause()),
-        }),
-      );
-      tiles.forEach((tile) =>
-        ScrollTrigger.create({
-          trigger: tile,
-          start: "top bottom",
-          end: "bottom top",
-          onToggle: (self) => tile.classList.toggle("is-live", self.isActive),
-        }),
-      );
+        });
+        // Hover: the hairlines brighten (CSS) and the loop runs a bit faster.
+        tile.addEventListener("pointerenter", () => tl.timeScale(1.5));
+        tile.addEventListener("pointerleave", () => tl.timeScale(1));
+      });
     }, el);
     return () => ctx.revert();
   }, []);
@@ -386,26 +463,35 @@ export default function ProcessBento() {
         {/* On phones the three steps swipe sideways, like the plans. */}
         <div className="pb-swipe">
           <article className="pb-tile pb-request" data-hairline="box">
-            <Lines mid={190} amp={40} spread={7} phase={0.4} red={9} />
-            <RequestArt />
-            <Copy n={1} title={site.steps[0]} />
+            <Head n={1} title={site.steps[0]} />
+            <span className="pb-live label" aria-hidden="true">
+              Live <i />
+            </span>
+            <BriefArt />
           </article>
           <article className="pb-tile pb-frames" data-hairline="box">
-            <Lines mid={150} amp={70} spread={9} phase={2.2} red={3} />
-            <FramesArt />
-            <Copy n={2} title={site.steps[1]} />
+            <Head n={2} title={site.steps[1]} />
+            <DialArt />
+            <p className="pb-status label" aria-hidden="true">
+              <span data-a="status">RENDERING · OCTANE</span>
+              <span data-a="clock" className="pb-clock">
+                T-48:00:00
+              </span>
+            </p>
           </article>
           <article className="pb-tile pb-exports-tile" data-hairline="box">
-            <Lines mid={120} amp={30} spread={6} phase={4.1} red={7} />
-            <ExportsArt />
-            <Copy n={3} title={site.steps[2]} />
+            <Head n={3} title={site.steps[2]} />
+            <CropsArt />
           </article>
         </div>
         <article className="pb-tile pb-craft" data-hairline="box">
-          <CraftArt />
-          <p className="pb-craft-line">
+          <div className="pb-craft-copy">
             <span className="label">Craft</span>
-            {site.craft}
+            <p className="pb-craft-line">{site.craft}</p>
+          </div>
+          <MeshArt />
+          <p className="pb-caption label" aria-hidden="true">
+            SubD 2 · 4,812 polys
           </p>
         </article>
       </div>
