@@ -28,8 +28,8 @@ export const site = {
   speed: "First frames in 48 hours",
   assurance: "Free 30-min call · fixed quote in writing · no lock\u2011in",
   craft: "Every frame built from scratch in Cinema 4D and Octane. No templates, no stock.",
-  // The availability line with a live dot. PLACEHOLDER: it has to be true,
-  // so the studio sets it (e.g. "Booking for November").
+  // The availability line with a live dot, confirmed by the studio. Change it
+  // when that stops being true (e.g. "Booking for November").
   availability: "Open for new projects",
   // How the monthly plan runs, shown under the plans. Placeholder.
   steps: ["Request in Slack", "Frames for review in 48h", "Exports for every platform"],
@@ -53,16 +53,14 @@ export function bookingLink(from: string) {
   return { href: url.toString(), target: "_blank", rel: "noopener noreferrer", "data-book": from };
 }
 
-// Calendly's embedded calendar, in the site's colours. Calendly only posts
-// the "booked" event back to embeds that name the page's host.
+// Calendly's embedded calendar. It keeps Calendly's own white page, shown as a
+// framed card inside the dark popup. Calendly only posts the "booked" event
+// back to embeds that name the page's host.
 export function bookingEmbed(from: string, host: string) {
   const url = new URL(bookingLink(from).href);
   url.searchParams.set("embed_domain", host);
   url.searchParams.set("embed_type", "Inline");
   url.searchParams.set("hide_gdpr_banner", "1");
-  url.searchParams.set("background_color", "0a0b10");
-  url.searchParams.set("text_color", "ededed");
-  url.searchParams.set("primary_color", "ff1f1f");
   return url.toString();
 }
 

@@ -2,8 +2,10 @@
 
 import { useGLTF } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
-import { Suspense, useMemo, useRef } from "react";
-import { type Group, MathUtils, type MeshStandardMaterial, type Object3D } from "three";
+import { useMemo, useRef } from "react";
+import { type Group, MathUtils, Mesh, type MeshStandardMaterial, type Object3D } from "three";
+import { bakeMeshes } from "./geometry";
+import Retry from "./Retry";
 
 /*
   Things passing by on the journey, both modelled in Blender:
@@ -43,9 +45,13 @@ function Asteroids({ count }: { count: number }) {
   const rocks = useMemo(
     () =>
       ROCKS.slice(0, count).map((r) => {
+        // Each rock is centred on its own origin, so it tumbles about its middle.
         const model = nodes[r.name].clone(true);
-        // Each rock is centred on its own origin here.
+        bakeMeshes(model);
         model.position.set(0, 0, 0);
+        model.traverse((o) => {
+          if (o instanceof Mesh) o.geometry.center();
+        });
         return { ...r, model };
       }),
     [nodes, count],
@@ -137,14 +143,14 @@ export default function SpaceObjects({ rich, asteroids, probe }: { rich: boolean
   return (
     <>
       {asteroids && (
-        <Suspense fallback={null}>
+        <Retry urls={[ASTEROIDS_URL]}>
           <Asteroids count={rich ? ROCKS.length : 5} />
-        </Suspense>
+        </Retry>
       )}
       {probe && (
-        <Suspense fallback={null}>
+        <Retry urls={[PROBE_URL]}>
           <Probe />
-        </Suspense>
+        </Retry>
       )}
     </>
   );

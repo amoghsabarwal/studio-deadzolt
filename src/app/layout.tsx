@@ -8,7 +8,7 @@ import EntryGate from "@/components/EntryGate";
 import HoloDriver from "@/components/HoloDriver";
 import MotionDriver from "@/components/MotionDriver";
 import PageTransition from "@/components/PageTransition";
-import SceneCanvas from "@/components/scene/SceneCanvas";
+import SceneLoader from "@/components/scene/SceneLoader";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
 import SmoothScroll from "@/components/SmoothScroll";
@@ -52,7 +52,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </noscript>
         <EntryGate />
         <SmoothScroll />
-        <SceneCanvas />
+        <SceneLoader />
         <a href="#main" className="skip-link">
           Skip to content
         </a>

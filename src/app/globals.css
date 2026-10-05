@@ -166,32 +166,110 @@ ol {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background: var(--ink);
 }
 
-/* The still for devices that skip the live scene. */
-.scene[data-lite] {
+/* Space drawn in CSS, under the 3D: a nebula and two star fields drifting at
+   different speeds. It needs no download, so the background moves from the
+   first paint even on a weak connection; the live scene covers it once it
+   has loaded, and devices that skip the live scene keep it. */
+.sky,
+.scene-lite {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.sky {
   background:
-    radial-gradient(40% 50% at 30% 30%, rgba(59, 79, 122, 0.22), transparent 70%),
-    radial-gradient(35% 40% at 75% 75%, rgba(122, 31, 46, 0.16), transparent 70%),
+    radial-gradient(45% 55% at 28% 30%, rgba(59, 79, 122, 0.22), transparent 70%),
+    radial-gradient(38% 45% at 76% 72%, rgba(122, 31, 46, 0.16), transparent 70%),
+    radial-gradient(60% 30% at 50% 50%, rgba(237, 237, 237, 0.025), transparent 70%),
     #020306;
+}
+
+.sky::before,
+.sky::after {
+  content: "";
+  position: absolute;
+  inset: -50%;
+  will-change: transform;
+}
+
+/* Far stars: fine and slow. */
+.sky::before {
+  background-image:
+    radial-gradient(1px 1px at 23px 41px, rgba(255, 255, 255, 0.8), transparent),
+    radial-gradient(1px 1px at 131px 87px, rgba(255, 255, 255, 0.55), transparent),
+    radial-gradient(1px 1px at 77px 163px, rgba(255, 255, 255, 0.7), transparent),
+    radial-gradient(1px 1px at 189px 19px, rgba(200, 214, 255, 0.6), transparent),
+    radial-gradient(1px 1px at 157px 191px, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 41px 121px, rgba(255, 220, 220, 0.5), transparent);
+  background-size: 211px 211px;
+  animation: sky-drift-far 90s linear infinite;
+}
+
+/* Near stars: fewer, brighter, faster, with a slow twinkle. */
+.sky::after {
+  background-image:
+    radial-gradient(1.5px 1.5px at 61px 83px, #fff, transparent),
+    radial-gradient(2px 2px at 283px 211px, rgba(220, 230, 255, 0.9), transparent),
+    radial-gradient(1.5px 1.5px at 197px 337px, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 359px 41px, rgba(255, 210, 210, 0.85), transparent);
+  background-size: 397px 397px;
+  animation:
+    sky-drift-near 60s linear infinite,
+    sky-twinkle 5s ease-in-out infinite alternate;
+}
+
+/* Each moves exactly one tile, so the loop is seamless. */
+@keyframes sky-drift-far {
+  to {
+    transform: translate3d(-211px, 0, 0);
+  }
+}
+
+@keyframes sky-drift-near {
+  to {
+    transform: translate3d(-397px, 0, 0);
+  }
+}
+
+@keyframes sky-twinkle {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.55;
+  }
+}
+
+/* The still star for devices that skip the live scene, floating gently. */
+.scene-lite .scene-still {
+  animation: still-float 9s ease-in-out infinite alternate;
+}
+
+@keyframes still-float {
+  to {
+    transform: translateY(-14px) rotate(-3deg);
+  }
 }
 
 .scene-still {
   position: absolute;
-  right: 4vw;
+  right: 14vw;
   top: 50%;
-  width: min(48vw, 640px);
+  width: min(22vw, 300px);
   translate: 0 -50%;
-  mix-blend-mode: screen;
-  opacity: 0.9;
+  opacity: 0.92;
 }
 
 @media (max-width: 760px) {
   .scene-still {
     right: 50%;
     top: 26%;
-    width: 78vw;
+    width: 36vw;
     translate: 50% -50%;
   }
 }
@@ -919,7 +997,7 @@ main {
 .booking-dialog[open] {
   display: flex;
   flex-direction: column;
-  padding: 12px;
+  padding: 14px 18px 18px;
 }
 
 .booking-dialog::backdrop {
@@ -930,11 +1008,31 @@ main {
 
 .booking-close {
   padding: 8px 12px;
+  white-space: nowrap;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: transparent;
   color: var(--paper);
   cursor: pointer;
+}
+
+.booking-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.booking-tab {
+  padding: 8px 12px;
+  white-space: nowrap;
+  color: var(--dim);
+  text-decoration: none;
+  transition: color 0.3s var(--ease);
+}
+
+.booking-tab:hover,
+.booking-tab:focus-visible {
+  color: var(--paper);
 }
 
 .booking-bar {
@@ -952,15 +1050,20 @@ main {
   color: var(--paper);
 }
 
-/* Calendly's own page sits in a framed window; until it loads, the frame
-   says so instead of flashing white. */
+/* Calendly's own white page, set into the dark popup as a framed card: a
+   hairline mat around it, the site's radius, and a quiet grey shimmer on
+   the same white until it loads, so there is never a dark-to-white flash. */
 .booking-frame {
   position: relative;
   flex: 1;
-  border-radius: 12px;
+  border-radius: 14px;
   overflow: hidden;
-  background: #0f1016;
-  box-shadow: 0 0 0 1px var(--line);
+  background: #fff;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.14),
+    0 0 0 6px #0f1016,
+    0 0 0 7px var(--line),
+    0 24px 60px rgba(0, 0, 0, 0.45);
 }
 
 .booking-frame iframe {
@@ -981,7 +1084,8 @@ main {
   inset: 0;
   display: grid;
   place-items: center;
-  background: linear-gradient(100deg, transparent 30%, rgba(237, 237, 237, 0.05) 50%, transparent 70%) 0 0 / 250% 100%;
+  color: #6b6f7a;
+  background: linear-gradient(100deg, transparent 30%, rgba(10, 11, 16, 0.06) 50%, transparent 70%) 0 0 / 250% 100%;
   animation: booking-shimmer 1.6s linear infinite;
 }
 
@@ -2290,6 +2394,10 @@ html[data-entry="open"] {
     justify-self: stretch;
   }
 
+  .booking-long {
+    display: none;
+  }
+
   .booking-dialog {
     width: 100vw;
     height: 100svh;
@@ -2389,7 +2497,10 @@ html[data-entry="open"] {
 
 @media (prefers-reduced-motion: reduce) {
   .entry-star,
-  .booking-wait {
+  .booking-wait,
+  .sky::before,
+  .sky::after,
+  .scene-lite .scene-still {
     animation: none;
   }
 

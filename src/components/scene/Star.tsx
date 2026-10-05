@@ -2,17 +2,18 @@
 
 import { useGLTF } from "@react-three/drei";
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { MathUtils, type Group, type Mesh, type MeshPhysicalMaterial } from "three";
 import { setCursorLabel } from "@/lib/cursor";
 import { getFocus } from "@/lib/focus";
 import { getLite } from "@/lib/lite";
 import { getEntrance, getStory, markSceneReady, subscribeStory } from "@/lib/story";
 import { getTilt } from "@/lib/tilt";
+import { toModelSpace } from "./geometry";
 import { REAL_CHROME, withSurfaceDetail } from "./materials";
 import { NARROW_SPOT } from "./spots";
 
-const STAR_URL = "/models/deadzolt-star.glb";
+export const STAR_URL = "/models/deadzolt-star.glb";
 // The Blender star is about 3 units across; this scales it to suit the size
 // the poses below were tuned for.
 const STAR_SCALE = 1.15;
@@ -58,7 +59,12 @@ export default function Star({ animate }: { animate: boolean }) {
   const wide = viewport.width > viewport.height;
 
   const { nodes } = useGLTF(STAR_URL) as unknown as { nodes: Record<string, Mesh> };
-  const geometry = nodes.DeadzoltStar.geometry;
+  // Plain floats in the star's own units, for the surface detail.
+  const geometry = useMemo(() => {
+    const node = nodes.DeadzoltStar;
+    node.updateMatrix();
+    return toModelSpace(node.geometry, node.matrix);
+  }, [nodes]);
 
   // Tells the entry screen the star has loaded and drawn.
   useEffect(() => {
