@@ -1,0 +1,140 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Process bento concept</title>
+<style>
+:root{--ink:#000;--paper:#ededed;--dim:#8c8c8c;--line:rgba(237,237,237,.1);--surface:rgba(237,237,237,.035);--red:#ff1f1f;--hair:rgba(237,237,237,.55);--faint:rgba(237,237,237,.18)}
+*{box-sizing:border-box;margin:0}
+body{background:#000;color:var(--paper);font:15px/1.45 "Helvetica Neue",Arial,sans-serif;width:1440px;padding:56px 60px}
+.label{font:11px/1 ui-monospace,Menlo,monospace;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
+.wrap{position:relative}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);grid-auto-rows:300px;gap:16px;position:relative;z-index:1}
+.tile{position:relative;border:1px solid var(--line);border-radius:18px;background:radial-gradient(120% 90% at 50% 0%,rgba(237,237,237,.05),rgba(237,237,237,.015) 60%);overflow:hidden;padding:22px 24px}
+.tile::before{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(237,237,237,.09) 1px,transparent 1.2px);background-size:18px 18px;mask-image:radial-gradient(80% 70% at 60% 55%,#000,transparent);pointer-events:none}
+.head{position:relative;z-index:2;display:flex;gap:12px;align-items:baseline}
+.head h3{font-size:19px;font-weight:500;letter-spacing:-.01em}
+.head p{color:var(--dim);font-size:13px;margin-top:4px}
+.n{font:11px ui-monospace,monospace;color:var(--dim)}
+svg.art{position:absolute;inset:0;width:100%;height:100%;z-index:1}
+svg .h{fill:none;stroke:var(--hair);stroke-width:1;vector-effect:non-scaling-stroke}
+svg .f{fill:none;stroke:var(--faint);stroke-width:1;vector-effect:non-scaling-stroke}
+svg .d{fill:none;stroke:var(--faint);stroke-width:1;stroke-dasharray:2 5;vector-effect:non-scaling-stroke}
+svg .r{fill:none;stroke:var(--red);stroke-width:1.4;vector-effect:non-scaling-stroke}
+svg text{font:10px ui-monospace,Menlo,monospace;fill:var(--dim);letter-spacing:.08em}
+svg text.w{fill:var(--paper)}
+.t1{grid-column:span 7}.t2{grid-column:span 5;grid-row:span 2}.t3{grid-column:span 4}.t4{grid-column:span 3}
+.pipe{position:absolute;inset:-20px;z-index:0;pointer-events:none}
+.stamp{position:absolute;right:60px;top:56px}
+</style></head>
+<body>
+<div style="display:flex;justify-content:space-between;align-items:end;margin-bottom:22px">
+  <div><p class="label">How it works</p></div>
+  <p class="label" id="stamp"></p>
+</div>
+<div class="wrap">
+<div class="grid">
+  <article class="tile t1"><header class="head"><span class="n">01</span><div><h3>Request in Slack or email</h3><p>Send a brief. We turn it into a storyboard the same day.</p></div></header><svg class="art" id="a1"></svg></article>
+  <article class="tile t2"><header class="head"><span class="n">02</span><div><h3>Frames for review in 48h</h3><p>Wireframe, clay, then the final render, on the clock.</p></div></header><svg class="art" id="a2"></svg></article>
+  <article class="tile t3"><header class="head"><span class="n">03</span><div><h3>Exports for every platform</h3><p>One master frame, cut for each feed.</p></div></header><svg class="art" id="a3"></svg></article>
+  <article class="tile t4"><header class="head"><div><p class="label">Craft</p><h3 style="font-size:15px;margin-top:8px">Built from scratch in Cinema 4D and Octane.</h3></div></header><svg class="art" id="a4"></svg></article>
+</div>
+</div>
+<script>
+const T = parseFloat(new URLSearchParams(location.search).get('t') ?? '0.55');
+document.getElementById('stamp').textContent = 'concept · t = ' + T.toFixed(2);
+const NS='http://www.w3.org/2000/svg';
+const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const seg=(t,a,b)=>clamp((t-a)/(b-a));
+const ease=x=>1-Math.pow(1-x,4); // close to cubic-bezier(.16,1,.3,1)
+function el(p,tag,attrs={},txt){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(txt!=null)e.textContent=txt;p.appendChild(e);return e}
+function size(svg){const r=svg.getBoundingClientRect();svg.setAttribute('viewBox',`0 0 ${r.width} ${r.height}`);return [r.width,r.height]}
+// Draw-on helper: reveal a path to fraction f.
+function draw(path,f){const L=path.getTotalLength();path.style.strokeDasharray=L;path.style.strokeDashoffset=L*(1-f)}
+// The Deadzolt star as a line drawing: 5 long concave points, slightly uneven like the render.
+function starPath(cx,cy,R,r,rot=0,squash=1){const pts=[];const n=5;const lens=[1,.82,.95,.78,.9];
+  for(let i=0;i<n;i++){const a=rot+i*2*Math.PI/n-Math.PI/2;pts.push([cx+Math.cos(a)*R*lens[i]*squash,cy+Math.sin(a)*R*lens[i]])}
+  let d=`M${pts[0][0]},${pts[0][1]}`;
+  for(let i=0;i<n;i++){const p=pts[i],q=pts[(i+1)%n];const am=rot+(i+.5)*2*Math.PI/n-Math.PI/2;const c=[cx+Math.cos(am)*r*squash,cy+Math.sin(am)*r];d+=` Q${c[0]},${c[1]} ${q[0]},${q[1]}`}
+  return {d,pts}}
+// Isometric helpers
+const iso=(x,y,z,ox,oy,s=1)=>[ox+(x-y)*0.866*s, oy+(x+y)*0.5*s - z*s];
+function isoBox(p,ox,oy,w,d,h,s,cls='h'){const P=(x,y,z)=>iso(x,y,z,ox,oy,s).join(',');
+  el(p,'path',{class:cls,d:`M${P(0,0,h)} L${P(w,0,h)} L${P(w,d,h)} L${P(0,d,h)} Z M${P(0,d,h)} L${P(0,d,0)} L${P(w,d,0)} L${P(w,0,0)} L${P(w,0,h)} M${P(w,d,h)} L${P(w,d,0)}`})}
+
+/* 01 · Brief → storyboard */
+(()=>{const s=document.getElementById('a1');const [W,H]=size(s);const ox=110,oy=150;
+  // brief card in isometric, lines of text draw in
+  isoBox(s,ox,oy,120,90,6,1);
+  const lines=[[14,80],[14,62],[14,86],[14,48]];
+  lines.forEach(([x,len],i)=>{const a=iso(x,20+i*18,6,ox,oy),b=iso(x+len,20+i*18,6,ox,oy);const p=el(s,'path',{class:'h',d:`M${a} L${b}`});draw(p,ease(seg(T,0.02+i*.05,0.2+i*.05)))});
+  el(s,'text',{x:ox-70,y:oy+112},'# DEADZOLT-X-YOURTEAM');
+  // three file slabs travel along a dotted route to the board
+  const route=el(s,'path',{class:'d',d:`M${ox+90},${oy+30} C ${ox+150},${oy-30} ${ox+190},${oy+110} ${ox+250},${oy+10}`});
+  const L=route.getTotalLength();
+  ['pdf','svg','fig'].forEach((t,i)=>{const f=ease(seg(T,0.25+i*.07,0.6+i*.07));const pt=route.getPointAtLength(L*f);
+    if(f<=0||f>=1){if(f>=1)return;}const g=el(s,'g',{transform:`translate(${pt.x-18},${pt.y-14})`});
+    isoBox(g,18,8,22,16,4,1,'h');el(g,'text',{x:4,y:34},t.toUpperCase())});
+  // storyboard: three frames, sketch strokes of the star draw in
+  const bx=ox+290,by=96,fw=100,fh=72;
+  [0,1,2].forEach(i=>{const x=bx+i*(fw+14),y=by+(i%2)*10;const on=seg(T,0.3+i*.18,0.55+i*.18);
+    el(s,'rect',{class:on>0?'h':'f',x,y,width:fw,height:fh,rx:6});
+    el(s,'text',{x,y:y+fh+16},`SH ${String(i+1).padStart(2,'0')} · ${['0:00','0:06','0:14'][i]}`);
+    const st=starPath(x+fw/2,y+fh/2,[26,22,34][i],[9,8,12][i],i*.5,[1,.7,1][i]);const p=el(s,'path',{class:'h',d:st.d});draw(p,ease(on));
+    if(i<2){const cam=el(s,'path',{class:'d',d:`M${x+fw-24},${y+12} l14,0 l0,10`})}
+  });
+  // the 'live' signal
+  el(s,'circle',{cx:W-36,cy:36,r:3.5,fill:'var(--red)'});el(s,'text',{x:W-80,y:39},'LIVE');
+})();
+
+/* 02 · 48-hour dial with wire → clay → render */
+(()=>{const s=document.getElementById('a2');const [W,H]=size(s);const cx=W/2,cy=H/2+34,R=Math.min(W,H)*0.36;
+  const defs=el(s,'defs');const rg=el(defs,'radialGradient',{id:'sg'});el(rg,'stop',{offset:'55%','stop-color':'#fff'});el(rg,'stop',{offset:'100%','stop-color':'#000'});const mk=el(defs,'mask',{id:'soft',maskContentUnits:'objectBoundingBox'});el(mk,'rect',{x:0,y:0,width:1,height:1,fill:'url(#sg)'});
+  el(s,'circle',{class:'f',cx,cy,r:R+22});
+  el(s,'circle',{class:'h',cx,cy,r:R});
+  for(let i=0;i<48;i++){const a=i/48*2*Math.PI-Math.PI/2;const long=i%8===0;const r1=R-(long?14:6);
+    el(s,'line',{class:long?'h':'f',x1:cx+Math.cos(a)*r1,y1:cy+Math.sin(a)*r1,x2:cx+Math.cos(a)*R,y2:cy+Math.sin(a)*R})}
+  // phase arcs
+  const ph=[['WIREFRAME',0,16],['CLAY',16,32],['RENDER',32,48]];
+  ph.forEach(([name,a0,a1])=>{const A=x=>x/48*2*Math.PI-Math.PI/2;const rr=R+22;const p0=[cx+Math.cos(A(a0)+.04)*rr,cy+Math.sin(A(a0)+.04)*rr],p1=[cx+Math.cos(A(a1)-.04)*rr,cy+Math.sin(A(a1)-.04)*rr];
+    const done=T*48>=a1, act=T*48>a0&&!done;
+    el(s,'path',{class:act?'r':(done?'h':'f'),d:`M${p0} A${rr},${rr} 0 0 1 ${p1}`});
+    const am=A((a0+a1)/2);el(s,'text',{x:cx+Math.cos(am)*(rr+16),y:cy+Math.sin(am)*(rr+16),'text-anchor':'middle',class:act?'w':''},name)});
+  [0,16,32].forEach(h=>{const a=h/48*2*Math.PI-Math.PI/2;el(s,'text',{x:cx+Math.cos(a)*(R-30),y:cy+Math.sin(a)*(R-30)+3,'text-anchor':'middle'},h+'H')});
+  // hand
+  const ah=T*2*Math.PI-Math.PI/2;
+  el(s,'line',{class:'r',x1:cx,y1:cy,x2:cx+Math.cos(ah)*(R-4),y2:cy+Math.sin(ah)*(R-4)});
+  el(s,'circle',{cx,cy,r:4,fill:'var(--red)'});
+  // centre object by phase
+  const phase=T*48<16?0:T*48<32?1:2;const sr=R*0.52;
+  if(phase===0||T*48<20){const st=starPath(cx,cy,sr,sr*.34,.2);const p=el(s,'path',{class:'h',d:st.d});draw(p,ease(seg(T,0,0.3)));
+    st.pts.forEach(q=>el(s,'line',{class:'f',x1:cx,y1:cy,x2:q[0],y2:q[1]}));
+    [0.66,0.36].forEach(k=>el(s,'path',{class:'f',d:starPath(cx,cy,sr*k,sr*.34*k,.2).d}))}
+  if(phase>=1){const im=el(s,'image',{href:'../../../public/models/previews/deadzolt-star.webp',x:cx-sr*1.25,y:cy-sr*1.25,width:sr*2.5,height:sr*2.5,
+      mask:'url(#soft)',style:phase===1?'filter:grayscale(1) contrast(1.05)':''});}
+  // clock + status
+  const left=Math.max(0,48-T*48);const hh=String(Math.floor(left)).padStart(2,'0'),mm=String(Math.floor((left%1)*60)).padStart(2,'0');
+  el(s,'text',{x:W-24,y:H-26,'text-anchor':'end',class:'w'},`T-${hh}:${mm}:00`);
+  el(s,'text',{x:24,y:H-26,class:T>=1?'w':''},T>=1?'● V1 · READY FOR REVIEW':'RENDERING · OCTANE');
+})();
+
+/* 03 · One master frame, nested crops */
+(()=>{const s=document.getElementById('a3');const [W,H]=size(s);const cx=W/2,cy=H/2+36;
+  const F=[['16:9',190,107,'YOUTUBE · SITE'],['9:16',90,160,'REELS · TIKTOK'],['1:1',128,128,'FEED'],['4:5',112,140,'LINKEDIN']];
+  const act=Math.min(3,Math.floor(T*4));
+  el(s,'image',{href:'../../../public/models/previews/deadzolt-star.webp',x:cx-62,y:cy-62,width:124,height:124,opacity:.95});
+  F.forEach(([r,w,h,where],i)=>{const on=i===act;const x=cx-w/2,y=cy-h/2;
+    el(s,'rect',{class:on?'r':'f',x,y,width:w,height:h,rx:3});
+    if(on){const c=10;[[x,y,1,1],[x+w,y,-1,1],[x,y+h,1,-1],[x+w,y+h,-1,-1]].forEach(([a,b,sx,sy])=>el(s,'path',{class:'h',d:`M${a-sx*6},${b} l${-sx*0},0 M${a},${b-sy*6} L${a},${b+sy*c} M${a-sx*6},${b} L${a+sx*c},${b}`}));
+      el(s,'text',{x:x+6,y:y+14,class:'w'},r);el(s,'text',{x:cx,y:cy+h/2+20,'text-anchor':'middle'},where)}});
+  // ticks for exported formats
+  F.forEach(([r],i)=>{const done=i<act||T>=1;el(s,'text',{x:24,y:H-84+i*16,class:done?'w':''},(done?'✓ ':'· ')+r)});
+})();
+
+/* 04 · Craft: the star as a turning topology mesh */
+(()=>{const s=document.getElementById('a4');const [W,H]=size(s);const cx=W/2,cy=H/2+40,R=78;const turn=Math.cos(T*Math.PI*2);
+  for(let k=1;k<=6;k++){const f=k/6;el(s,'path',{class:k===6?'h':'f',d:starPath(cx,cy,R*f,R*.34*f,.2,turn).d})}
+  starPath(cx,cy,R,R*.34,.2,turn).pts.forEach(q=>el(s,'line',{class:'f',x1:cx,y1:cy,x2:q[0],y2:q[1]}));
+  const tip=starPath(cx,cy,R,R*.34,.2,turn).pts[0];el(s,'circle',{cx:tip[0],cy:tip[1],r:3,fill:'var(--red)'});
+  el(s,'text',{x:24,y:H-22},'SUBD 2 · 4,812 POLYS');
+})();
+
+</script>
+</body></html>
