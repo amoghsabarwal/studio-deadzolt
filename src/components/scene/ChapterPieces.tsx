@@ -2,7 +2,7 @@
 
 import { useGLTF } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
-import { useMemo, useRef } from "react";
+import { Suspense, useMemo, useRef } from "react";
 import { MathUtils, type Group } from "three";
 import { getFocus } from "@/lib/focus";
 import { getTilt } from "@/lib/tilt";
@@ -164,11 +164,16 @@ function ChapterPiece({ piece, animate }: { piece: Piece; animate: boolean }) {
   );
 }
 
-export default function ChapterPieces({ animate }: { animate: boolean }) {
+export const PIECE_DISCIPLINES = PIECES.map((p) => p.discipline);
+
+// Only the pieces the scene has staged in so far, each loading on its own.
+export default function ChapterPieces({ animate, ready }: { animate: boolean; ready: readonly string[] }) {
   return (
     <>
-      {PIECES.map((piece) => (
-        <ChapterPiece key={piece.url} piece={piece} animate={animate} />
+      {PIECES.filter((piece) => ready.includes(piece.discipline)).map((piece) => (
+        <Suspense key={piece.url} fallback={null}>
+          <ChapterPiece piece={piece} animate={animate} />
+        </Suspense>
       ))}
     </>
   );

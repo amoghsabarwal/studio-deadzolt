@@ -6,6 +6,7 @@ import { useEffect, useRef } from "react";
 import { MathUtils, type Group, type Mesh, type MeshPhysicalMaterial } from "three";
 import { setCursorLabel } from "@/lib/cursor";
 import { getFocus } from "@/lib/focus";
+import { getLite } from "@/lib/lite";
 import { getEntrance, getStory, markSceneReady, subscribeStory } from "@/lib/story";
 import { getTilt } from "@/lib/tilt";
 import { REAL_CHROME, withSurfaceDetail } from "./materials";
@@ -243,4 +244,5 @@ export default function Star({ animate }: { animate: boolean }) {
   );
 }
 
-useGLTF.preload(STAR_URL);
+// Fetched ahead only where the live scene will run; the still needs no model.
+if (typeof window !== "undefined" && !getLite()) useGLTF.preload(STAR_URL);

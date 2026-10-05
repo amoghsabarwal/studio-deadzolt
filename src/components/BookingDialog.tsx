@@ -2,7 +2,9 @@
 
 import { track } from "@vercel/analytics";
 import { useEffect, useRef, useState } from "react";
+import { preconnect } from "react-dom";
 import { bookingEmbed, site } from "@/content/site";
+import { setScenePaused } from "@/lib/story";
 
 // Every booking button opens Calendly over the site instead of sending the
 // visitor to another tab, and each step is counted: which button was pressed,
@@ -12,6 +14,10 @@ export default function BookingDialog() {
   const dialog = useRef<HTMLDialogElement>(null);
   const [from, setFrom] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
+  // Warm the connection to Calendly up front, so the calendar starts loading
+  // the moment the popup opens.
+  preconnect("https://calendly.com");
+  preconnect("https://assets.calendly.com", { crossOrigin: "anonymous" });
 
   useEffect(() => {
     const click = (e: MouseEvent) => {
@@ -22,8 +28,10 @@ export default function BookingDialog() {
       // Let a new-tab click (cmd, ctrl, middle button) do what it asks.
       if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
       e.preventDefault();
-      setFrom(source);
+      // The popup opens first; the 3D behind it holds still while it is open.
       dialog.current?.showModal();
+      setFrom(source);
+      setScenePaused(true, "booking");
     };
     // Calendly reports a finished booking from inside its frame.
     const message = (e: MessageEvent) => {
@@ -45,6 +53,7 @@ export default function BookingDialog() {
       className="booking-dialog"
       aria-label="Book a call"
       onClose={() => {
+        setScenePaused(false, "booking");
         setFrom(null);
         setLoaded(false);
       }}
