@@ -5,7 +5,8 @@ import { disciplineNames, disciplines, projects } from "@/content/site";
 
 export const metadata: Metadata = {
   title: "Works",
-  description: "3D experiences, motion direction, branding and art direction by Studio Deadzolt.",
+  description: "Selected motion graphics work by Studio Deadzolt: launch films, product animation and social content.",
+  alternates: { canonical: "/works" },
 };
 
 // Hovering a row brings that work's discipline piece in beside the list;

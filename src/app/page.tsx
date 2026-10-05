@@ -1,4 +1,5 @@
 import BookButton from "@/components/BookButton";
+import type { Metadata } from "next";
 import Link from "next/link";
 import Faq from "@/components/Faq";
 import ProcessBento from "@/components/ProcessBento";
@@ -14,9 +15,48 @@ import { plans, projects, site } from "@/content/site";
 // showreel, the work, the plans, and one last ask. Each element with
 // data-chapter is a chapter; the 3D scene moves to a new pose for each one.
 
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
+
+// Tells Google who the studio is, where, and what it costs, for the
+// knowledge panel and rich results. Nothing here is shown on the page.
+const studioJsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "ProfessionalService",
+      "@id": `${site.url}/#studio`,
+      name: site.name,
+      url: site.url,
+      description: site.search.description,
+      logo: `${site.url}/brand/mark.webp`,
+      image: `${site.url}/opengraph-image`,
+      email: site.email,
+      founder: { "@type": "Person", name: site.founder },
+      address: { "@type": "PostalAddress", addressLocality: "Indore", addressRegion: "Madhya Pradesh", addressCountry: "IN" },
+      areaServed: "Worldwide",
+      priceRange: `${plans[0].price}–${plans[plans.length - 1].price}`,
+      knowsAbout: ["Motion graphics", "Launch films", "Product animation", "Social content"],
+      sameAs: site.socials.map((s) => s.href),
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${site.url}/#website`,
+      name: site.name,
+      url: site.url,
+      publisher: { "@id": `${site.url}/#studio` },
+    },
+  ],
+};
+
 export default function Home() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(studioJsonLd).replace(/</g, "\\u003c") }}
+      />
       <StoryDriver />
 
       <section id="arrival" data-chapter className="chapter hero">
