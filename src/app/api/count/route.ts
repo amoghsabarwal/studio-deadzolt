@@ -5,7 +5,7 @@
 
 const KEY = "deadzolt:bookings";
 const EVENTS = new Set(["book", "booked"]);
-const FROM = /^[a-z0-9-]{1,24}$/;
+const FROM = /^[a-z0-9-]{1,32}$/;
 
 function store() {
   const url = process.env.KV_REST_API_URL ?? process.env.UPSTASH_REDIS_REST_URL;
