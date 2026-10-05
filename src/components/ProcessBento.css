@@ -31,6 +31,11 @@
   overflow: hidden;
 }
 
+/* A plain wrapper on wider screens: its tiles sit in the grid directly. */
+.pb-swipe {
+  display: contents;
+}
+
 .pb-request {
   grid-column: 1 / 8;
 }
@@ -550,50 +555,111 @@
   }
 }
 
-/* Phones: one column, drawings kept short so the page stays short. */
+/* Phones: the three steps swipe sideways like the plans, and the craft
+   line sits underneath as plain text, so the page stays short. */
 @media (max-width: 760px) {
   .pb {
     margin-top: 40px;
   }
 
+  .pb-label {
+    margin-bottom: 14px;
+  }
+
   .pb-grid {
-    grid-template-columns: 1fr;
+    display: block;
+  }
+
+  .pb-swipe {
+    display: flex;
     gap: 10px;
+    margin: 0 calc(-1 * var(--gutter));
+    padding: 0 var(--gutter) 4px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding: 0 var(--gutter);
+    scrollbar-width: none;
   }
 
-  .pb-request,
-  .pb-frames,
-  .pb-exports-tile,
-  .pb-craft {
-    grid-column: 1;
+  .pb-swipe::-webkit-scrollbar {
+    display: none;
   }
 
-  .pb-tile {
-    padding: 18px;
-    gap: 16px;
+  .pb-swipe .pb-tile {
+    flex: 0 0 86%;
+    scroll-snap-align: start;
+    padding: 16px;
+    gap: 14px;
+  }
+
+  .pb-note {
+    font-size: 12.5px;
   }
 
   .pb-chat {
     min-height: 0;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .pb-msg {
+    font-size: 12.5px;
   }
 
   .pb-view {
-    min-height: 280px;
+    min-height: 236px;
   }
 
   .pb-render {
-    width: min(56%, 200px);
+    width: min(48%, 150px);
   }
 
   .pb-exports {
     grid-template-columns: 1fr;
-    gap: 14px;
+    gap: 10px;
   }
 
-  .pb-sphere {
-    width: 72px;
-    height: 72px;
+  .pb-frame-box {
+    height: 116px;
   }
+
+  .pb-formats {
+    gap: 6px;
+  }
+
+  .pb-craft {
+    display: block;
+    margin-top: 16px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+  }
+
+  .pb-craft .pb-sphere,
+  .pb-craft .label {
+    display: none;
+  }
+
+  .pb-craft-line {
+    margin-top: 0;
+    color: var(--dim);
+  }
+
+  .pb-book {
+    margin-top: 12px;
+  }
+}
+
+.pb-book {
+  display: inline-block;
+  margin-top: 18px;
+  color: var(--paper);
+  transition: color 0.3s;
+}
+
+.pb-book:hover {
+  color: var(--red);
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -32,7 +32,7 @@ export const site = {
   // so the studio sets it (e.g. "Booking for November").
   availability: "Open for new projects",
   // How the monthly plan runs, shown under the plans. Placeholder.
-  steps: ["Request in Slack", "Frames for review in 48h", "Exports for every platform"],
+  steps: ["Request in Slack or email", "Frames for review in 48h", "Exports for every platform"],
   // What happens on the free call, shown on the closing booking card.
   callSteps: [
     "You show what you're launching, and when",

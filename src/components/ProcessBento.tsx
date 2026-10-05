@@ -6,7 +6,7 @@ import { useEffect, useRef } from "react";
 import { holoScramble } from "@/lib/motion/holo";
 import { DUR, EASE, STAGGER, replay } from "@/lib/motion/tokens";
 import { getReducedMotion } from "@/lib/story";
-import { site } from "@/content/site";
+import { bookingLink, site } from "@/content/site";
 import "./ProcessBento.css";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -30,7 +30,7 @@ const FORMATS = [
 ];
 
 const NOTES = [
-  "Post a brief in your shared channel.",
+  "Send a brief in your shared Slack channel or by email.",
   "First frames land within 48 hours.",
   "Cut and exported for every platform you post on.",
 ];
@@ -319,18 +319,21 @@ export default function ProcessBento() {
         How it works
       </p>
       <div className="pb-grid">
-        <article className="pb-tile pb-request" data-hairline="box">
-          <Head n={1} title={site.steps[0]} />
-          <RequestArt />
-        </article>
-        <article className="pb-tile pb-frames" data-hairline="box">
-          <Head n={2} title={site.steps[1]} />
-          <FramesArt />
-        </article>
-        <article className="pb-tile pb-exports-tile" data-hairline="box">
-          <Head n={3} title={site.steps[2]} />
-          <ExportsArt />
-        </article>
+        {/* On phones the three steps swipe sideways, like the plans. */}
+        <div className="pb-swipe">
+          <article className="pb-tile pb-request" data-hairline="box">
+            <Head n={1} title={site.steps[0]} />
+            <RequestArt />
+          </article>
+          <article className="pb-tile pb-frames" data-hairline="box">
+            <Head n={2} title={site.steps[1]} />
+            <FramesArt />
+          </article>
+          <article className="pb-tile pb-exports-tile" data-hairline="box">
+            <Head n={3} title={site.steps[2]} />
+            <ExportsArt />
+          </article>
+        </div>
         <article className="pb-tile pb-craft" data-hairline="box">
           <CraftArt />
           <div>
@@ -339,6 +342,9 @@ export default function ProcessBento() {
           </div>
         </article>
       </div>
+      <a className="pb-book label" {...bookingLink("process")}>
+        Book a free call →
+      </a>
     </div>
   );
 }
