@@ -2592,6 +2592,100 @@ html[data-entry="open"] {
   }
 }
 
+/* Flight-log layout: each section reads like a page from a mission log.
+   On wide screens the heading holds still in a narrow left column while the
+   content scrolls past it on the right, the hero sits inside viewfinder
+   brackets, and every section label carries a red crosshair tick. */
+.section-head .label::before,
+.contact-copy > .label::before {
+  content: "+";
+  margin-right: 10px;
+  color: var(--red);
+}
+
+.hero::before,
+.hero::after {
+  content: "";
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border: 1px solid rgba(237, 237, 237, 0.28);
+  pointer-events: none;
+}
+
+.hero::before {
+  top: 96px;
+  left: calc(var(--gutter) - 14px);
+  border-right: 0;
+  border-bottom: 0;
+}
+
+.hero::after {
+  right: calc(var(--gutter) - 14px);
+  bottom: 16px;
+  border-left: 0;
+  border-top: 0;
+}
+
+@media (min-width: 1024px) {
+  .work,
+  .faq {
+    display: grid;
+    grid-template-columns: minmax(240px, 4fr) minmax(0, 8fr);
+    column-gap: clamp(40px, 6vw, 120px);
+    align-items: start;
+  }
+
+  .work .section-head,
+  .faq .section-head {
+    position: sticky;
+    top: 120px;
+    margin-bottom: 0;
+    padding-top: 18px;
+  }
+
+  .work-list,
+  .faq-list {
+    width: 100%;
+    max-width: none;
+    margin-bottom: 0;
+  }
+
+  /* The plans' heading runs as one line of two halves: the ask on the left,
+     the terms on the right. */
+  .pricing .section-head {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    grid-template-areas:
+      "label ."
+      "title sub"
+      "title chips";
+    column-gap: clamp(40px, 6vw, 120px);
+    row-gap: 12px;
+    max-width: none;
+    align-items: end;
+  }
+
+  .pricing .section-head > .label {
+    grid-area: label;
+  }
+
+  .pricing .section-head > .section-title {
+    grid-area: title;
+    align-self: start;
+  }
+
+  .pricing .section-head > .section-sub {
+    grid-area: sub;
+    justify-self: end;
+  }
+
+  .pricing .section-head > .pricing-chips {
+    grid-area: chips;
+    justify-self: end;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .entry-star,
   .booking-wait,
