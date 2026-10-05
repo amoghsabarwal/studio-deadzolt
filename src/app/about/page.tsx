@@ -30,6 +30,10 @@ const file = [
   { key: "Craft", value: site.craft },
 ];
 
+// 3D is how the motion is made, not a separate service, so it stays out of
+// this list.
+const made = site.services.filter((s) => s !== "3D motion");
+
 export default function AboutPage() {
   const [hello, rest] = splitHello(site.about[0]);
   return (
@@ -53,7 +57,6 @@ export default function AboutPage() {
             <span className="label" data-scramble>
               Studio file
             </span>
-            <span className="label">2000—forever</span>
           </div>
           <dl data-stagger>
             {file.map((row) => (
@@ -82,7 +85,7 @@ export default function AboutPage() {
           What I make
         </p>
         <ol className="ab-list" data-stagger>
-          {site.services.map((s, i) => (
+          {made.map((s, i) => (
             <li key={s}>
               <span className="ab-num">{String(i + 1).padStart(2, "0")}</span>
               {s}
