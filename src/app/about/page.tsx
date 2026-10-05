@@ -9,6 +9,7 @@ import "./about.css";
 export const metadata: Metadata = {
   title: "About",
   description: site.description,
+  alternates: { canonical: "/about" },
 };
 
 // The studio's file: who runs it, where, what it makes and how fast, set as
