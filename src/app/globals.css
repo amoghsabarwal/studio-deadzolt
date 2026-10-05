@@ -773,7 +773,7 @@ main {
   padding: 32px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  background: rgba(10, 10, 10, 0.92);
+  background: rgba(10, 10, 10, 0.97);
 }
 
 .plan header {
@@ -835,7 +835,8 @@ main {
 
 .plan[data-featured] {
   border-color: rgba(255, 31, 31, 0.35);
-  background: linear-gradient(180deg, rgba(255, 31, 31, 0.1), rgba(10, 10, 10, 0.92) 60%);
+  /* The red tint sits on a solid backing so nothing behind shows through. */
+  background: linear-gradient(180deg, rgba(255, 31, 31, 0.1), transparent 60%), rgba(10, 10, 10, 0.97);
 }
 
 /* The one speed promise, beside the booking buttons. */

@@ -314,7 +314,7 @@ export default function SceneCanvas() {
         >
           {/* Judged against fixed rates, not the display's refresh rate, so a
               120 Hz laptop drawing a smooth 80 fps is never read as slow. */}
-          <PerformanceMonitor bounds={() => [20, 27]} flipflops={6} onDecline={decline} onIncline={incline} />
+          <PerformanceMonitor bounds={() => [20, 27]} flipflops={Infinity} onDecline={decline} onIncline={incline} />
           {!reducedMotion && <SlowStartWatch />}
           <Space rich={full} animate={!reducedMotion} />
           {/* The lighting is drawn in place, so it needs no download; the hero
