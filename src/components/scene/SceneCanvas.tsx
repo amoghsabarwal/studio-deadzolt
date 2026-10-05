@@ -1,6 +1,6 @@
 "use client";
 
-import { Environment, Lightformer, PerformanceMonitor } from "@react-three/drei";
+import { Environment, Lightformer, PerformanceMonitor, useProgress } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
 import {
   Bloom,
@@ -17,18 +17,19 @@ import {
   getEntered,
   getReducedMotion,
   getScenePaused,
-  markSceneReady,
+  getSceneReady,
   subscribeEntry,
   subscribeReducedMotion,
   subscribeScenePaused,
 } from "@/lib/story";
 import { getFocus } from "@/lib/focus";
-import { getLite, subscribeLite, switchToLite } from "@/lib/lite";
+import { switchToLite } from "@/lib/lite";
 import { getTilt } from "@/lib/tilt";
 import ChapterPieces, { PIECE_DISCIPLINES } from "./ChapterPieces";
 import Space from "./Space";
 import SpaceObjects from "./SpaceObjects";
-import Star from "./Star";
+import Retry from "./Retry";
+import Star, { STAR_URL } from "./Star";
 
 // One canvas for the whole site, mounted in the root layout so it survives
 // page navigation: deep space that the visitor flies through as they scroll,
@@ -91,28 +92,51 @@ function TiltedStudio() {
   return null;
 }
 
-// Watches the first few frames once the scene is running: if any takes
-// longer than a quarter of a second, the device is too slow for the live
-// scene and the still takes over. The very first frame is skipped, since it
-// includes compiling shaders, and frames are only timed while the tab is on
-// screen and the scene isn't paused.
-const WATCH_FRAMES = 5;
-const SLOW_FRAME_MS = 250;
+// Decides whether the device is too slow for the live scene, without ever
+// mistaking a slow connection for a slow computer. While models, fonts and
+// scripts are still arriving the page is busy for reasons that have nothing
+// to do with the graphics, so the watch only arms once the star has drawn,
+// nothing is loading, and two quiet seconds have passed. Then it times a run
+// of frames and goes by the median, so a one-off hitch (a shader compiling,
+// a late script) can't tip it: only a device that keeps drawing under ten
+// frames a second gets the still.
+const ARM_AFTER_MS = 2000;
+const SAMPLE_FRAMES = 40;
+const SLOW_MEDIAN_MS = 100;
+
+const watch = { quietSince: 0, armed: false };
+
+// True once the scene has settled; declines before then are ignored.
+function watchArmed() {
+  return watch.armed;
+}
 
 function SlowStartWatch() {
-  const seen = useRef({ count: -1, last: 0 });
+  const gaps = useRef<number[]>([]);
+  const last = useRef(0);
   useFrame(() => {
-    const s = seen.current;
-    if (s.count >= WATCH_FRAMES) return;
     const now = performance.now();
-    const gap = now - s.last;
-    s.last = now;
-    if (document.visibilityState !== "visible" || getScenePaused()) {
-      s.count = -1;
+    const gap = now - last.current;
+    last.current = now;
+    if (gaps.current.length >= SAMPLE_FRAMES) return;
+    const busy =
+      !getSceneReady() ||
+      useProgress.getState().active ||
+      document.visibilityState !== "visible" ||
+      getScenePaused();
+    if (busy) {
+      watch.quietSince = 0;
+      watch.armed = false;
+      gaps.current = [];
       return;
     }
-    s.count += 1;
-    if (s.count > 0 && gap > SLOW_FRAME_MS) switchToLite();
+    if (!watch.quietSince) watch.quietSince = now;
+    if (now - watch.quietSince < ARM_AFTER_MS) return;
+    watch.armed = true;
+    gaps.current.push(gap);
+    if (gaps.current.length < SAMPLE_FRAMES) return;
+    const sorted = [...gaps.current].sort((x, y) => x - y);
+    if (sorted[SAMPLE_FRAMES >> 1] > SLOW_MEDIAN_MS) switchToLite();
   });
   return null;
 }
@@ -240,12 +264,16 @@ export default function SceneCanvas() {
     () => window.innerWidth > 760 && window.devicePixelRatio <= 2,
     () => true,
   );
-  const lite = useSyncExternalStore(subscribeLite, getLite, () => false);
   // Drops resolution and effects if the frame rate can't keep up.
   const [struggling, setStruggling] = useState(false);
   // A second drop after resolution and effects have already stepped down
-  // means the device can't carry the scene, so it swaps to the still.
-  const decline = () => (struggling ? switchToLite() : setStruggling(true));
+  // means the device can't carry the scene, so it swaps to the still. Drops
+  // while things are still loading don't count.
+  const decline = () => {
+    if (!watchArmed()) return;
+    if (struggling) switchToLite();
+    else setStruggling(true);
+  };
   const full = rich && !struggling;
 
   // The discipline pieces and the space objects are staged in one at a time
@@ -253,20 +281,6 @@ export default function SceneCanvas() {
   // the first seconds (when visitors reach for Book) stay light.
   const entered = useSyncExternalStore(subscribeEntry, getEntered, () => false);
   const extras = useStagedExtras(entered);
-
-  // With no 3D to draw, the entry screen needn't wait for it.
-  useEffect(() => {
-    if (lite) markSceneReady();
-  }, [lite]);
-
-  if (lite) {
-    return (
-      <div className="scene" data-lite aria-hidden="true">
-        {/* eslint-disable-next-line @next/next/no-img-element -- a small decorative still */}
-        <img src="/models/previews/deadzolt-star.webp" alt="" className="scene-still" />
-      </div>
-    );
-  }
 
   return (
     <div className="scene" aria-hidden="true">
@@ -294,13 +308,16 @@ export default function SceneCanvas() {
           <PerformanceMonitor onDecline={decline} />
           {!reducedMotion && <SlowStartWatch />}
           <Space rich={full} animate={!reducedMotion} />
-          {/* The hero star waits only for its own model and the lighting; the
-              chapter pieces load behind it. */}
+          {/* The lighting is drawn in place, so it needs no download; the hero
+              star waits only for its own model, and is retried if the
+              connection drops it. The chapter pieces load behind it. */}
           <Suspense fallback={null}>
             <SpaceLights rich={rich} />
             {!reducedMotion && <TiltedStudio />}
-            <Star animate={!reducedMotion} />
           </Suspense>
+          <Retry urls={[STAR_URL]}>
+            <Star animate={!reducedMotion} />
+          </Retry>
           <ChapterPieces animate={!reducedMotion} ready={extras} />
           <SpaceObjects rich={full} asteroids={extras.includes("asteroids")} probe={extras.includes("probe")} />
           <Effects rich={full} />

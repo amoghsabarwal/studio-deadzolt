@@ -6,14 +6,14 @@ shapes and materials can be tweaked and rebuilt rather than hand-edited.
 
 | File | Chapter | Triangles | Size |
 | --- | --- | --- | --- |
-| `deadzolt-star.glb` | Hero (arrival, contact) | 60k (hard-surface slab, bevelled edges) | 455 KB |
-| `orb-3d-experience.glb` | 3D Experience | 80k (seamed sphere, engraved bezel ring, star moon) | 625 KB |
-| `knob-motion-direction.glb` | Motion Direction | 122k (spun-metal top, fluted grip, dial, red insert and ring) | 970 KB |
-| `pendant-branding.glb` | Branding | 80k (engraved DEADZOLT STUDIO front, 2000 back) | 620 KB |
-| `loop-art-direction.glb` | Art Direction | 65k (rounded-square twisted band) | 390 KB |
-| `asteroids-space.glb` | Space journey | 4k (six bevelled faceted rocks, separate nodes) | 40 KB |
-| `moon-space.glb` | Space journey | 70k (cratered chrome moon) | 540 KB |
-| `probe-space.glb` | Space journey | 21k (DZ-01 probe: engraved body, star emblem, solar wings, dish, red lights) | 200 KB |
+| `deadzolt-star.glb` | Hero (arrival, contact) | 60k (hard-surface slab, bevelled edges) | 234 KB |
+| `orb-3d-experience.glb` | 3D Experience | 80k (seamed sphere, engraved bezel ring, star moon) | 323 KB |
+| `knob-motion-direction.glb` | Motion Direction | 122k (spun-metal top, fluted grip, dial, red insert and ring) | 501 KB |
+| `pendant-branding.glb` | Branding | 80k (engraved DEADZOLT STUDIO front, 2000 back) | 298 KB |
+| `loop-art-direction.glb` | Art Direction | 65k (rounded-square twisted band) | 235 KB |
+| `asteroids-space.glb` | Space journey | 4k (six bevelled faceted rocks, separate nodes) | 24 KB |
+| `moon-space.glb` | Space journey | 70k (cratered chrome moon) | 280 KB |
+| `probe-space.glb` | Space journey | 21k (DZ-01 probe: engraved body, star emblem, solar wings, dish, red lights) | 116 KB |
 | `env/holo-studio.hdr` | Environment for all of the above | 1024×512 | 950 KB |
 
 `previews/*.webp` are 1600px Cycles stills of each object, usable as posters
@@ -21,6 +21,11 @@ or reduced-motion fallbacks.
 
 ## Loading
 
+- After export, every file is re-packed with quantized meshopt, which about
+  halves the download (14-bit positions, 10-bit normals):
+  `npx @gltf-transform/cli meshopt in.glb out.glb --level high`. Quantized
+  meshes carry a scale and offset on their node; the site bakes that back
+  into plain floats where it needs real units (`scene/geometry.ts`).
 - Meshes use `EXT_meshopt_compression`. three.js bundles the decoder, so
   nothing is fetched from a CDN: drei's `useGLTF` handles it by default, or
   call `loader.setMeshoptDecoder(MeshoptDecoder)` from

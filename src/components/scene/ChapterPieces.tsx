@@ -2,11 +2,13 @@
 
 import { useGLTF } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
-import { Suspense, useMemo, useRef } from "react";
+import { useMemo, useRef } from "react";
 import { MathUtils, type Group } from "three";
 import { getFocus } from "@/lib/focus";
 import { getTilt } from "@/lib/tilt";
+import { bakeMeshes } from "./geometry";
 import { applyRealChrome } from "./materials";
+import Retry from "./Retry";
 import { DISCIPLINE_SPOT, NARROW_SPOT } from "./spots";
 
 type Motion = "spin" | "dial" | "swing" | "tumble";
@@ -43,6 +45,7 @@ function ChapterPiece({ piece, animate }: { piece: Piece; animate: boolean }) {
   // A copy with the studio finish, so the cached original stays untouched.
   const model = useMemo(() => {
     const copy = scene.clone(true);
+    bakeMeshes(copy);
     applyRealChrome(copy);
     return copy;
   }, [scene]);
@@ -171,9 +174,9 @@ export default function ChapterPieces({ animate, ready }: { animate: boolean; re
   return (
     <>
       {PIECES.filter((piece) => ready.includes(piece.discipline)).map((piece) => (
-        <Suspense key={piece.url} fallback={null}>
+        <Retry key={piece.url} urls={[piece.url]}>
           <ChapterPiece piece={piece} animate={animate} />
-        </Suspense>
+        </Retry>
       ))}
     </>
   );
