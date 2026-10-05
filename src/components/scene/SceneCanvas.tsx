@@ -265,8 +265,10 @@ export default function SceneCanvas() {
     () => true,
   );
   // Quality steps down gradually, and only when the frame rate really sags:
-  // first the resolution, a quarter step at a time, then the heavier effects,
-  // and only after that the still. It steps back up when frames recover.
+  // first the resolution, a quarter step at a time, then the heavier effects.
+  // It never swaps to the still partway through a visit; only the start-up
+  // watch above does that, for a device drawing under ten frames a second.
+  // Bounds sit under 30 fps because iPhones in Low Power Mode cap there.
   // Drops while things are still loading don't count.
   const top = rich ? 1.75 : 1.5;
   const [dpr, setDpr] = useState(top);
@@ -274,8 +276,7 @@ export default function SceneCanvas() {
   const decline = () => {
     if (!watchArmed()) return;
     if (dpr > 1) setDpr((d) => Math.max(1, d - 0.25));
-    else if (!struggling) setStruggling(true);
-    else switchToLite();
+    else setStruggling(true);
   };
   const incline = () => {
     if (struggling) setStruggling(false);
@@ -313,7 +314,7 @@ export default function SceneCanvas() {
         >
           {/* Judged against fixed rates, not the display's refresh rate, so a
               120 Hz laptop drawing a smooth 80 fps is never read as slow. */}
-          <PerformanceMonitor bounds={() => [32, 50]} flipflops={6} onDecline={decline} onIncline={incline} />
+          <PerformanceMonitor bounds={() => [20, 27]} flipflops={6} onDecline={decline} onIncline={incline} />
           {!reducedMotion && <SlowStartWatch />}
           <Space rich={full} animate={!reducedMotion} />
           {/* The lighting is drawn in place, so it needs no download; the hero
