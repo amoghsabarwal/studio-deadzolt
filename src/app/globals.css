@@ -852,29 +852,6 @@ main {
   gap: 12px 20px;
 }
 
-/* How the monthly plan runs, and the craft promise. */
-.steps {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
-  margin-top: 40px;
-  padding-top: 24px;
-  border-top: 1px solid var(--line);
-}
-
-.steps li {
-  display: flex;
-  gap: 14px;
-  align-items: baseline;
-  font-size: 15px;
-}
-
-.craft-line {
-  margin-top: 28px;
-  color: var(--dim);
-  font-size: 14px;
-}
-
 /* Questions before booking. */
 .faq {
   position: relative;
@@ -1598,58 +1575,6 @@ html[data-entry="open"] {
   --po: 0;
 }
 
-/* ---------- 3-step row with mock cards ---------- */
-.step-card {
-  display: grid;
-  gap: 8px;
-  margin-top: 16px;
-  padding: 14px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: rgba(10, 11, 16, 0.85);
-  font-size: 13px;
-  translate: calc(var(--mx, 0) * 4px) calc(var(--my, 0) * 4px);
-  box-shadow: 0 30px 60px -30px rgba(160, 180, 255, 0);
-  transition: box-shadow 0.8s var(--ease);
-}
-
-.steps[data-lit] .step-card {
-  box-shadow: 0 30px 60px -30px rgba(160, 180, 255, 0.45);
-}
-
-.step-card .label {
-  font-size: 10px;
-}
-
-.step-frame {
-  aspect-ratio: 16 / 9;
-  border-radius: 8px;
-  background: url("/models/previews/deadzolt-star.webp") 50% 50% / auto 120% no-repeat, #05060a;
-}
-
-.step-formats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.step-formats span {
-  padding: 4px 8px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-}
-
-.steps li {
-  flex-direction: column;
-  align-items: stretch;
-}
-
-.step-head {
-  display: flex;
-  gap: 14px;
-  align-items: baseline;
-}
-
 /* Inner pages */
 .page {
   padding: 150px var(--gutter) 120px;
@@ -2343,10 +2268,6 @@ html[data-entry="open"] {
 
 /* Phones */
 @media (max-width: 760px) {
-  .step-frame {
-    aspect-ratio: 3 / 1;
-  }
-
   /* The hero's buttons and promise get the room; the service list is in the footer. */
   .hero-foot ul {
     display: none;
@@ -2380,10 +2301,6 @@ html[data-entry="open"] {
   /* The plans carry the speed promise; the hero keeps its button and note in view. */
   .hero .speed-chip {
     display: none;
-  }
-
-  .steps {
-    grid-template-columns: 1fr;
   }
 
   .contact {

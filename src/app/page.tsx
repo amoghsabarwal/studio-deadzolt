@@ -1,6 +1,7 @@
 import BookButton from "@/components/BookButton";
 import Link from "next/link";
 import Faq from "@/components/Faq";
+import ProcessBento from "@/components/ProcessBento";
 import ProofStrip from "@/components/ProofStrip";
 import Showreel from "@/components/Showreel";
 import HoloLayers from "@/components/HoloLayers";
@@ -12,35 +13,6 @@ import { plans, projects, site } from "@/content/site";
 // The home page is short and built to get a call booked: the hero, the
 // showreel, the work, the plans, and one last ask. Each element with
 // data-chapter is a chapter; the 3D scene moves to a new pose for each one.
-
-// Small mock screens under the three steps of the monthly plan.
-function StepCard({ step }: { step: number }) {
-  if (step === 0)
-    return (
-      <span className="step-card" aria-hidden="true">
-        <span className="label"># deadzolt · new request</span>
-        <span>Launch teaser for the new app, 20 seconds, vertical and wide.</span>
-      </span>
-    );
-  if (step === 1)
-    return (
-      <span className="step-card" aria-hidden="true">
-        <span className="step-frame" />
-        <span className="label">v1 · frames for review</span>
-      </span>
-    );
-  return (
-    <span className="step-card" aria-hidden="true">
-      <span className="label">Exports</span>
-      <span className="step-formats">
-        <span>16:9</span>
-        <span>9:16</span>
-        <span>1:1</span>
-        <span>4:5</span>
-      </span>
-    </span>
-  );
-}
 
 export default function Home() {
   return (
@@ -159,18 +131,7 @@ export default function Home() {
           ))}
         </div>
 
-        <ol className="steps" aria-label="How the monthly plan runs" data-hairline="top" data-parallax>
-          {site.steps.map((step, i) => (
-            <li key={step}>
-              <span className="step-head">
-                <span className="label">{String(i + 1).padStart(2, "0")}</span>
-                {step}
-              </span>
-              <StepCard step={i} />
-            </li>
-          ))}
-        </ol>
-        <p className="craft-line">{site.craft}</p>
+        <ProcessBento />
       </section>
 
       <Faq />
