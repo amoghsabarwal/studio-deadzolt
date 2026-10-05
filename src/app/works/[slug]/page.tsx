@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: PageProps<"/works/[slug]">): 
   const { slug } = await params;
   const project = getProject(slug);
   if (!project) return {};
-  return { title: project.title, description: project.summary };
+  return { title: project.title, description: project.summary, alternates: { canonical: `/works/${slug}` } };
 }
 
 // A case study: the title beside the work's discipline piece in 3D, the

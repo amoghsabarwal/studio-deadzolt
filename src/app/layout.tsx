@@ -29,16 +29,25 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  // Share cards resolve against the live Vercel domain until deadzolt.studio
-  // points at this site (it still serves the old Framer site).
-  metadataBase: new URL(
-    process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : site.url,
-  ),
+  // Share cards and absolute links resolve against deadzolt.studio.
+  metadataBase: new URL(site.url),
   title: {
-    default: `${site.name}: ${site.tagline}`,
+    default: site.search.title,
     template: `%s · ${site.name}`,
   },
-  description: site.description,
+  description: site.search.description,
+  applicationName: site.name,
+  authors: [{ name: site.founder, url: site.url }],
+  creator: site.founder,
+  // Each page sets its own canonical address; this covers the share card text.
+  openGraph: {
+    type: "website",
+    siteName: site.name,
+    locale: "en_US",
+  },
+  twitter: { card: "summary_large_image", creator: "@deadzoltt" },
+  // Search Console's meta tag, if the studio verifies that way instead of DNS.
+  verification: process.env.GOOGLE_SITE_VERIFICATION ? { google: process.env.GOOGLE_SITE_VERIFICATION } : undefined,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
