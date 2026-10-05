@@ -6,7 +6,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { showreel, site } from "@/content/site";
 import { getLite, subscribeLite } from "@/lib/lite";
-import { getReducedMotion, setScenePaused, setStory } from "@/lib/story";
+import { getReducedMotion, getSceneReady, setScenePaused, setStory, subscribeEntry } from "@/lib/story";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -36,6 +36,13 @@ export default function Showreel() {
   const [near, setNear] = useState(false);
   const lite = useSyncExternalStore(subscribeLite, getLite, () => true);
   const loop = near && !lite && !getReducedMotion();
+  const video = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    const v = video.current;
+    if (!loop || !v) return;
+    v.load();
+    v.play().catch(() => {});
+  }, [loop]);
 
   // The 3D pauses while the reel plays on screen.
   useEffect(() => {
@@ -57,12 +64,23 @@ export default function Showreel() {
         setInView(self.isActive);
       },
     });
+    let stopWaiting: (() => void) | undefined;
     const approach = ScrollTrigger.create({
       trigger: el,
       start: "top bottom+=400",
       once: true,
-      // Waits for an idle moment so it never competes with the first paint or Book.
-      onEnter: () => (window.requestIdleCallback ?? setTimeout)(() => setNear(true), { timeout: 2500 }),
+      onEnter: () => {
+        if ((navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData) return;
+        // Waits until the star has drawn, so on a slow connection the loop
+        // never queues ahead of the 3D, then for an idle moment.
+        const start = () => (window.requestIdleCallback ?? setTimeout)(() => setNear(true), { timeout: 2500 });
+        if (getSceneReady()) return start();
+        stopWaiting = subscribeEntry(() => {
+          if (!getSceneReady()) return;
+          stopWaiting?.();
+          start();
+        });
+      },
     });
     // The frame zooms out to full size as it scrolls in, through a soft oval
     // mask that opens up, while the poster inside settles from a closer crop.
@@ -80,6 +98,7 @@ export default function Showreel() {
     return () => {
       stage.kill();
       approach.kill();
+      stopWaiting?.();
       opens?.scrollTrigger?.kill();
       opens?.kill();
       setStory({ stage: false });
@@ -109,7 +128,7 @@ export default function Showreel() {
             <span className="reel-fallback" aria-hidden="true">
               <span>Showreel</span>
             </span>
-            <video key={loop ? "loop" : "poster"} className="reel-loop" poster="/reel/poster.jpg" muted loop playsInline autoPlay preload="none" aria-hidden="true">
+            <video ref={video} className="reel-loop" poster="/reel/poster.jpg" muted loop playsInline autoPlay preload="none" aria-hidden="true">
               {loop && <source src="/reel/loop.webm" type="video/webm" />}
               {loop && <source src="/reel/loop.mp4" type="video/mp4" />}
             </video>
