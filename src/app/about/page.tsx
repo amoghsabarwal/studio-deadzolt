@@ -1,56 +1,107 @@
 import BookButton from "@/components/BookButton";
+import Reveals from "@/components/Reveals";
+import StudioClock from "@/components/StudioClock";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { site } from "@/content/site";
+import "./about.css";
 
 export const metadata: Metadata = {
   title: "About",
   description: site.description,
 };
 
+// The studio's file: who runs it, where, what it makes and how fast, set as
+// a spec sheet beside the chrome pendant. The star keeps the top right.
+const file = [
+  { key: "Studio", value: site.name },
+  { key: "Founder", value: site.founder },
+  { key: "Makes", value: "Motion graphics. Only motion graphics." },
+  {
+    key: "Based",
+    value: (
+      <>
+        {site.location} <StudioClock />
+      </>
+    ),
+  },
+  { key: "Status", value: <span className="availability">{site.availability}</span> },
+  { key: "Turnaround", value: site.speed },
+  { key: "Craft", value: site.craft },
+];
+
 export default function AboutPage() {
+  const [hello, rest] = splitHello(site.about[0]);
   return (
     <section className="page about">
-      <header className="page-head">
+      <Reveals />
+      <header className="ab-head">
         <p className="label" data-enter>
-          {site.founder} · Founder · {site.location}
+          About · {site.name}
         </p>
-        <h1 className="display page-title" data-enter>
-          About
+        <h1 className="display ab-title" data-split>
+          {hello} <em>{rest}</em>
         </h1>
+        <p className="ab-lede" data-enter>
+          {site.about[1]}
+        </p>
       </header>
 
-      <div className="about-grid" data-enter>
-        <div>
-          <p className="studio-hello">{site.about[0]}</p>
-          <p className="studio-body">{site.about[1]}</p>
-        </div>
-        <div>
-          <p className="label">Services</p>
-          <ul className="services">
-            {site.services.map((s) => (
-              <li key={s}>{s}</li>
+      <div className="ab-file">
+        <div className="ab-sheet">
+          <div className="ab-sheet-head">
+            <span className="label" data-scramble>
+              Studio file
+            </span>
+            <span className="label">2000—forever</span>
+          </div>
+          <dl data-stagger>
+            {file.map((row) => (
+              <div className="ab-row" key={row.key}>
+                <dt className="label">{row.key}</dt>
+                <dd>{row.value}</dd>
+              </div>
             ))}
-          </ul>
+          </dl>
         </div>
+
+        <figure className="ab-plate" data-wipe-in>
+          <Image
+            src="/brand/pendant.webp"
+            alt="A chrome pendant of the Deadzolt mark hanging on a chain"
+            width={996}
+            height={558}
+            sizes="(max-width: 760px) 100vw, 50vw"
+          />
+          <figcaption className="label">Fig. 01 · The mark, as a pendant</figcaption>
+        </figure>
       </div>
 
-      <div className="about-images">
-        <Image
-          src="/brand/pendant.webp"
-          alt="A chrome pendant of the Deadzolt mark hanging on a chain"
-          width={996}
-          height={558}
-        />
-        <Image
-          src="/brand/type-panel.webp"
-          alt="Brand typography: Y2K-born design for electric, chrome-finished web, visual and objects"
-          width={996}
-          height={559}
-        />
+      <div className="ab-make">
+        <p className="label" data-scramble>
+          What I make
+        </p>
+        <ol className="ab-list" data-stagger>
+          {site.services.map((s, i) => (
+            <li key={s}>
+              <span className="ab-num">{String(i + 1).padStart(2, "0")}</span>
+              {s}
+            </li>
+          ))}
+        </ol>
       </div>
 
-      <BookButton from="about" primary={false} />
+      <div className="ab-close" data-reveal>
+        <p className="ab-close-line">{site.ctaNote}</p>
+        <BookButton from="about" />
+      </div>
     </section>
   );
+}
+
+// "Hi, I'm Amogh, founder of …" → ["Hi, I'm Amogh,", "founder of …"], so the
+// greeting reads in paper and the rest in dim.
+function splitHello(line: string): [string, string] {
+  const at = line.indexOf(",");
+  return at < 0 ? [line, ""] : [line.slice(0, at + 1), line.slice(at + 2)];
 }
