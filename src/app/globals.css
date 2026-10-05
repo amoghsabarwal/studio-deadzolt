@@ -1008,11 +1008,31 @@ main {
 
 .booking-close {
   padding: 8px 12px;
+  white-space: nowrap;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: transparent;
   color: var(--paper);
   cursor: pointer;
+}
+
+.booking-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.booking-tab {
+  padding: 8px 12px;
+  white-space: nowrap;
+  color: var(--dim);
+  text-decoration: none;
+  transition: color 0.3s var(--ease);
+}
+
+.booking-tab:hover,
+.booking-tab:focus-visible {
+  color: var(--paper);
 }
 
 .booking-bar {
@@ -2372,6 +2392,10 @@ html[data-entry="open"] {
 
   .call-card {
     justify-self: stretch;
+  }
+
+  .booking-long {
+    display: none;
   }
 
   .booking-dialog {

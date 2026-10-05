@@ -3,7 +3,7 @@
 import { track } from "@vercel/analytics";
 import { useEffect, useRef, useState } from "react";
 import { preconnect } from "react-dom";
-import { bookingEmbed, site } from "@/content/site";
+import { bookingEmbed, bookingLink, site } from "@/content/site";
 import { count } from "@/lib/count";
 import { setScenePaused } from "@/lib/story";
 
@@ -73,11 +73,27 @@ export default function BookingDialog() {
     >
       <header className="booking-bar">
         <p className="label">
-          <span className="dot" aria-hidden="true" /> {site.cta} · 30 min
+          <span className="dot" aria-hidden="true" /> {site.cta}
+          <span className="booking-long"> · 30 min</span>
         </p>
-        <button type="button" className="booking-close label" onClick={() => dialog.current?.close()}>
-          Close ✕
-        </button>
+        <div className="booking-actions">
+          {/* A way out if the calendar can't load here (an ad blocker, a
+              company firewall, a Calendly outage): the same page in a tab. */}
+          {from && (
+            <a
+              className="booking-tab label"
+              href={bookingLink(from).href}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => count("book", `${from}-tab`)}
+            >
+              <span className="booking-long">Open in </span>Calendly ↗
+            </a>
+          )}
+          <button type="button" className="booking-close label" onClick={() => dialog.current?.close()}>
+            Close ✕
+          </button>
+        </div>
       </header>
       <div className="booking-frame" data-loaded={loaded || undefined}>
         <p className="label booking-wait" aria-hidden={loaded}>
