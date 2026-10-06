@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import HoloLayers from "@/components/HoloLayers";
 import { drawKeepsake, type KeepsakeFormat, toBlob, visitorLabel } from "@/lib/keepsake";
-import { rollNumber } from "@/lib/motion/text";
+import { loadMotion } from "@/lib/motion/load";
 import { getVisitor, startVisitor, subscribeVisitor } from "@/lib/visitor";
 
 const noop = () => () => {};
@@ -66,7 +66,10 @@ export default function Keepsake() {
   }, [open, format, visitor]);
 
   useEffect(() => {
-    if (open && visitor?.number != null && number.current) rollNumber(number.current);
+    if (!open || visitor?.number == null) return;
+    loadMotion().then(({ rollNumber }) => {
+      if (number.current) rollNumber(number.current);
+    });
   }, [open, visitor?.number]);
 
   const fileName = `deadzolt-keepsake-${format}.png`;

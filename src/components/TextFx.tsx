@@ -1,14 +1,13 @@
 "use client";
 
 import { useEffect } from "react";
-import { holoScramble } from "@/lib/motion/holo";
 import { getReducedMotion } from "@/lib/story";
-import { inOwnTask } from "@/lib/task";
+import { withMotion } from "@/lib/motion/load";
 
 // Hover scrambles for links and the booking buttons: the words scan again
 // each time the pointer arrives.
 export default function TextFx() {
-  useEffect(() => inOwnTask(() => {
+  useEffect(() => withMotion(({ holoScramble }) => {
     if (getReducedMotion()) return;
     const busy = new WeakSet<HTMLElement>();
     const over = (e: PointerEvent) => {
