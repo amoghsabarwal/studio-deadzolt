@@ -1,11 +1,11 @@
 "use client";
 
-import gsap from "gsap";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { getProject } from "@/content/site";
 import { setDomCursorLabel } from "@/lib/cursor";
 import { clearHoverFocus } from "@/lib/focus";
+import { loadMotion } from "@/lib/motion/load";
 import { getReducedMotion } from "@/lib/story";
 
 function labelFor(pathname: string) {
@@ -21,7 +21,8 @@ function labelFor(pathname: string) {
 // elements up behind it.
 function liftCurtain(el: HTMLElement, covering: { current: boolean }) {
   // Give the new page a frame to lay out before the curtain lifts.
-  requestAnimationFrame(() => {
+  requestAnimationFrame(async () => {
+    const { gsap } = await loadMotion();
     gsap
       .timeline({
         onComplete: () => {
@@ -74,11 +75,13 @@ export default function PageTransition() {
 
       const href = url.pathname + url.search + url.hash;
       router.prefetch(href);
-      gsap
-        .timeline()
-        .set(el, { visibility: "visible", yPercent: 100 })
-        .to(el, { yPercent: 0, duration: 0.6, ease: "expo.inOut" })
-        .add(() => router.push(href));
+      loadMotion().then(({ gsap }) =>
+        gsap
+          .timeline()
+          .set(el, { visibility: "visible", yPercent: 100 })
+          .to(el, { yPercent: 0, duration: 0.6, ease: "expo.inOut" })
+          .add(() => router.push(href)),
+      );
       // Never leave the page covered if the navigation stalls.
       fallback.current = window.setTimeout(() => {
         if (covering.current) liftCurtain(el, covering);

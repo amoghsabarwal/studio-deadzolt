@@ -1,21 +1,16 @@
 "use client";
 
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import type { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useEffect } from "react";
 import { getEntered, getReducedMotion, setStory, subscribeEntry } from "@/lib/story";
-import { holoScramble } from "@/lib/motion/holo";
-import { wipeFill } from "@/lib/motion/text";
 import { DUR, EASE, RISE, SCRUB, replay } from "@/lib/motion/tokens";
 import { useReveals } from "../Reveals";
-import { inOwnTask } from "@/lib/task";
-
-gsap.registerPlugin(ScrollTrigger);
+import { withMotion } from "@/lib/motion/load";
 
 // Wires the home page to the scroll: which chapter is in view (for
 // the 3D star), and the text reveals.
 export default function StoryDriver() {
-  useEffect(() => inOwnTask(() => {
+  useEffect(() => withMotion(({ gsap, ScrollTrigger, holoScramble, wipeFill }) => {
     setStory({ active: true, chapter: 0, progress: 0 });
     const reduced = getReducedMotion();
 

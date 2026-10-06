@@ -1,10 +1,10 @@
 "use client";
 
-import gsap from "gsap";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { EASE } from "@/lib/motion/tokens";
 import { getReducedMotion } from "@/lib/story";
+import { withMotion } from "@/lib/motion/load";
 import { inOwnTask } from "@/lib/task";
 
 // Site-wide pointer motion:
@@ -14,6 +14,8 @@ import { inOwnTask } from "@/lib/task";
 //   1.6 s and coasts back down over 3 s.
 // Both are for mice only, and the flywheel only runs while it's on screen.
 const REACH = 150;
+
+const clamp = (v: number) => Math.min(1, Math.max(-1, v));
 
 export default function MotionDriver() {
   const pathname = usePathname();
@@ -39,8 +41,8 @@ export default function MotionDriver() {
       document.querySelectorAll<HTMLElement>("[data-parallax]").forEach((el) => {
         const r = el.getBoundingClientRect();
         if (r.bottom < 0 || r.top > innerHeight) return;
-        const mx = gsap.utils.clamp(-1, 1, (px - (r.left + r.width / 2)) / (r.width / 2));
-        const my = gsap.utils.clamp(-1, 1, (py - (r.top + r.height / 2)) / (r.height / 2));
+        const mx = clamp((px - (r.left + r.width / 2)) / (r.width / 2));
+        const my = clamp((py - (r.top + r.height / 2)) / (r.height / 2));
         el.style.setProperty("--mx", mx.toFixed(3));
         el.style.setProperty("--my", my.toFixed(3));
       });
@@ -75,7 +77,7 @@ export default function MotionDriver() {
     };
   }), [pathname]);
 
-  useEffect(() => inOwnTask(() => {
+  useEffect(() => withMotion(({ gsap }) => {
     const wheel = document.querySelector<HTMLElement>(".flywheel");
     const card = wheel?.closest<HTMLElement>(".plan");
     if (!wheel || !card || getReducedMotion()) return;

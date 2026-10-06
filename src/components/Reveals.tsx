@@ -1,12 +1,9 @@
 "use client";
 
-import gsap from "gsap";
 import { useEffect } from "react";
-import { holoScramble } from "@/lib/motion/holo";
-import { rollNumber } from "@/lib/motion/text";
 import { DUR, EASE, RISE, STAGGER, replay } from "@/lib/motion/tokens";
 import { getReducedMotion } from "@/lib/story";
-import { inOwnTask } from "@/lib/task";
+import { withMotion } from "@/lib/motion/load";
 
 // Scroll reveals for any page:
 // [data-split] headings rise a little and scan in through the holo scramble,
@@ -17,7 +14,7 @@ import { inOwnTask } from "@/lib/task";
 // [data-wipe-in] blocks wipe in from the left,
 // [data-reveal] blocks rise and fade in.
 export function useReveals() {
-  useEffect(() => inOwnTask(() => {
+  useEffect(() => withMotion(({ gsap, holoScramble, rollNumber }) => {
     if (getReducedMotion()) return;
     const ctx = gsap.context(() => {
       gsap.utils.toArray<HTMLElement>("[data-split]").forEach((el) => {

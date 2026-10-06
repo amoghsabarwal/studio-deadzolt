@@ -1,13 +1,11 @@
 "use client";
 
-import gsap from "gsap";
-import { Flip } from "gsap/Flip";
+import type { Flip } from "gsap/Flip";
 import Link from "next/link";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { Discipline, Project } from "@/content/site";
+import { loadMotion, type Motion } from "@/lib/motion/load";
 import { getReducedMotion } from "@/lib/story";
-
-gsap.registerPlugin(Flip);
 
 type Props = {
   projects: (Project & { tags: string })[];
@@ -20,19 +18,27 @@ export default function WorksIndex({ projects, disciplines }: Props) {
   const [filter, setFilter] = useState<string>("all");
   const list = useRef<HTMLOListElement>(null);
   const flipState = useRef<Flip.FlipState | null>(null);
+  // Flip arrives with the rest of the motion library after the first paint;
+  // a filter picked before then simply switches without the glide.
+  const motion = useRef<Motion | null>(null);
+  useEffect(() => {
+    loadMotion().then((m) => (motion.current = m));
+  }, []);
 
   const choose = (next: string) => {
     if (next === filter) return;
-    if (list.current && !getReducedMotion()) {
-      flipState.current = Flip.getState(list.current.querySelectorAll("li"));
+    if (list.current && motion.current && !getReducedMotion()) {
+      flipState.current = motion.current.Flip.getState(list.current.querySelectorAll("li"));
     }
     setFilter(next);
   };
 
   useLayoutEffect(() => {
     const state = flipState.current;
-    if (!state) return;
+    const m = motion.current;
+    if (!state || !m) return;
     flipState.current = null;
+    const { gsap, Flip } = m;
     Flip.from(state, {
       duration: 0.7,
       ease: "expo.out",

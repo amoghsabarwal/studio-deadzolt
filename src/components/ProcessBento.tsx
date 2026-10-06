@@ -1,16 +1,11 @@
 "use client";
 
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useEffect, useRef } from "react";
-import { holoScramble } from "@/lib/motion/holo";
 import { STAGGER, replay } from "@/lib/motion/tokens";
 import { getReducedMotion } from "@/lib/story";
 import { bookingLink, site } from "@/content/site";
 import "./ProcessBento.css";
-import { inOwnTask } from "@/lib/task";
-
-gsap.registerPlugin(ScrollTrigger);
+import { withMotion } from "@/lib/motion/load";
 
 // How the monthly plan runs, as a bento of small animated drawings. Each tile
 // is a quiet UI vignette over a field of hairlines drifting like wind; the
@@ -226,7 +221,7 @@ function CraftArt() {
 export default function ProcessBento() {
   const root = useRef<HTMLDivElement>(null);
 
-  useEffect(() => inOwnTask(() => {
+  useEffect(() => withMotion(({ gsap, ScrollTrigger, holoScramble }) => {
     const el = root.current;
     if (!el) return;
     const reduced = getReducedMotion();

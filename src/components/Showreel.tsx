@@ -1,15 +1,11 @@
 "use client";
 
 import BookButton from "@/components/BookButton";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { showreel, site } from "@/content/site";
 import { getLite, subscribeLite } from "@/lib/lite";
 import { getReducedMotion, getSceneReady, setScenePaused, setStory, subscribeEntry } from "@/lib/story";
-import { inOwnTask } from "@/lib/task";
-
-gsap.registerPlugin(ScrollTrigger);
+import { withMotion } from "@/lib/motion/load";
 
 const { youtubeId, title } = showreel;
 
@@ -68,7 +64,7 @@ export default function Showreel() {
     return () => setScenePaused(false);
   }, [playing, inView]);
 
-  useEffect(() => inOwnTask(() => {
+  useEffect(() => withMotion(({ gsap, ScrollTrigger }) => {
     const el = root.current;
     const box = frame.current;
     if (!el || !box) return;
