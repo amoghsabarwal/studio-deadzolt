@@ -168,7 +168,7 @@ export default function Showreel() {
       </div>
       <div className="reel-cta">
         <p>
-          Motion graphics for startups and brands.
+          Motion graphics for venture-backed startups.
         </p>
         <div className="reel-book">
           <BookButton from="reel" />
