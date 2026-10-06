@@ -32,6 +32,9 @@
 html {
   background: var(--ink);
   -webkit-text-size-adjust: 100%;
+  /* The scrollbar's room is kept while the entry screen holds the scroll,
+     so nothing jumps sideways when it lifts. */
+  scrollbar-gutter: stable;
 }
 
 html.lenis,
@@ -197,26 +200,18 @@ ol {
   will-change: transform;
 }
 
-/* Far stars: fine and slow. */
+/* Far stars: fine and slow. Each field is one small tile image, repeated:
+   drawn once, so even a phone painting in software gets its first frame
+   out quickly. */
 .sky::before {
-  background-image:
-    radial-gradient(1px 1px at 23px 41px, rgba(255, 255, 255, 0.8), transparent),
-    radial-gradient(1px 1px at 131px 87px, rgba(255, 255, 255, 0.55), transparent),
-    radial-gradient(1px 1px at 77px 163px, rgba(255, 255, 255, 0.7), transparent),
-    radial-gradient(1px 1px at 189px 19px, rgba(200, 214, 255, 0.6), transparent),
-    radial-gradient(1px 1px at 157px 191px, rgba(255, 255, 255, 0.5), transparent),
-    radial-gradient(1px 1px at 41px 121px, rgba(255, 220, 220, 0.5), transparent);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='211' height='211'%3E%3Cdefs%3E%3CradialGradient id='a'%3E%3Cstop offset='0' stop-color='%23fff' stop-opacity='0.8'/%3E%3Cstop offset='1' stop-color='%23fff' stop-opacity='0'/%3E%3C/radialGradient%3E%3CradialGradient id='b'%3E%3Cstop offset='0' stop-color='%23fff' stop-opacity='0.55'/%3E%3Cstop offset='1' stop-color='%23fff' stop-opacity='0'/%3E%3C/radialGradient%3E%3CradialGradient id='c'%3E%3Cstop offset='0' stop-color='%23fff' stop-opacity='0.7'/%3E%3Cstop offset='1' stop-color='%23fff' stop-opacity='0'/%3E%3C/radialGradient%3E%3CradialGradient id='d'%3E%3Cstop offset='0' stop-color='%23c8d6ff' stop-opacity='0.6'/%3E%3Cstop offset='1' stop-color='%23c8d6ff' stop-opacity='0'/%3E%3C/radialGradient%3E%3CradialGradient id='e'%3E%3Cstop offset='0' stop-color='%23fff' stop-opacity='0.5'/%3E%3Cstop offset='1' stop-color='%23fff' stop-opacity='0'/%3E%3C/radialGradient%3E%3CradialGradient id='f'%3E%3Cstop offset='0' stop-color='%23ffdcdc' stop-opacity='0.5'/%3E%3Cstop offset='1' stop-color='%23ffdcdc' stop-opacity='0'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='23' cy='41' r='1' fill='url(%23a)'/%3E%3Ccircle cx='131' cy='87' r='1' fill='url(%23b)'/%3E%3Ccircle cx='77' cy='163' r='1' fill='url(%23c)'/%3E%3Ccircle cx='189' cy='19' r='1' fill='url(%23d)'/%3E%3Ccircle cx='157' cy='191' r='1' fill='url(%23e)'/%3E%3Ccircle cx='41' cy='121' r='1' fill='url(%23f)'/%3E%3C/svg%3E");
   background-size: 211px 211px;
   animation: sky-drift-far 90s linear infinite;
 }
 
 /* Near stars: fewer, brighter, faster, with a slow twinkle. */
 .sky::after {
-  background-image:
-    radial-gradient(1.5px 1.5px at 61px 83px, #fff, transparent),
-    radial-gradient(2px 2px at 283px 211px, rgba(220, 230, 255, 0.9), transparent),
-    radial-gradient(1.5px 1.5px at 197px 337px, #fff, transparent),
-    radial-gradient(1.5px 1.5px at 359px 41px, rgba(255, 210, 210, 0.85), transparent);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='397' height='397'%3E%3Cdefs%3E%3CradialGradient id='a'%3E%3Cstop offset='0' stop-color='%23fff' stop-opacity='1'/%3E%3Cstop offset='1' stop-color='%23fff' stop-opacity='0'/%3E%3C/radialGradient%3E%3CradialGradient id='b'%3E%3Cstop offset='0' stop-color='%23dce6ff' stop-opacity='0.9'/%3E%3Cstop offset='1' stop-color='%23dce6ff' stop-opacity='0'/%3E%3C/radialGradient%3E%3CradialGradient id='c'%3E%3Cstop offset='0' stop-color='%23fff' stop-opacity='1'/%3E%3Cstop offset='1' stop-color='%23fff' stop-opacity='0'/%3E%3C/radialGradient%3E%3CradialGradient id='d'%3E%3Cstop offset='0' stop-color='%23ffd2d2' stop-opacity='0.85'/%3E%3Cstop offset='1' stop-color='%23ffd2d2' stop-opacity='0'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='61' cy='83' r='1.5' fill='url(%23a)'/%3E%3Ccircle cx='283' cy='211' r='2' fill='url(%23b)'/%3E%3Ccircle cx='197' cy='337' r='1.5' fill='url(%23c)'/%3E%3Ccircle cx='359' cy='41' r='1.5' fill='url(%23d)'/%3E%3C/svg%3E");
   background-size: 397px 397px;
   animation:
     sky-drift-near 60s linear infinite,
@@ -1238,12 +1233,6 @@ html[data-entry="open"] {
 
 
 /* ---------- Motion system: holo scramble ---------- */
-@property --spin {
-  syntax: "<angle>";
-  inherits: true;
-  initial-value: 0deg;
-}
-
 .holo-word {
   display: inline-block;
   white-space: pre;
@@ -1288,7 +1277,14 @@ html[data-entry="open"] {
   width: 16px;
   height: 16px;
   margin-right: -4px;
-  animation: cta-spin 9s linear infinite;
+  /* The ring turns as a whole, on the compositor. Its eight dots are evenly
+     spaced, so snapping the turn back to zero on hover can't be seen. */
+  animation: orbit-turn 9s linear infinite;
+}
+
+.cta:hover .cta-orbit,
+.cta:focus-visible .cta-orbit {
+  animation: none;
 }
 
 .cta-orbit i {
@@ -1300,7 +1296,7 @@ html[data-entry="open"] {
   margin: -1.25px 0 0 -1.25px;
   border-radius: 50%;
   background: currentColor;
-  transform: rotate(calc(var(--i) * 45deg + var(--spin))) translateX(6px);
+  transform: rotate(calc(var(--i) * 45deg)) translateX(6px);
   /* Leaving: springs back, softer. */
   transition: transform 0.6s cubic-bezier(0.3, 1.45, 0.55, 1) calc(var(--i) * 26ms);
 }
@@ -1352,9 +1348,9 @@ html[data-entry="open"] {
   --y: 6px;
 }
 
-@keyframes cta-spin {
+@keyframes orbit-turn {
   to {
-    --spin: 360deg;
+    rotate: 360deg;
   }
 }
 
@@ -1539,11 +1535,11 @@ html[data-entry="open"] {
 }
 
 .faq-item[data-open] .faq-dots {
-  animation: cta-spin 4s linear infinite;
+  animation: orbit-turn 4s linear infinite;
 }
 
 .faq-item[data-open] .faq-dots i {
-  transform: rotate(calc(var(--i) * 45deg + var(--spin))) translateX(6px);
+  transform: rotate(calc(var(--i) * 45deg)) translateX(6px);
   opacity: 1;
 }
 

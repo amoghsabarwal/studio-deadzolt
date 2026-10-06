@@ -18,7 +18,7 @@ const noop = () => () => {};
 
 export default function SceneLoader() {
   const mounted = useSyncExternalStore(noop, () => true, () => false);
-  const lite = useSyncExternalStore(subscribeLite, getLite, () => false);
+  const lite = useSyncExternalStore(subscribeLite, getLite, () => null);
 
   // With no 3D to draw, the entry screen needn't wait for it.
   useEffect(() => {
@@ -28,7 +28,9 @@ export default function SceneLoader() {
   return (
     <>
       <div className="sky" aria-hidden="true" />
+      {/* While the graphics check runs (a moment at most), the sky shows alone. */}
       {mounted &&
+        lite !== null &&
         (lite ? (
           <div className="scene-lite" aria-hidden="true">
             {/* eslint-disable-next-line @next/next/no-img-element -- a small decorative still */}

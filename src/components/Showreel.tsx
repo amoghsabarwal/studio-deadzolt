@@ -7,6 +7,7 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { showreel, site } from "@/content/site";
 import { getLite, subscribeLite } from "@/lib/lite";
 import { getReducedMotion, getSceneReady, setScenePaused, setStory, subscribeEntry } from "@/lib/story";
+import { inOwnTask } from "@/lib/task";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -35,8 +36,25 @@ export default function Showreel() {
   // as the reel comes near; lite devices and reduced motion keep the poster.
   const [near, setNear] = useState(false);
   const lite = useSyncExternalStore(subscribeLite, getLite, () => true);
-  const loop = near && !lite && !getReducedMotion();
+  const loop = near && lite === false && !getReducedMotion();
   const video = useRef<HTMLVideoElement>(null);
+  // The poster sits below the first screen, so it's fetched once the page
+  // has loaded and painted, never ahead of what the visitor sees first.
+  const [poster, setPoster] = useState(false);
+  useEffect(() => {
+    let id = 0;
+    const show = () => {
+      id = requestAnimationFrame(() => {
+        id = requestAnimationFrame(() => setPoster(true));
+      });
+    };
+    if (document.readyState === "complete") show();
+    else window.addEventListener("load", show, { once: true });
+    return () => {
+      cancelAnimationFrame(id);
+      window.removeEventListener("load", show);
+    };
+  }, []);
   useEffect(() => {
     const v = video.current;
     if (!loop || !v) return;
@@ -50,7 +68,7 @@ export default function Showreel() {
     return () => setScenePaused(false);
   }, [playing, inView]);
 
-  useEffect(() => {
+  useEffect(() => inOwnTask(() => {
     const el = root.current;
     const box = frame.current;
     if (!el || !box) return;
@@ -109,7 +127,7 @@ export default function Showreel() {
       opens?.kill();
       setStory({ stage: false });
     };
-  }, []);
+  }), []);
 
   return (
     <section ref={root} id="showreel" className="reel" aria-label="Showreel">
@@ -134,7 +152,7 @@ export default function Showreel() {
             <span className="reel-fallback" aria-hidden="true">
               <span>Showreel</span>
             </span>
-            <video ref={video} className="reel-loop" poster="/reel/poster.jpg" muted loop playsInline autoPlay preload="none" aria-hidden="true">
+            <video ref={video} className="reel-loop" poster={poster ? "/reel/poster.jpg" : undefined} muted loop playsInline autoPlay preload="none" aria-hidden="true">
               {loop && <source src="/reel/loop.webm" type="video/webm" />}
               {loop && <source src="/reel/loop.mp4" type="video/mp4" />}
             </video>

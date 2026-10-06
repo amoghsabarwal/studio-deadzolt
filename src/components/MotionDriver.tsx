@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { EASE } from "@/lib/motion/tokens";
 import { getReducedMotion } from "@/lib/story";
+import { inOwnTask } from "@/lib/task";
 
 // Site-wide pointer motion:
 // - starlight hairlines: [data-hairline] edges light up near the pointer,
@@ -27,7 +28,7 @@ export default function MotionDriver() {
     return () => io.disconnect();
   }, [pathname]);
 
-  useEffect(() => {
+  useEffect(() => inOwnTask(() => {
     if (getReducedMotion() || !window.matchMedia("(hover: hover)").matches) return;
     let frame = 0;
     let px = -1e4;
@@ -72,9 +73,9 @@ export default function MotionDriver() {
       window.removeEventListener("pointermove", move);
       cancelAnimationFrame(frame);
     };
-  }, [pathname]);
+  }), [pathname]);
 
-  useEffect(() => {
+  useEffect(() => inOwnTask(() => {
     const wheel = document.querySelector<HTMLElement>(".flywheel");
     const card = wheel?.closest<HTMLElement>(".plan");
     if (!wheel || !card || getReducedMotion()) return;
@@ -98,7 +99,7 @@ export default function MotionDriver() {
       card.removeEventListener("pointerenter", enter);
       card.removeEventListener("pointerleave", leave);
     };
-  }, [pathname]);
+  }), [pathname]);
 
   return null;
 }

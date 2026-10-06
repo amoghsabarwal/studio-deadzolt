@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getLite } from "@/lib/lite";
+import { whenLiteKnown } from "@/lib/lite";
 import { ENTERED_KEY, getSceneReady, markEntered, subscribeEntry } from "@/lib/story";
 import { isGyroEnabled, needsMotionPermission, requestMotionPermission, startGyro } from "@/lib/tilt";
 
@@ -66,16 +66,22 @@ export default function EntryGate() {
     const tick = () => alive && setDone((d) => d + 1);
     // The space objects are fetched ahead only for the live scene; the still
     // image needs none of them.
-    const models = getLite() ? [] : MODELS;
-    if (models.length !== MODELS.length) queueMicrotask(() => setTasks(models.length + 2));
+    const models = whenLiteKnown().then((lite) => {
+      if (lite && alive) setTasks(2);
+      return lite ? [] : MODELS;
+    });
     const work = [
       document.fonts.ready.then(tick),
       sceneDrawn().then(tick),
-      ...models.map((url) =>
-        fetch(url)
-          .then((r) => r.arrayBuffer())
-          .catch(() => null)
-          .then(tick),
+      models.then((urls) =>
+        Promise.all(
+          urls.map((url) =>
+            fetch(url)
+              .then((r) => r.arrayBuffer())
+              .catch(() => null)
+              .then(tick),
+          ),
+        ),
       ),
     ];
     const cap = setTimeout(() => alive && setReady(true), CAP);
@@ -99,7 +105,7 @@ export default function EntryGate() {
     <div className="entry" data-leaving={leaving || undefined} data-ready={ready || undefined}>
       <div className="entry-core">
         {/* eslint-disable-next-line @next/next/no-img-element -- tiny brand mark, must paint with the HTML */}
-        <img className="entry-star" src="/brand/star-glow.webp" alt="" width={120} height={120} />
+        <img className="entry-star" src="/brand/star-glow.webp" alt="" width={120} height={120} fetchPriority="high" />
         <p className="label entry-status" aria-live="polite">
           {ready ? "Ready" : `Loading the studio · ${pct}%`}
         </p>
