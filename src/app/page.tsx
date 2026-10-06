@@ -36,6 +36,7 @@ const studioJsonLd = {
       founder: { "@type": "Person", name: site.founder },
       address: { "@type": "PostalAddress", addressLocality: "Indore", addressRegion: "Madhya Pradesh", addressCountry: "IN" },
       areaServed: "Worldwide",
+      audience: { "@type": "BusinessAudience", audienceType: "Venture-backed startups" },
       priceRange: `${plans[0].price}–${plans[plans.length - 1].price}`,
       knowsAbout: ["Motion graphics", "Launch films", "Product animation", "Social content"],
       sameAs: site.socials.map((s) => s.href),

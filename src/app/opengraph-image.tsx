@@ -32,7 +32,7 @@ export default async function Image() {
           <div style={{ display: "flex", flexDirection: "column" }}>
             <div style={{ fontSize: 68, lineHeight: 1.05, letterSpacing: -2 }}>{site.tagline}</div>
             <div style={{ fontSize: 28, color: "#8c8c8c", marginTop: 24 }}>
-              Launch films, product animation and social content for startups and brands.
+              Launch films, product animation and social content for venture-backed startups.
             </div>
           </div>
           <div style={{ display: "flex", fontSize: 24, color: "#ededed" }}>
