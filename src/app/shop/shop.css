@@ -1,0 +1,182 @@
+/*
+  Shop: a short intro on the left (the star holds the top right), then the
+  products as numbered plates in two columns, a line on how checkout works,
+  and one booking line.
+*/
+
+.sh-head {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 58%;
+  margin-bottom: clamp(88px, 11vw, 160px);
+}
+
+.sh-title {
+  font-size: clamp(2rem, 3.8vw, 3.4rem);
+  max-width: 17ch;
+}
+
+.sh-lede {
+  max-width: 46ch;
+  color: var(--dim);
+  font-size: 17px;
+}
+
+.sh-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.sh-item {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow: hidden;
+  transition: border-color 0.18s var(--ease);
+}
+
+.sh-item:hover {
+  border-color: rgba(237, 237, 237, 0.22);
+}
+
+.sh-plate {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: var(--ink);
+  border-bottom: 1px solid var(--line);
+}
+
+.sh-plate img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.8s var(--ease);
+}
+
+.sh-item:hover .sh-plate img {
+  transform: scale(1.03);
+}
+
+.sh-num {
+  position: absolute;
+  top: 16px;
+  left: 20px;
+}
+
+.sh-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px 24px 22px;
+}
+
+.sh-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.sh-name {
+  font-size: clamp(1.15rem, 1.6vw, 1.4rem);
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+}
+
+.sh-price {
+  font-family: var(--mono);
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  transition: color 0.18s var(--ease);
+}
+
+.sh-item:hover .sh-price {
+  color: var(--red);
+}
+
+.sh-line {
+  max-width: 44ch;
+  color: var(--dim);
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+/* Formats on the left, the buy button on the right, held to the bottom so
+   the cards in a row line up. */
+.sh-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.sh-buy:hover {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.sh-soon {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 16px;
+  border: 1px dashed var(--line);
+  border-radius: 999px;
+}
+
+/* Not on sale yet: the picture rests in grey. */
+.sh-item[data-soon] .sh-plate img {
+  filter: grayscale(1);
+  opacity: 0.7;
+}
+
+.sh-note {
+  margin-top: 24px;
+}
+
+.sh-close {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-top: clamp(72px, 10vw, 128px);
+  padding-top: 32px;
+  border-top: 1px solid var(--line);
+}
+
+.sh-close-line {
+  font-size: clamp(1.1rem, 1.6vw, 1.35rem);
+  letter-spacing: -0.01em;
+  max-width: 34ch;
+}
+
+@media (max-width: 760px) {
+  /* The star takes the top of the screen on phones, so the copy starts below it. */
+  .shop {
+    padding-top: 40vh;
+  }
+
+  .sh-head {
+    max-width: none;
+  }
+
+  .sh-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sh-body {
+    padding: 18px 18px 20px;
+  }
+}
