@@ -8,13 +8,14 @@ import { holoScramble } from "@/lib/motion/holo";
 import { wipeFill } from "@/lib/motion/text";
 import { DUR, EASE, RISE, SCRUB, replay } from "@/lib/motion/tokens";
 import { useReveals } from "../Reveals";
+import { inOwnTask } from "@/lib/task";
 
 gsap.registerPlugin(ScrollTrigger);
 
 // Wires the home page to the scroll: which chapter is in view (for
 // the 3D star), and the text reveals.
 export default function StoryDriver() {
-  useEffect(() => {
+  useEffect(() => inOwnTask(() => {
     setStory({ active: true, chapter: 0, progress: 0 });
     const reduced = getReducedMotion();
 
@@ -130,7 +131,7 @@ export default function StoryDriver() {
       ctx.revert();
       setStory({ active: false, chapter: 0, progress: 0 });
     };
-  }, []);
+  }), []);
 
   // Heading, list and block reveals. Created after the triggers above so
   // their trigger points account for its scroll length.

@@ -8,6 +8,7 @@ import { STAGGER, replay } from "@/lib/motion/tokens";
 import { getReducedMotion } from "@/lib/story";
 import { bookingLink, site } from "@/content/site";
 import "./ProcessBento.css";
+import { inOwnTask } from "@/lib/task";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -225,7 +226,7 @@ function CraftArt() {
 export default function ProcessBento() {
   const root = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  useEffect(() => inOwnTask(() => {
     const el = root.current;
     if (!el) return;
     const reduced = getReducedMotion();
@@ -375,7 +376,7 @@ export default function ProcessBento() {
       );
     }, el);
     return () => ctx.revert();
-  }, []);
+  }), []);
 
   return (
     <div className="pb" ref={root} aria-label="How the monthly plan runs" role="group">

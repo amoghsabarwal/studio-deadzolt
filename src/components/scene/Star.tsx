@@ -253,4 +253,4 @@ export default function Star({ animate }: { animate: boolean }) {
 }
 
 // Fetched ahead only where the live scene will run; the still needs no model.
-if (typeof window !== "undefined" && !getLite()) useGLTF.preload(STAR_URL);
+if (typeof window !== "undefined" && getLite() === false) useGLTF.preload(STAR_URL);

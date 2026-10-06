@@ -11,6 +11,12 @@ type Card = {
   local: { x: number; y: number };
   // Current, smoothed values.
   cur: { rx: number; ry: number; mx: number; my: number; on: number };
+  // The values last written to the card's style, so a card at rest costs no
+  // style work.
+  written: string;
+  // Where the card's centre sits on the page (px from the top), kept up to
+  // date by the observers so the loop never has to measure.
+  centre: number;
 };
 
 const MAX_X = 9; // degrees of tilt around the vertical axis
@@ -33,7 +39,10 @@ export default function HoloDriver() {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         const card = cards.get(entry.target as HTMLElement);
-        if (card) card.visible = entry.isIntersecting;
+        if (!card) return;
+        card.visible = entry.isIntersecting;
+        const box = entry.boundingClientRect;
+        card.centre = box.top + box.height / 2 + window.scrollY;
       });
     });
 
@@ -46,6 +55,8 @@ export default function HoloDriver() {
           hover: false,
           local: { x: 0.5, y: 0.5 },
           cur: { rx: 0, ry: 0, mx: 50, my: 50, on: 0 },
+          written: "",
+          centre: 0,
         });
         observer.observe(el);
       });
@@ -60,6 +71,15 @@ export default function HoloDriver() {
     // Cards come and go as pages change.
     const mutations = new MutationObserver(collect);
     mutations.observe(document.body, { childList: true, subtree: true });
+    // When the page reflows (an answer opens, the window resizes), the cards
+    // are measured again, once.
+    const measure = () =>
+      cards.forEach((card) => {
+        const box = card.el.getBoundingClientRect();
+        card.centre = box.top + box.height / 2 + window.scrollY;
+      });
+    const reflow = new ResizeObserver(measure);
+    reflow.observe(document.body);
 
     const move = (e: PointerEvent) => {
       if (e.pointerType !== "mouse") return;
@@ -104,6 +124,14 @@ export default function HoloDriver() {
     let gx = 0;
     let gy = 0;
     const root = document.documentElement.style;
+    // Every write to <html> restyles the whole page, so a value is written
+    // only when it changes, and the loop goes quiet once everything rests.
+    const rootWritten: Record<string, string> = {};
+    const setRoot = (name: string, value: string) => {
+      if (rootWritten[name] === value) return;
+      rootWritten[name] = value;
+      root.setProperty(name, value);
+    };
     const loop = (now: number) => {
       const dt = Math.min((now - last) / 1000, 0.05);
       last = now;
@@ -114,14 +142,16 @@ export default function HoloDriver() {
       lastScroll = window.scrollY;
       const target = Math.max(-3, Math.min(3, velocity * -0.0012));
       skew += (target - skew) * (1 - Math.exp(-6 * dt));
-      if (Math.abs(skew) > 0.005 || Math.abs(target) > 0.005) root.setProperty("--skew", `${skew.toFixed(3)}deg`);
+      if (Math.abs(skew) > 0.005 || Math.abs(target) > 0.005) setRoot("--skew", `${skew.toFixed(3)}deg`);
+      else setRoot("--skew", "0deg");
       const tilt = getTilt();
       // The page-wide tilt (--tx/--ty, -1 to 1) for effects that turn with
       // the visitor, like the footer wordmark.
       gx += (tilt.x - gx) * k;
       gy += (tilt.y - gy) * k;
-      root.setProperty("--tx", gx.toFixed(3));
-      root.setProperty("--ty", gy.toFixed(3));
+      setRoot("--tx", gx.toFixed(3));
+      setRoot("--ty", gy.toFixed(3));
+
       cards.forEach((card) => {
         if (!card.visible) return;
         let x = 0;
@@ -137,8 +167,7 @@ export default function HoloDriver() {
           on = 1;
         } else if (coarse) {
           // No gyroscope yet: the foil catches the light as the card scrolls.
-          const box = card.el.getBoundingClientRect();
-          const p = (box.top + box.height / 2) / window.innerHeight; // 0 top, 1 bottom
+          const p = (card.centre - window.scrollY) / window.innerHeight; // 0 top, 1 bottom
           x = Math.sin(p * Math.PI * 2) * 0.6;
           y = (p - 0.5) * 1.4;
           on = 0.7;
@@ -149,13 +178,22 @@ export default function HoloDriver() {
         c.mx += ((0.5 + x * 0.5) * 100 - c.mx) * k;
         c.my += ((0.5 + y * 0.5) * 100 - c.my) * k;
         c.on += (on - c.on) * k;
+        const rx = `${c.rx.toFixed(2)}deg`;
+        const ry = `${c.ry.toFixed(2)}deg`;
+        const mx = `${c.mx.toFixed(1)}%`;
+        const my = `${c.my.toFixed(1)}%`;
+        const hyp = Math.min(Math.hypot(c.ry / MAX_X, c.rx / MAX_Y), 1).toFixed(3);
+        const lit = c.on.toFixed(3);
+        const key = `${rx} ${ry} ${mx} ${my} ${hyp} ${lit}`;
+        if (key === card.written) return;
+        card.written = key;
         const s = card.el.style;
-        s.setProperty("--rx", `${c.rx.toFixed(2)}deg`);
-        s.setProperty("--ry", `${c.ry.toFixed(2)}deg`);
-        s.setProperty("--mx", `${c.mx.toFixed(1)}%`);
-        s.setProperty("--my", `${c.my.toFixed(1)}%`);
-        s.setProperty("--hyp", Math.min(Math.hypot(c.ry / MAX_X, c.rx / MAX_Y), 1).toFixed(3));
-        s.setProperty("--on", c.on.toFixed(3));
+        s.setProperty("--rx", rx);
+        s.setProperty("--ry", ry);
+        s.setProperty("--mx", mx);
+        s.setProperty("--my", my);
+        s.setProperty("--hyp", hyp);
+        s.setProperty("--on", lit);
       });
       frame = requestAnimationFrame(loop);
     };
@@ -165,6 +203,7 @@ export default function HoloDriver() {
       cancelAnimationFrame(frame);
       observer.disconnect();
       mutations.disconnect();
+      reflow.disconnect();
       window.removeEventListener("pointermove", move);
       document.removeEventListener("pointerleave", leave);
       window.removeEventListener("touchstart", touch);

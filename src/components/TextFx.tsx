@@ -3,11 +3,12 @@
 import { useEffect } from "react";
 import { holoScramble } from "@/lib/motion/holo";
 import { getReducedMotion } from "@/lib/story";
+import { inOwnTask } from "@/lib/task";
 
 // Hover scrambles for links and the booking buttons: the words scan again
 // each time the pointer arrives.
 export default function TextFx() {
-  useEffect(() => {
+  useEffect(() => inOwnTask(() => {
     if (getReducedMotion()) return;
     const busy = new WeakSet<HTMLElement>();
     const over = (e: PointerEvent) => {
@@ -22,6 +23,6 @@ export default function TextFx() {
     };
     document.addEventListener("pointerover", over);
     return () => document.removeEventListener("pointerover", over);
-  }, []);
+  }), []);
   return null;
 }
