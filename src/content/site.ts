@@ -8,12 +8,12 @@ export const site = {
   url: "https://deadzolt.studio",
   location: "Indore, M.P.",
   description:
-    "Studio Deadzolt is the motion graphics studio of Amogh Sabarwal, making launch films, product animation and social content for startups and brands.",
+    "Studio Deadzolt is the motion graphics studio of Amogh Sabarwal, making launch films, product animation and social content for venture-backed startups.",
   // What Google shows for the home page: the title and the line under it.
   search: {
-    title: "Studio Deadzolt · Motion graphics studio for startups and brands",
+    title: "Studio Deadzolt · Motion design for venture-backed startups",
     description:
-      "Motion graphics for startups and brands: launch films, product animation and social content. First frames in 48 hours, plans from $500. Book a free call.",
+      "Motion design for venture-backed startups: launch films, product animation and social content. First frames in 48 hours, plans from $500. Book a free call.",
   },
   about: [
     "Hi, I'm Amogh, founder of Studio Deadzolt.",
