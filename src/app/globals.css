@@ -1941,6 +1941,12 @@ html[data-entry="open"] {
   background: linear-gradient(90deg, var(--paper) var(--wipe), var(--dim) var(--wipe));
   -webkit-background-clip: text;
   background-clip: text;
+  /* iOS Safari drops clipped-text backgrounds on inline runs inside the
+     split (transformed) lines, leaving the words invisible. One unbroken box
+     with cloned decoration paints reliably. */
+  display: inline-block;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
 
 /*
