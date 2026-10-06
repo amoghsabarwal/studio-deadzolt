@@ -69,7 +69,7 @@ export default function Home() {
             Motion graphics people can&apos;t <em className="wipe">scroll past.</em>
           </h1>
           <p className="hero-sub">
-            Launch films, product animation and social content for startups and brands that need to be
+            Launch films, product animation and social content for venture-backed startups that need to be
             seen.
           </p>
           <div className="actions">

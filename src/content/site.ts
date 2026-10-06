@@ -17,7 +17,7 @@ export const site = {
   },
   about: [
     "Hi, I'm Amogh, founder of Studio Deadzolt.",
-    "I make motion graphics for startups and brands: launch films, product animation and social content, built so people stop scrolling and look.",
+    "I make motion graphics for venture-backed startups: launch films, product animation and social content, built so people stop scrolling and look.",
   ],
   // Where every booking button goes: the studio's Calendly page. With
   // JavaScript it opens over the site (BookingDialog); without, in a new tab.
