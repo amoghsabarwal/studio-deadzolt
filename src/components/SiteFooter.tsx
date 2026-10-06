@@ -9,6 +9,7 @@ const pages = [
   { href: "/works", label: "Work" },
   { href: "/#pricing", label: "Pricing" },
   { href: "/about", label: "About" },
+  { href: "/shop", label: "Shop" },
 ];
 
 export default function SiteFooter() {

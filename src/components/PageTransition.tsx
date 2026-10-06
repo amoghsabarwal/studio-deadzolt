@@ -12,6 +12,7 @@ function labelFor(pathname: string) {
   if (pathname === "/") return "Studio";
   if (pathname === "/works") return "Works";
   if (pathname === "/about") return "About";
+  if (pathname === "/shop") return "Shop";
   const project = pathname.startsWith("/works/") ? getProject(pathname.split("/")[2] ?? "") : undefined;
   return project?.title ?? "Studio Deadzolt";
 }
