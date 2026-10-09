@@ -1,8 +1,11 @@
 "use client";
 
 import type { Flip } from "gsap/Flip";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import WorkPreview from "@/components/WorkPreview";
+import { workCover } from "@/content/media";
 import type { Discipline, Project } from "@/content/site";
 import { loadMotion, type Motion } from "@/lib/motion/load";
 import { getReducedMotion } from "@/lib/story";
@@ -77,7 +80,14 @@ export default function WorksIndex({ projects, disciplines }: Props) {
           const shown = filter === "all" || p.disciplines.some((d) => d === filter);
           return (
             <li key={p.slug} hidden={!shown} data-flip-id={p.slug}>
-              <Link href={`/works/${p.slug}`} className="works-row" data-focus={p.disciplines[0]} data-cursor="View">
+              <Link
+                href={`/works/${p.slug}`}
+                className="works-row"
+                data-focus={p.disciplines[0]}
+                data-cover={p.slug}
+                data-cursor="View"
+              >
+                <Image className="work-thumb" src={workCover[p.slug]} alt="" width={96} height={120} sizes="48px" />
                 <span className="label works-num">{String(i + 1).padStart(2, "0")}</span>
                 <span className="works-title">{p.title}</span>
                 <span className="label works-tags">{p.tags}</span>
@@ -87,6 +97,7 @@ export default function WorksIndex({ projects, disciplines }: Props) {
           );
         })}
       </ol>
+      <WorkPreview />
     </>
   );
 }
