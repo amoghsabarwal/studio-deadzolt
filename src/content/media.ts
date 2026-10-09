@@ -16,7 +16,6 @@ export const workMedia: Record<string, WorkMedia[]> = {
     { kind: "image", src: "/work/node-ecosystem/05.webp", width: 1600, height: 2000 },
   ],
   "sound-studies": [
-    { kind: "image", src: "/work/sound-studies/01.webp", width: 1920, height: 1080 },
     { kind: "image", src: "/work/sound-studies/02.webp", width: 1125, height: 1406 },
     { kind: "image", src: "/work/sound-studies/03.webp", width: 735, height: 920 },
     { kind: "image", src: "/work/sound-studies/04.webp", width: 1200, height: 1500 },
@@ -71,27 +70,12 @@ export const workMedia: Record<string, WorkMedia[]> = {
   ],
   "solflare": [
     { kind: "video", src: "/work/solflare/01.mp4", poster: "/work/solflare/01-poster.webp", width: 1600, height: 900 },
-    { kind: "image", src: "/work/solflare/02.webp", width: 1600, height: 1600 },
-    { kind: "image", src: "/work/solflare/03.webp", width: 1600, height: 1600 },
-    { kind: "image", src: "/work/solflare/04.webp", width: 1920, height: 1200 },
-    { kind: "image", src: "/work/solflare/05.webp", width: 1600, height: 1600 },
-    { kind: "image", src: "/work/solflare/06.webp", width: 1600, height: 1600 },
-    { kind: "image", src: "/work/solflare/07.webp", width: 1920, height: 1200 },
-    { kind: "image", src: "/work/solflare/08.webp", width: 1600, height: 1600 },
-    { kind: "image", src: "/work/solflare/09.webp", width: 1600, height: 1600 },
-    { kind: "image", src: "/work/solflare/10.webp", width: 1600, height: 1600 },
-    { kind: "image", src: "/work/solflare/11.webp", width: 1600, height: 1600 },
     { kind: "image", src: "/work/solflare/12.webp", width: 2000, height: 1009 },
-  ],};
-
-// The still that stands for each work in lists: the old site's card image.
-export const workCover: Record<string, string> = {
-  "node-ecosystem": "/work/node-ecosystem/01-poster.webp",
-  "sound-studies": "/work/sound-studies/02.webp",
-  "soft-structures": "/work/soft-structures/01-poster.webp",
-  "frequency-fields": "/work/frequency-fields/01-poster.webp",
-  "teenage-engineering-ko-ii": "/work/teenage-engineering-ko-ii/01.webp",
-  seeker: "/work/seeker/01-poster.webp",
-  "not-your-average-tee": "/work/not-your-average-tee/01.webp",
-  solflare: "/work/solflare/12.webp",
+  ],
 };
+
+// The still that stands for each work in lists, cut to 4:5 at two sizes
+// (public/work/<slug>/cover.webp and thumb.webp) so lists never wait on the
+// image optimiser.
+export const workCover = (slug: string) => `/work/${slug}/cover.webp`;
+export const workThumb = (slug: string) => `/work/${slug}/thumb.webp`;
