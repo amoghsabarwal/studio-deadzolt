@@ -1,5 +1,6 @@
 import BookButton from "@/components/BookButton";
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import Faq from "@/components/Faq";
 import ProcessBento from "@/components/ProcessBento";
@@ -8,7 +9,9 @@ import Showreel from "@/components/Showreel";
 import HoloLayers from "@/components/HoloLayers";
 import StudioClock from "@/components/StudioClock";
 import TiltHint from "@/components/TiltHint";
+import WorkPreview from "@/components/WorkPreview";
 import StoryDriver from "@/components/story/StoryDriver";
+import { workCover } from "@/content/media";
 import { plans, projects, site } from "@/content/site";
 
 // The home page is short and built to get a call booked: the hero, the
@@ -111,8 +114,10 @@ export default function Home() {
                 href={`/works/${p.slug}`}
                 className="work-row"
                 data-focus={p.disciplines[0]}
+                data-cover={p.slug}
                 data-cursor="View"
               >
+                <Image className="work-thumb" src={workCover[p.slug]} alt="" width={96} height={120} sizes="48px" />
                 <span className="label work-index">{String(i + 1).padStart(2, "0")}</span>
                 <span className="work-title">{p.title}</span>
                 <span className="label work-date">{p.year}</span>
@@ -120,6 +125,7 @@ export default function Home() {
             </li>
           ))}
         </ol>
+        <WorkPreview />
       </section>
 
       <section id="pricing" data-chapter className="chapter pricing">

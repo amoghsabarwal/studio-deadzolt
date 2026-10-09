@@ -1,10 +1,13 @@
 import BookButton from "@/components/BookButton";
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import CaseFocus from "@/components/CaseFocus";
 import HoloLayers from "@/components/HoloLayers";
+import LoopVideo from "@/components/LoopVideo";
 import Reveals from "@/components/Reveals";
+import { workMedia } from "@/content/media";
 import { disciplineNames, getDiscipline, getProject, projects, site } from "@/content/site";
 
 export const dynamicParams = false;
@@ -21,7 +24,8 @@ export async function generateMetadata({ params }: PageProps<"/works/[slug]">): 
 }
 
 // A case study: the title beside the work's discipline piece in 3D, the
-// facts, the story, a way to start a similar project, and the next work.
+// facts, the story, the work itself, a way to start a similar project, and
+// the next work.
 export default async function CaseStudyPage({ params }: PageProps<"/works/[slug]">) {
   const { slug } = await params;
   const project = getProject(slug);
@@ -30,6 +34,7 @@ export default async function CaseStudyPage({ params }: PageProps<"/works/[slug]
   const index = projects.indexOf(project);
   const next = projects[(index + 1) % projects.length];
   const number = (n: number) => String(n).padStart(2, "0");
+  const media = workMedia[project.slug] ?? [];
 
   return (
     <article className="page case">
@@ -70,6 +75,32 @@ export default async function CaseStudyPage({ params }: PageProps<"/works/[slug]
         <p className="label" data-scramble>Overview</p>
         <p className="case-text">{project.body}</p>
       </section>
+
+      {media.length > 0 && (
+        <section className="case-media" aria-label={`${project.title}: the work`}>
+          {media.map((m, i) => (
+            <figure key={m.src} className={i === 0 ? "case-shot case-lead" : "case-shot"} data-reveal>
+              {m.kind === "video" ? (
+                <LoopVideo
+                  src={m.src}
+                  poster={m.poster}
+                  width={m.width}
+                  height={m.height}
+                  label={`${project.title}, film ${number(i + 1)}`}
+                />
+              ) : (
+                <Image
+                  src={m.src}
+                  alt={`${project.title}, still ${number(i + 1)}`}
+                  width={m.width}
+                  height={m.height}
+                  sizes={i === 0 ? "(max-width: 760px) 100vw, 1320px" : "(max-width: 760px) 100vw, 50vw"}
+                />
+              )}
+            </figure>
+          ))}
+        </section>
+      )}
 
       <section className="case-section" data-reveal>
         <p className="label" data-scramble>Practice</p>
