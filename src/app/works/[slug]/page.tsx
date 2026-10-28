@@ -131,9 +131,11 @@ export default async function CaseStudyPage({ params }: PageProps<"/works/[slug]
         </div>
         <div className="actions">
           <BookButton from="case" />
-          <Link href="/#pricing" className="button">
-            See pricing
-          </Link>
+          {site.showPricing && (
+            <Link href="/#pricing" className="button">
+              See pricing
+            </Link>
+          )}
         </div>
       </section>
 

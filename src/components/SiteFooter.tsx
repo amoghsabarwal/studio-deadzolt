@@ -7,7 +7,7 @@ import { site } from "@/content/site";
 const pages = [
   { href: "/", label: "Home" },
   { href: "/works", label: "Work" },
-  { href: "/#pricing", label: "Pricing" },
+  ...(site.showPricing ? [{ href: "/#pricing", label: "Pricing" }] : []),
   { href: "/about", label: "About" },
   { href: "/shop", label: "Shop" },
 ];
