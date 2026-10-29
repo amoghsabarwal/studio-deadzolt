@@ -39,7 +39,7 @@ const studioJsonLd = {
       address: { "@type": "PostalAddress", addressLocality: "Indore", addressRegion: "Madhya Pradesh", addressCountry: "IN" },
       areaServed: "Worldwide",
       audience: { "@type": "BusinessAudience", audienceType: "Venture-backed startups" },
-      priceRange: `${plans[0].price}–${plans[plans.length - 1].price}`,
+      ...(site.showPricing && { priceRange: `${plans[0].price}–${plans[plans.length - 1].price}` }),
       knowsAbout: ["Motion graphics", "Launch films", "Product animation", "Social content"],
       sameAs: site.socials.map((s) => s.href),
     },
@@ -144,39 +144,44 @@ export default function Home() {
           </div>
         </div>
 
-        <TiltHint />
-        <div className="plans" data-stagger>
-          {plans.map((plan) => (
-            <article
-              key={plan.name}
-              className="plan"
-              data-featured={plan.featured || undefined}
-              data-holo
-              data-tier={plan.foil}
-              data-hairline="box"
-              data-drumroll
-            >
-              <HoloLayers />
-              {plan.featured && <span className="flywheel" aria-hidden="true" />}
-              <header>
-                <p className="label">{plan.note}</p>
-                <h3 className="plan-name">{plan.name}</h3>
-                <p className="plan-price">{plan.price}</p>
-                <p className="plan-summary">{plan.summary}</p>
-              </header>
-              <ul className="plan-list">
-                {plan.includes.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-              <BookButton
-                from={`plan-${plan.name.toLowerCase().replace(/\s+/g, "-")}`}
-                primary={Boolean(plan.featured)}
-              />
-              {plan.fine && <p className="plan-fine label">{plan.fine}</p>}
-            </article>
-          ))}
-        </div>
+        {/* The plan cards hide while site.showPricing is false. */}
+        {site.showPricing && (
+          <>
+          <TiltHint />
+          <div className="plans" data-stagger>
+            {plans.map((plan) => (
+              <article
+                key={plan.name}
+                className="plan"
+                data-featured={plan.featured || undefined}
+                data-holo
+                data-tier={plan.foil}
+                data-hairline="box"
+                data-drumroll
+              >
+                <HoloLayers />
+                {plan.featured && <span className="flywheel" aria-hidden="true" />}
+                <header>
+                  <p className="label">{plan.note}</p>
+                  <h3 className="plan-name">{plan.name}</h3>
+                  <p className="plan-price">{plan.price}</p>
+                  <p className="plan-summary">{plan.summary}</p>
+                </header>
+                <ul className="plan-list">
+                  {plan.includes.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+                <BookButton
+                  from={`plan-${plan.name.toLowerCase().replace(/\s+/g, "-")}`}
+                  primary={Boolean(plan.featured)}
+                />
+                {plan.fine && <p className="plan-fine label">{plan.fine}</p>}
+              </article>
+            ))}
+          </div>
+          </>
+        )}
 
         <ProcessBento />
       </section>

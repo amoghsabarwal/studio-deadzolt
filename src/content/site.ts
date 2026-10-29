@@ -1,6 +1,10 @@
 // All site copy lives here. Project text is taken from deadzolt.studio.
 
 export const site = {
+  // Whether prices show anywhere on the site: the plan cards on the home
+  // page, the Pricing links in the header and footer, the price questions in
+  // the FAQ and the price range Google reads. Set to true to bring them back.
+  showPricing: false,
   name: "Studio Deadzolt",
   founder: "Amogh Sabarwal",
   tagline: "Motion graphics people can't scroll past.",
@@ -13,7 +17,7 @@ export const site = {
   search: {
     title: "Studio Deadzolt · Motion design for venture-backed startups",
     description:
-      "Motion design for venture-backed startups: launch films, product animation and social content. First frames in 48 hours, plans from $500. Book a free call.",
+      "Motion design for venture-backed startups: launch films, product animation and social content. First frames in 48 hours. Book a free call.",
   },
   about: [
     "Hi, I'm Amogh, founder of Studio Deadzolt.",
@@ -263,8 +267,11 @@ export const proof: { clients: string[]; quote?: { text: string; name: string; r
 // studio: 48 hours, one to three weeks, unlimited requests one at a time,
 // pausing with unused days carried over, USD invoices. The revision counts
 // are still to be confirmed.
-export const faq: { q: string; a: string }[] = [
+// Questions marked `pricing` name a plan or a price, so they hide with the
+// plans (site.showPricing).
+const allFaq: { q: string; a: string; pricing?: boolean }[] = [
   {
+    pricing: true,
     q: "What do I get for $500 or $1,000?",
     a: "$500 covers one short piece, like a logo animation or a product loop. $1,000 covers a full launch film or product animation, from storyboard to final render. The call ends with a fixed quote, so you know before anything starts.",
   },
@@ -273,10 +280,12 @@ export const faq: { q: string; a: string }[] = [
     a: "First frames land within 48 hours of the brief. A full film usually takes one to three weeks, depending on length.",
   },
   {
+    pricing: true,
     q: "How many revisions do I get?",
     a: "Two rounds on Starter, and revisions at storyboard, style frame and animation stages on Project. The subscription takes requests one at a time with no revision cap.",
   },
   {
+    pricing: true,
     q: "Can I pause the monthly plan?",
     a: "Yes. Pause or cancel any time, with no lock-in. Unused days carry over when you resume.",
   },
@@ -285,6 +294,8 @@ export const faq: { q: string; a: string }[] = [
     a: "Work is async, with updates waiting for you each morning and calls booked at a time that suits you. Invoices are in USD.",
   },
 ];
+
+export const faq = allFaq.filter((item) => site.showPricing || !item.pricing);
 
 // The studio showreel, shown right after the hero on the home page.
 export const showreel = {
